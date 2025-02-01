@@ -1,0 +1,51 @@
+<div class="row">
+  <div class="col-md-4 mb-4">
+    <div class="card card-custom">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="card-title mb-0">Total Institutes</h6>
+            <h2 class="mt-2 mb-0"><%= @institutes_count %></h2>
+          </div>
+          <i class="bi bi-building fs-1 icon-primary"></i>
+        </div>
+        <div class="mt-3 d-flex gap-2">
+          <%= link_to "View All", admin_institutes_path, class: "btn btn-custom-primary" %>
+          <%= link_to new_admin_institute_path, class: "btn btn-outline-custom" do %>
+            <i class="bi bi-plus-lg"></i> Add Institute
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-4">
+    <div class="card card-custom">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="card-title mb-0">Institute Admins</h6>
+            <h2 class="mt-2 mb-0"><%= @institute_admins_count %></h2>
+          </div>
+          <i class="bi bi-people fs-1 icon-primary"></i>
+        </div>
+        <%= link_to "Manage Admins", admin_users_path, class: "btn btn-custom-primary mt-3" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-4">
+    <div class="card card-custom">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="card-title mb-0">Active Programs</h6>
+            <h2 class="mt-2 mb-0"><%= @active_programs_count %></h2>
+          </div>
+          <i class="bi bi-calendar-check fs-1 icon-primary"></i>
+        </div>
+        <%= link_to "View Programs", "#", class: "btn btn-custom-primary mt-3" %>
+      </div>
+    </div>
+  </div>
+</div>

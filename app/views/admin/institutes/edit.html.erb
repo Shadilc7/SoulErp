@@ -1,0 +1,76 @@
+<div class="card card-custom">
+  <div class="card-header card-header-custom">
+    <h5 class="mb-0">Edit Institute</h5>
+  </div>
+  
+  <div class="card-body">
+    <%= form_with(model: [:admin, @institute], local: true) do |f| %>
+      <% if @institute.errors.any? %>
+        <div class="alert alert-danger">
+          <h6>Please fix the following errors:</h6>
+          <ul>
+            <% @institute.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <div class="form-group">
+            <%= f.label :name, class: "form-label" %>
+            <%= f.text_field :name, class: "form-control", placeholder: "Enter institute name" %>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <div class="form-group">
+            <%= f.label :code, class: "form-label" %>
+            <%= f.text_field :code, class: "form-control", placeholder: "Enter unique code" %>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <div class="form-group">
+            <%= f.label :email, class: "form-label" %>
+            <%= f.email_field :email, class: "form-control", placeholder: "Enter email address" %>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <div class="form-group">
+            <%= f.label :contact_number, class: "form-label" %>
+            <%= f.text_field :contact_number, class: "form-control", placeholder: "Enter contact number" %>
+          </div>
+        </div>
+
+        <div class="col-12 mb-3">
+          <div class="form-group">
+            <%= f.label :address, class: "form-label" %>
+            <%= f.text_area :address, class: "form-control", rows: 3, placeholder: "Enter full address" %>
+          </div>
+        </div>
+
+        <div class="col-12 mb-3">
+          <div class="form-group">
+            <%= f.label :description, class: "form-label" %>
+            <%= f.text_area :description, class: "form-control", rows: 4, placeholder: "Enter institute description" %>
+          </div>
+        </div>
+
+        <div class="col-12 mb-3">
+          <div class="form-check">
+            <%= f.check_box :active, class: "form-check-input" %>
+            <%= f.label :active, class: "form-check-label" %>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <%= f.submit "Update Institute", class: "btn btn-custom-primary" %>
+        <%= link_to "Cancel", admin_institute_path(@institute), class: "btn btn-outline-custom ms-2" %>
+      </div>
+    <% end %>
+  </div>
+</div> 

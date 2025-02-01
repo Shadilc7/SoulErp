@@ -1,0 +1,46 @@
+.form-floating {
+  > label {
+    padding: 1rem 0.75rem;
+  }
+  
+  > .form-control {
+    height: calc(3.5rem + 2px);
+    line-height: 1.25;
+    
+    &:focus {
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+  }
+}
+
+.card {
+  .card-header {
+    border-bottom: none;
+  }
+  
+  .card-footer {
+    background: none;
+    border-top: none;
+  }
+}
+
+.btn-primary {
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+  }
+}
+
+// Add responsive styles for smaller screens
+@media (max-width: 576px) {
+  .card {
+    margin: 1rem;
+  }
+  
+  .btn-lg {
+    padding: 0.5rem 1rem;
+  }
+} 

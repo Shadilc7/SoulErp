@@ -1,0 +1,144 @@
+<div class="container">
+  <div class="row justify-content-center min-vh-100 align-items-center">
+    <div class="col-12 col-md-8 col-lg-5">
+      <div class="card shadow-lg border-0 rounded-lg card-custom">
+        <div class="card-header card-header-custom text-center py-4">
+          <h3 class="mb-0">Create Account</h3>
+        </div>
+        <div class="card-body p-4">
+          <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+            <%= render "devise/shared/error_messages", resource: resource %>
+
+            <div class="form-floating mb-3">
+              <%= f.text_field :username, autofocus: true, class: "form-control", placeholder: "Username" %>
+              <%= f.label :username %>
+            </div>
+
+            <div class="form-floating mb-3">
+              <%= f.email_field :email, autocomplete: "email", class: "form-control", placeholder: "name@example.com" %>
+              <%= f.label :email %>
+            </div>
+
+            <div class="form-floating mb-3">
+              <%= f.password_field :password, autocomplete: "new-password", class: "form-control", placeholder: "Password" %>
+              <%= f.label :password %>
+              <% if @minimum_password_length %>
+                <small class="text-muted">(<%= @minimum_password_length %> characters minimum)</small>
+              <% end %>
+            </div>
+
+            <div class="form-floating mb-4">
+              <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control", placeholder: "Confirm Password" %>
+              <%= f.label :password_confirmation %>
+            </div>
+
+            <div class="d-grid">
+              <%= f.submit "Create Account", class: "btn btn-custom-primary btn-lg" %>
+            </div>
+          <% end %>
+        </div>
+        <div class="card-footer text-center py-3">
+          <div class="small">
+            Already have an account? <%= link_to "Login here", new_user_session_path, class: "text-custom-primary" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% content_for :head do %>
+  <style>
+    :root {
+      --primary-color: #98D8AA;
+      --secondary-color: #F3E99F;
+      --accent-color: #D7B290;
+      --highlight-color: #B7E5B4;
+      --danger-color: #FF6D60;
+      --success-color: #98D8AA;
+      --warning-color: #F3E99F;
+      --info-color: #B7E5B4;
+      --light-color: #FFFFFF;
+      --dark-color: #2C3639;
+    }
+
+    body {
+      background-color: #f8f9fa;
+    }
+
+    .card-custom {
+      border: none;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .card-custom:hover {
+      transform: translateY(-5px);
+    }
+
+    .card-header-custom {
+      background-color: var(--primary-color);
+      color: var(--dark-color);
+      border-bottom: none;
+    }
+
+    .btn-custom-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+      color: var(--dark-color);
+      transition: all 0.3s ease;
+    }
+
+    .btn-custom-primary:hover {
+      background-color: #7BC5A0;
+      border-color: #7BC5A0;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .text-custom-primary {
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .text-custom-primary:hover {
+      color: #7BC5A0;
+      text-decoration: underline;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.25rem rgba(152, 216, 170, 0.25);
+    }
+
+    .form-floating label {
+      color: #6c757d;
+    }
+
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+      color: var(--primary-color);
+    }
+
+    .alert {
+      border: none;
+      border-radius: 8px;
+    }
+
+    .alert-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .invalid-feedback {
+      color: var(--danger-color);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+    }
+  </style>
+<% end %>

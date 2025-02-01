@@ -8,3 +8,249 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+/*
+ *= require_tree .
+ *= require_self
+ */
+
+:root {
+  --primary-color: #98D8AA;
+  --secondary-color: #F3E99F;
+  --accent-color: #D7B290;
+  --highlight-color: #B7E5B4;
+  --danger-color: #FF6D60;
+  --success-color: #98D8AA;
+  --warning-color: #F3E99F;
+  --info-color: #B7E5B4;
+  --light-color: #FFFFFF;
+  --dark-color: #2C3639;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Login Page Styles */
+.login-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Left Panel Styles */
+.left-panel {
+  flex: 1;
+  background-color: #1C1F25;
+  color: white;
+  padding: clamp(1rem, 5vw, 3rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-container {
+  margin-bottom: clamp(2rem, 4vw, 4rem);
+}
+
+.company-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+}
+
+.company-logo i {
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+}
+
+.welcome-content {
+  flex-grow: 1;
+}
+
+.welcome-content h1 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.welcome-content h2 {
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  margin-bottom: 1rem;
+  font-weight: normal;
+  color: #E5E5E5;
+}
+
+.welcome-content p {
+  color: #8B8D92;
+  margin-bottom: 2rem;
+  font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+  max-width: 80%;
+  line-height: 1.6;
+}
+
+.register-btn {
+  display: inline-block;
+  background-color: #00B67A;
+  color: white;
+  padding: clamp(0.8rem, 2vw, 1rem) clamp(1.5rem, 3vw, 2.5rem);
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.register-btn:hover {
+  background-color: #009966;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.bottom-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(1rem, 2vw, 2.5rem);
+  margin-top: 2rem;
+}
+
+.bottom-link {
+  color: #8B8D92;
+  text-decoration: none;
+  font-size: clamp(0.7rem, 1.2vw, 0.8rem);
+  letter-spacing: 1px;
+  transition: color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.bottom-link:hover {
+  color: white;
+}
+
+/* Right Panel Styles */
+.right-panel {
+  flex: 1;
+  background-color: #00B67A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 5vw, 3rem);
+}
+
+.login-form-container {
+  width: 100%;
+  max-width: min(90%, 400px);
+}
+
+.login-form-container h2 {
+  color: white;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  margin-bottom: 2rem;
+  font-weight: normal;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 1rem;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 1rem;
+  background-color: white;
+  color: #00B67A;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+.login-btn:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-2px);
+}
+
+.forgot-password {
+  color: white;
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: block;
+  text-align: center;
+  opacity: 0.9;
+  transition: opacity 0.3s;
+}
+
+.forgot-password:hover {
+  opacity: 1;
+  text-decoration: underline;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+
+  .left-panel {
+    min-height: 60vh;
+  }
+
+  .right-panel {
+    min-height: 40vh;
+  }
+
+  .welcome-content p {
+    max-width: 100%;
+  }
+
+  .bottom-links {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .login-form-container {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .bottom-links {
+    gap: 1rem;
+  }
+
+  .bottom-link {
+    font-size: 0.7rem;
+  }
+
+  .welcome-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .welcome-content h2 {
+    font-size: 1.2rem;
+  }
+}
+
+/* Hide alerts inside login container */
+.login-container .alert {
+  display: none;
+}

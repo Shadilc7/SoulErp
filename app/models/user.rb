@@ -24,6 +24,17 @@ class User < ApplicationRecord
   # Scopes
   scope :institute_admin, -> { where(role: :institute_admin) }
   scope :active, -> { where(active: true) }
+  scope :trainer, -> { where(role: :trainer) }
+  scope :participant, -> { where(role: :participant) }
+  scope :guardian, -> { where(role: :guardian) }
+
+  has_one :trainer, dependent: :destroy
+  has_one :participant, dependent: :destroy
+  has_one :guardian, dependent: :destroy
+  belongs_to :section, optional: true
+
+  accepts_nested_attributes_for :participant
+  accepts_nested_attributes_for :trainer
 
   def login
     @login || username || email

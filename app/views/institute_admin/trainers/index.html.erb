@@ -1,0 +1,55 @@
+<div class="card card-custom">
+  <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Trainers</h5>
+    <%= link_to new_institute_admin_trainer_path, class: "btn btn-custom-primary" do %>
+      <i class="bi bi-plus-lg"></i> Add Trainer
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Specialization</th>
+            <th>Experience</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @trainers.each do |trainer| %>
+            <tr>
+              <td><%= trainer.user.username %></td>
+              <td><%= trainer.user.email %></td>
+              <td><%= trainer.specialization %></td>
+              <td><%= trainer.experience_years %> years</td>
+              <td>
+                <span class="badge badge-<%= trainer.status == 'active' ? 'success' : 'warning' %>">
+                  <%= trainer.status.titleize %>
+                </span>
+              </td>
+              <td>
+                <%= link_to institute_admin_trainer_path(trainer.user), class: "btn btn-sm btn-custom-primary me-2" do %>
+                  <i class="bi bi-eye"></i>
+                <% end %>
+                <%= link_to edit_institute_admin_trainer_path(trainer.user), class: "btn btn-sm btn-outline-custom me-2" do %>
+                  <i class="bi bi-pencil"></i>
+                <% end %>
+                <%= button_to institute_admin_trainer_path(trainer.user), 
+                    method: :delete, 
+                    class: "btn btn-sm btn-outline-danger",
+                    form: { style: 'display: inline-block' },
+                    data: { turbo_confirm: "Are you sure you want to delete this trainer?" } do %>
+                  <i class="bi bi-trash"></i>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div> 

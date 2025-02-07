@@ -1,0 +1,82 @@
+<%= form_with(model: [:institute_admin, @user], url: @user.persisted? ? institute_admin_trainer_path(@user) : institute_admin_trainers_path, local: true) do |f| %>
+  <% if @user.errors.any? %>
+    <div class="alert alert-danger">
+      <h6>Please fix the following errors:</h6>
+      <ul class="mb-0">
+        <% @user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <div class="form-group">
+        <%= f.label :username, class: "form-label" %>
+        <%= f.text_field :username, class: "form-control", placeholder: "Enter username" %>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <div class="form-group">
+        <%= f.label :email, class: "form-label" %>
+        <%= f.email_field :email, class: "form-control", placeholder: "Enter email" %>
+      </div>
+    </div>
+
+    <% unless @user.persisted? %>
+      <div class="col-md-6 mb-3">
+        <div class="form-group">
+          <%= f.label :password, class: "form-label" %>
+          <%= f.password_field :password, class: "form-control" %>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <div class="form-group">
+          <%= f.label :password_confirmation, class: "form-label" %>
+          <%= f.password_field :password_confirmation, class: "form-control" %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= f.fields_for :trainer do |trainer_form| %>
+      <div class="col-md-6 mb-3">
+        <div class="form-group">
+          <%= trainer_form.label :specialization, class: "form-label" %>
+          <%= trainer_form.text_field :specialization, class: "form-control" %>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <div class="form-group">
+          <%= trainer_form.label :qualification, class: "form-label" %>
+          <%= trainer_form.text_field :qualification, class: "form-control" %>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <div class="form-group">
+          <%= trainer_form.label :experience_years, class: "form-label" %>
+          <%= trainer_form.number_field :experience_years, class: "form-control", min: 0 %>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <div class="form-group">
+          <%= trainer_form.label :status, class: "form-label" %>
+          <%= trainer_form.select :status, 
+              Trainer.statuses.keys.map { |s| [s.titleize, s] },
+              {}, 
+              { class: "form-select" } %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mt-4">
+    <%= f.submit @user.new_record? ? "Create Trainer" : "Update Trainer", class: "btn btn-custom-primary" %>
+    <%= link_to "Cancel", institute_admin_trainers_path, class: "btn btn-outline-custom ms-2" %>
+  </div>
+<% end %> 

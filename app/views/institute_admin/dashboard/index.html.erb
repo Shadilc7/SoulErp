@@ -1,0 +1,46 @@
+<div class="row">
+  <div class="col-md-4 mb-4">
+    <div class="card card-custom">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="card-title mb-0">Total Sections</h6>
+            <h2 class="mt-2 mb-0"><%= @sections_count %></h2>
+          </div>
+          <i class="bi bi-grid fs-1 icon-primary"></i>
+        </div>
+        <%= link_to "View Sections", institute_admin_sections_path, class: "btn btn-custom-primary mt-3" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-4">
+    <div class="card card-custom">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="card-title mb-0">Total Participants</h6>
+            <h2 class="mt-2 mb-0"><%= @participants_count %></h2>
+          </div>
+          <i class="bi bi-people fs-1 icon-primary"></i>
+        </div>
+        <%= link_to "View Participants", institute_admin_participants_path, class: "btn btn-custom-primary mt-3" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-4">
+    <div class="card card-custom">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="card-title mb-0">Total Trainers</h6>
+            <h2 class="mt-2 mb-0"><%= @trainers_count %></h2>
+          </div>
+          <i class="bi bi-person-workspace fs-1 icon-primary"></i>
+        </div>
+        <%= link_to "View Trainers", institute_admin_trainers_path, class: "btn btn-custom-primary mt-3" %>
+      </div>
+    </div>
+  </div>
+</div> 

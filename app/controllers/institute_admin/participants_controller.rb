@@ -4,27 +4,26 @@ module InstituteAdmin
     before_action :set_sections, only: [ :new, :create, :edit, :update ]
 
     def index
-      @participants = current_institute.participants.includes(:participant_profile, :section)
+      @participants = current_institute.participants.includes(:user)
     end
 
     def show
-      @participant_profile = @participant.participant_profile
-      @guardian = @participant.guardian_profile&.user
+      @guardian = @participant.guardian&.user
     end
 
     def new
-      @participant = User.new
-      @participant.build_participant_profile(institute_id: current_institute.id)
+      @user = User.new
+      @user.build_participant(institute_id: current_institute.id)
     end
 
     def create
-      @participant = User.new(participant_params)
-      @participant.institute = current_institute
-      @participant.role = :participant
-      @participant.participant_profile.institute = current_institute if @participant.participant_profile
+      @user = User.new(participant_params)
+      @user.institute = current_institute
+      @user.role = :participant
+      @user.participant.institute = current_institute if @user.participant
 
-      if @participant.save
-        redirect_to institute_admin_participant_path(@participant),
+      if @user.save
+        redirect_to institute_admin_participant_path(@user),
           notice: "Participant was successfully created."
       else
         render :new, status: :unprocessable_entity
@@ -32,21 +31,35 @@ module InstituteAdmin
     end
 
     def edit
+      # @participant and @user are set by set_participant
     end
 
     def update
-      if @participant.update(participant_params)
-        redirect_to institute_admin_participant_path(@participant),
+      if @user.update(participant_params)
+        redirect_to institute_admin_participant_path(@user),
           notice: "Participant was successfully updated."
       else
         render :edit, status: :unprocessable_entity
       end
     end
 
+    def destroy
+      @user = current_institute.users.find(params[:id])
+      @participant = @user.participant
+
+      if @user.destroy
+        redirect_to institute_admin_participants_path, notice: "Participant was successfully deleted."
+      else
+        redirect_to institute_admin_participants_path, alert: "Failed to delete participant."
+      end
+    end
+
     private
 
     def set_participant
-      @participant = current_institute.participants.find(params[:id])
+      @user = current_institute.users.find(params[:id])
+      @participant = @user.participant
+      raise ActiveRecord::RecordNotFound unless @participant
     end
 
     def set_sections
@@ -56,7 +69,7 @@ module InstituteAdmin
     def participant_params
       params.require(:user).permit(
         :username, :email, :password, :password_confirmation, :section_id,
-        participant_profile_attributes: [
+        participant_attributes: [
           :id, :date_of_birth, :education_level, :enrollment_date,
           :status, :notes, :institute_id
         ]

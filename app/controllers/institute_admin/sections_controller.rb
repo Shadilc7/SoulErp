@@ -36,8 +36,13 @@ module InstituteAdmin
     end
 
     def destroy
-      @section.destroy
-      redirect_to institute_admin_sections_path, notice: "Section was successfully deleted."
+      @section = current_institute.sections.find(params[:id])
+
+      if @section.destroy
+        redirect_to institute_admin_sections_path, notice: "Section was successfully deleted."
+      else
+        redirect_to institute_admin_sections_path, alert: "Failed to delete section."
+      end
     end
 
     private

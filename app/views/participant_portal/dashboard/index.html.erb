@@ -2,7 +2,7 @@
   <!-- Profile Overview Card -->
   <div class="row mb-4">
     <div class="col-12">
-      <div class="card card-custom shadow-sm">
+      <div class="card card-custom shadow-sm border-primary">
         <div class="card-body">
           <div class="row align-items-center">
             <div class="col-md-2 text-center">
@@ -41,13 +41,12 @@
       </div>
     </div>
   </div>
-</div>
 
   <!-- Training Programs and Personal Info -->
   <div class="row">
     <!-- Training Programs -->
     <div class="col-md-8">
-      <div class="card card-custom shadow-sm">
+      <div class="card card-custom shadow-sm border-primary">
         <div class="card-header card-header-custom">
           <h5 class="mb-0">My Training Programs</h5>
         </div>
@@ -99,16 +98,14 @@
               </table>
             </div>
           <% else %>
-            <div class="text-center py-4">
-              <i class="bi bi-journal-x h1 text-muted"></i>
-              <p class="text-muted mt-2">No training programs assigned yet.</p>
+            <div class="alert alert-warning" role="alert">
+              No training programs found.
             </div>
           <% end %>
         </div>
       </div>
     </div>
 
-    <!-- Personal Info & Stats -->
     <div class="col-md-4">
       <!-- Personal Info Card -->
       <div class="card card-custom shadow-sm mb-4">
@@ -116,61 +113,14 @@
           <h5 class="mb-0">Personal Information</h5>
         </div>
         <div class="card-body">
-          <ul class="list-unstyled">
-            <li class="mb-3">
-              <i class="bi bi-envelope me-2 text-muted"></i>
-              <%= current_user.email %>
-            </li>
-            <li class="mb-3">
-              <i class="bi bi-calendar me-2 text-muted"></i>
-              Date of Birth: <%= current_participant.date_of_birth&.strftime("%B %d, %Y") %>
-            </li>
-            <li class="mb-3">
-              <i class="bi bi-book me-2 text-muted"></i>
-              Education: <%= current_participant.education_level %>
-            </li>
-            <li class="mb-3">
-              <i class="bi bi-calendar-check me-2 text-muted"></i>
-              Enrolled: <%= current_participant.enrollment_date&.strftime("%B %d, %Y") %>
-            </li>
-            <li>
-              <i class="bi bi-person-badge me-2 text-muted"></i>
-              Status: <span class="badge bg-success"><%= current_participant.status.titleize %></span>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Quick Stats Card -->
-      <div class="card card-custom shadow-sm">
-        <div class="card-header card-header-custom">
-          <h5 class="mb-0">Quick Stats</h5>
-        </div>
-        <div class="card-body">
-          <div class="row text-center">
-            <div class="col-6 mb-3">
-              <div class="p-3 rounded bg-light">
-                <i class="bi bi-calendar-check h3 text-success"></i>
-                <h6 class="mt-2 mb-1"><%= @training_programs.completed.count %></h6>
-                <p class="small text-muted mb-0">Programs Completed</p>
-              </div>
-            </div>
-            <div class="col-6 mb-3">
-              <div class="p-3 rounded bg-light">
-                <i class="bi bi-play-circle h3 text-primary"></i>
-                <h6 class="mt-2 mb-1"><%= @training_programs.ongoing.count %></h6>
-                <p class="small text-muted mb-0">Programs Ongoing</p>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 rounded bg-light">
-                <i class="bi bi-clock-history h3 text-warning"></i>
-                <h6 class="mt-2 mb-1"><%= current_participant.all_training_programs.sum { |p| ((p.end_date.to_i - p.start_date.to_i) / 3600.0).round if p.start_date && p.end_date } || 0 %></h6>
-                <p class="small text-muted mb-0">Total Hours</p>
-              </div>
-            </div>
-          </div>
+          <p><strong>Name:</strong> <%= current_user.full_name %></p>
+          <p><strong>Email:</strong> <%= current_user.email %></p>
+          <p><strong>Institute:</strong> <%= current_institute.name %></p>
+          <% if current_participant.section %>
+            <p><strong>Section:</strong> <%= current_participant.section.name %></p>
+          <% end %>
         </div>
       </div>
     </div>
   </div>
+</div>

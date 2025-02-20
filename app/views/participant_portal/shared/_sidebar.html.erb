@@ -1,0 +1,19 @@
+<nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+  <div class="position-sticky pt-3">
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <%= link_to participant_portal_root_path, 
+            class: "nav-link #{active_link?('dashboard')}" do %>
+          <i class="bi bi-speedometer2"></i> Dashboard
+        <% end %>
+      </li>
+
+      <li class="nav-item">
+        <%= link_to participant_portal_training_programs_path, 
+            class: "nav-link #{active_link?('training_programs')}" do %>
+          <i class="bi bi-mortarboard"></i> Training Programs
+        <% end %>
+      </li>
+    </ul>
+  </div>
+</nav> 

@@ -1,0 +1,97 @@
+<div class="card card-custom">
+  <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Question Sets</h5>
+    <%= link_to new_institute_admin_question_set_path, class: "btn btn-custom-primary" do %>
+      <i class="bi bi-plus-lg"></i> Add Question Set
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <div class="card card-custom mb-4">
+      <div class="card-body">
+        <%= form_with(url: institute_admin_question_sets_path, method: :get, class: "row g-3") do |f| %>
+          <div class="col-md-4">
+            <div class="form-group">
+              <%= f.label :search, "Search Title", class: "form-label" %>
+              <%= f.text_field :search, value: params[:search], class: "form-control" %>
+            </div>
+          </div>
+
+          <div class="col-md-2">
+            <div class="form-group">
+              <%= f.label :min_marks, "Min Marks", class: "form-label" %>
+              <%= f.number_field :min_marks, value: params[:min_marks], class: "form-control", min: 0 %>
+            </div>
+          </div>
+
+          <div class="col-md-2">
+            <div class="form-group">
+              <%= f.label :max_marks, "Max Marks", class: "form-label" %>
+              <%= f.number_field :max_marks, value: params[:max_marks], class: "form-control", min: 0 %>
+            </div>
+          </div>
+
+          <div class="col-md-2">
+            <div class="form-group">
+              <%= f.label :active, "Status", class: "form-label" %>
+              <%= f.select :active,
+                  [["All", ""], ["Active", "true"], ["Inactive", "false"]],
+                  { selected: params[:active] },
+                  { class: "form-select" } %>
+            </div>
+          </div>
+
+          <div class="col-md-2 d-flex align-items-end">
+            <%= f.submit "Search", class: "btn btn-custom-primary me-2" %>
+            <%= link_to "Clear", institute_admin_question_sets_path, class: "btn btn-outline-secondary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Questions</th>
+            <th>Total Marks</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @question_sets.each do |question_set| %>
+            <tr>
+              <td><%= question_set.title %></td>
+              <td><%= question_set.questions.count %></td>
+              <td><%= question_set.total_marks %></td>
+              <td><%= pluralize(question_set.duration_minutes, 'minute') %></td>
+              <td>
+                <span class="badge <%= question_set.active? ? 'badge-success' : 'badge-danger' %>">
+                  <%= question_set.active? ? 'Active' : 'Inactive' %>
+                </span>
+              </td>
+              <td>
+                <%= link_to institute_admin_question_set_path(question_set), class: "btn btn-sm btn-custom-primary me-2" do %>
+                  <i class="bi bi-eye"></i>
+                <% end %>
+                <%= link_to edit_institute_admin_question_set_path(question_set), class: "btn btn-sm btn-outline-custom me-2" do %>
+                  <i class="bi bi-pencil"></i>
+                <% end %>
+                <%= button_to institute_admin_question_set_path(question_set), 
+                    method: :delete, 
+                    class: "btn btn-sm btn-outline-danger",
+                    form: { style: 'display: inline-block' },
+                    data: { turbo_confirm: "Are you sure you want to delete this question set?" } do %>
+                  <i class="bi bi-trash"></i>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div> 

@@ -1,0 +1,39 @@
+<div class="nested-fields card mb-3" data-new-record="<%= f.object.new_record? %>">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <div class="form-group">
+          <%= f.label :question_id, "Select Question", class: "form-label" %>
+          <%= f.collection_select :question_id, 
+              current_institute.questions.active, 
+              :id, 
+              :title,
+              { prompt: "Choose a question" }, 
+              { class: "form-select" } %>
+        </div>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <div class="form-group">
+          <%= f.label :order_number, "Order", class: "form-label" %>
+          <%= f.number_field :order_number, class: "form-control", min: 0 %>
+        </div>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <div class="form-group">
+          <%= f.label :marks_override, "Marks (Optional)", class: "form-label" %>
+          <%= f.number_field :marks_override, class: "form-control", min: 1 %>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-end">
+      <button type="button" class="btn btn-outline-danger btn-sm" data-action="nested-form#remove">
+        <i class="bi bi-trash"></i> Remove
+      </button>
+    </div>
+
+    <%= f.hidden_field :_destroy %>
+  </div>
+</div> 

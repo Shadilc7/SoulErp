@@ -1,0 +1,68 @@
+<%= form_with(model: [:institute_admin, @question_set], local: true) do |f| %>
+  <% if @question_set.errors.any? %>
+    <div class="alert alert-danger">
+      <h6>Please fix the following errors:</h6>
+      <ul class="mb-0">
+        <% @question_set.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="row">
+    <div class="col-md-12 mb-3">
+      <div class="form-group">
+        <%= f.label :title, class: "form-label" %>
+        <%= f.text_field :title, class: "form-control" %>
+      </div>
+    </div>
+
+    <div class="col-md-12 mb-3">
+      <div class="form-group">
+        <%= f.label :description, class: "form-label" %>
+        <%= f.text_area :description, class: "form-control", rows: 3 %>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <div class="form-group">
+        <%= f.label :duration_minutes, "Duration (minutes)", class: "form-label" %>
+        <%= f.number_field :duration_minutes, class: "form-control", min: 1 %>
+      </div>
+    </div>
+
+    <div class="col-12 mb-3">
+      <div class="form-check">
+        <%= f.check_box :active, class: "form-check-input" %>
+        <%= f.label :active, class: "form-check-label" %>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <h5 class="mb-3">Questions</h5>
+      <div id="question-items" data-controller="nested-form">
+        <template data-nested-form-target="template">
+          <%= f.fields_for :question_set_items, QuestionSetItem.new, child_index: 'NEW_RECORD' do |item| %>
+            <%= render 'question_set_item_fields', f: item %>
+          <% end %>
+        </template>
+
+        <%= f.fields_for :question_set_items do |item| %>
+          <%= render 'question_set_item_fields', f: item %>
+        <% end %>
+
+        <div class="mb-3">
+          <button type="button" class="btn btn-outline-custom btn-sm" data-action="nested-form#add">
+            <i class="bi bi-plus"></i> Add Question
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <%= f.submit class: "btn btn-custom-primary" %>
+    <%= link_to "Cancel", institute_admin_question_sets_path, class: "btn btn-outline-custom ms-2" %>
+  </div>
+<% end %> 

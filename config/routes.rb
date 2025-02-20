@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  # Root path first
+  root "home#index"
+
+  # Devise routes with custom paths
   devise_for :users, path: "", path_names: {
     sign_in: "login",
     sign_out: "logout",
@@ -25,21 +29,55 @@ Rails.application.routes.draw do
   # Admin routes
   authenticate :user, lambda { |u| u.master_admin? } do
     namespace :admin do
-      root to: "admin#dashboard"
-      get "dashboard", to: "admin#dashboard"
+      root "admin#dashboard"
       resources :institutes do
         member do
           post "assign_admin"
           delete "unassign_admin"
         end
-        resources :users, only: [ :new, :create, :index ]
       end
       resources :users
     end
   end
 
-  # Default root path
-  root "home#index"
+  # Institute Admin routes
+  authenticate :user, lambda { |u| u.institute_admin? } do
+    namespace :institute_admin do
+      root "dashboard#index"
+      resources :sections
+      resources :trainers
+      resources :participants
+      resources :questions
+      resources :question_sets
+      resources :training_programs
+    end
+  end
+
+  # Trainer Portal routes
+  authenticate :user, lambda { |u| u.trainer? } do
+    namespace :trainer_portal do
+      root "dashboard#index"
+      resources :training_programs do
+        member do
+          patch :update_progress
+          patch :mark_completed
+        end
+        resources :sessions
+      end
+      resource :profile, only: [ :edit, :update ]
+    end
+  end
+
+  # Participant routes
+  authenticate :user, lambda { |u| u.participant? } do
+    namespace :participant_portal do
+      root "dashboard#index"
+      resources :training_programs, only: [ :index, :show ] do
+        resources :sessions, only: [ :show ]
+      end
+      resource :profile, only: [ :show, :edit, :update ]
+    end
+  end
 
   # Add any additional routes below
 end

@@ -16,13 +16,21 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_in_path_for(resource)
-    stored_location = stored_location_for(resource)
-    return stored_location if stored_location
-
-    if resource.master_admin?
-      admin_dashboard_path
+    case resource.role
+    when "master_admin"
+      admin_root_path
+    when "institute_admin"
+      institute_admin_root_path
+    when "trainer"
+      trainer_portal_root_path
+    when "participant"
+      participant_portal_root_path
     else
       root_path
     end
+  end
+
+  def after_sign_out_path_for(resource_or_scope)
+    root_path
   end
 end

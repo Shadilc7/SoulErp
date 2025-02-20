@@ -1,9 +1,21 @@
 <div class="card card-custom">
   <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
     <h5 class="mb-0">Participants</h5>
-    <%= link_to new_institute_admin_participant_path, class: "btn btn-custom-primary" do %>
-      <i class="bi bi-plus-lg"></i> Add Participant
-    <% end %>
+    <div>
+      <div class="btn-group me-2">
+        <%= link_to institute_admin_participants_path(format: :pdf), 
+            class: "btn btn-outline-custom", target: '_blank' do %>
+          <i class="bi bi-file-pdf"></i> Export PDF
+        <% end %>
+        <%= link_to institute_admin_participants_path(format: :csv), 
+            class: "btn btn-outline-custom" do %>
+          <i class="bi bi-file-spreadsheet"></i> Export CSV
+        <% end %>
+      </div>
+      <%= link_to new_institute_admin_participant_path, class: "btn btn-custom-primary" do %>
+        <i class="bi bi-plus-lg"></i> Add Participant
+      <% end %>
+    </div>
   </div>
 
   <div class="card-body">

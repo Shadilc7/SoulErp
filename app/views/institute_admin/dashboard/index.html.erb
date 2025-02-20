@@ -1,5 +1,5 @@
 <div class="row">
-  <div class="col-md-4 mb-4">
+  <div class="col-md-3 mb-4">
     <div class="card card-custom">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
@@ -14,7 +14,7 @@
     </div>
   </div>
 
-  <div class="col-md-4 mb-4">
+  <div class="col-md-3 mb-4">
     <div class="card card-custom">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
@@ -29,7 +29,7 @@
     </div>
   </div>
 
-  <div class="col-md-4 mb-4">
+  <div class="col-md-3 mb-4">
     <div class="card card-custom">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
@@ -40,6 +40,208 @@
           <i class="bi bi-person-workspace fs-1 icon-primary"></i>
         </div>
         <%= link_to "View Trainers", institute_admin_trainers_path, class: "btn btn-custom-primary mt-3" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-4">
+    <div class="card card-custom">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="card-title mb-0">Total Questions</h6>
+            <h2 class="mt-2 mb-0"><%= @questions_count %></h2>
+          </div>
+          <i class="bi bi-question-circle fs-1 icon-primary"></i>
+        </div>
+        <%= link_to "View Questions", institute_admin_questions_path, class: "btn btn-custom-primary mt-3" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= render 'training_metrics' %>
+
+<div class="row mt-4">
+  <div class="col-md-6 mb-4">
+    <div class="card card-custom h-100">
+      <div class="card-body text-center py-5">
+        <div class="display-1 mb-4 text-primary">
+          <i class="bi bi-person-video3"></i>
+        </div>
+        <h4 class="mb-4">Individual Training</h4>
+        <p class="text-muted mb-4">Create personalized training programs for individual participants</p>
+        <%= link_to new_institute_admin_training_program_path(program_type: :individual), 
+            class: "btn btn-lg btn-custom-primary" do %>
+          <i class="bi bi-plus-lg"></i> Create Individual Program
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-4">
+    <div class="card card-custom h-100">
+      <div class="card-body text-center py-5">
+        <div class="display-1 mb-4 text-primary">
+          <i class="bi bi-people-fill"></i>
+        </div>
+        <h4 class="mb-4">Section Training</h4>
+        <p class="text-muted mb-4">Create training programs for entire sections or groups</p>
+        <%= link_to new_institute_admin_training_program_path(program_type: :section), 
+            class: "btn btn-lg btn-custom-primary" do %>
+          <i class="bi bi-plus-lg"></i> Create Section Program
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="card card-custom">
+      <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Recent Training Programs</h5>
+        <%= link_to institute_admin_training_programs_path, class: "btn btn-outline-custom" do %>
+          View All <i class="bi bi-arrow-right"></i>
+        <% end %>
+      </div>
+      <div class="card-body">
+        <% if @recent_training_programs.any? %>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Type</th>
+                  <th>Trainer</th>
+                  <th>Assigned To</th>
+                  <th>Duration</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @recent_training_programs.each do |program| %>
+                  <tr>
+                    <td>
+                      <%= link_to program.title, 
+                          institute_admin_training_program_path(program),
+                          class: "text-decoration-none" %>
+                    </td>
+                    <td><%= program.program_type.titleize %></td>
+                    <td><%= program.trainer.user.full_name %></td>
+                    <td>
+                      <% if program.individual? %>
+                        <%= program.participant.user.full_name %>
+                      <% else %>
+                        <%= program.section.name %>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= program.start_date.strftime("%b %d") %> - 
+                      <%= program.end_date.strftime("%b %d, %Y") %>
+                    </td>
+                    <td>
+                      <span class="badge <%= program.status == 'completed' ? 'badge-success' : 
+                        program.status == 'cancelled' ? 'badge-danger' : 'badge-warning' %>">
+                        <%= program.status.titleize %>
+                      </span>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted text-center mb-0">No training programs created yet</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-6 mb-4">
+    <div class="card card-custom h-100">
+      <div class="card-body text-center py-5">
+        <div class="display-1 mb-4 text-primary">
+          <i class="bi bi-plus-circle"></i>
+        </div>
+        <h4 class="mb-4">Create New Question</h4>
+        <p class="text-muted mb-4">Add multiple choice, true/false, or descriptive questions to your question bank</p>
+        <%= link_to new_institute_admin_question_path, class: "btn btn-lg btn-custom-primary" do %>
+          <i class="bi bi-plus-lg"></i> Create Question
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-4">
+    <div class="card card-custom h-100">
+      <div class="card-body text-center py-5">
+        <div class="display-1 mb-4 text-primary">
+          <i class="bi bi-collection"></i>
+        </div>
+        <h4 class="mb-4">Create Question Set</h4>
+        <p class="text-muted mb-4">Combine questions into sets for assessments and examinations</p>
+        <%= link_to new_institute_admin_question_set_path, class: "btn btn-lg btn-custom-primary" do %>
+          <i class="bi bi-plus-lg"></i> Create Question Set
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-6 mb-4">
+    <div class="card card-custom">
+      <div class="card-header card-header-custom">
+        <h5 class="mb-0">Recent Questions</h5>
+      </div>
+      <div class="card-body">
+        <% if @recent_questions.any? %>
+          <div class="list-group list-group-flush">
+            <% @recent_questions.each do |question| %>
+              <%= link_to institute_admin_question_path(question), class: "list-group-item list-group-item-action" do %>
+                <div class="d-flex w-100 justify-content-between">
+                  <h6 class="mb-1"><%= question.title %></h6>
+                  <small class="text-muted"><%= time_ago_in_words(question.created_at) %> ago</small>
+                </div>
+                <p class="mb-1 text-muted"><%= question.question_type.titleize %> • <%= pluralize(question.marks, 'mark') %></p>
+              <% end %>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-muted text-center mb-0">No questions created yet</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-4">
+    <div class="card card-custom">
+      <div class="card-header card-header-custom">
+        <h5 class="mb-0">Recent Question Sets</h5>
+      </div>
+      <div class="card-body">
+        <% if @recent_question_sets.any? %>
+          <div class="list-group list-group-flush">
+            <% @recent_question_sets.each do |set| %>
+              <%= link_to institute_admin_question_set_path(set), class: "list-group-item list-group-item-action" do %>
+                <div class="d-flex w-100 justify-content-between">
+                  <h6 class="mb-1"><%= set.title %></h6>
+                  <small class="text-muted"><%= time_ago_in_words(set.created_at) %> ago</small>
+                </div>
+                <p class="mb-1 text-muted">
+                  <%= pluralize(set.questions.count, 'question') %> • 
+                  <%= pluralize(set.total_marks, 'mark') %> • 
+                  <%= pluralize(set.duration_minutes, 'minute') %>
+                </p>
+              <% end %>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-muted text-center mb-0">No question sets created yet</p>
+        <% end %>
       </div>
     </div>
   </div>

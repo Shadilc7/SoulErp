@@ -32,13 +32,13 @@
                 </span>
               </td>
               <td>
-                <%= link_to institute_admin_trainer_path(trainer.user), class: "btn btn-sm btn-custom-primary me-2" do %>
+                <%= link_to institute_admin_trainer_path(trainer), class: "btn btn-sm btn-custom-primary me-2" do %>
                   <i class="bi bi-eye"></i>
                 <% end %>
-                <%= link_to edit_institute_admin_trainer_path(trainer.user), class: "btn btn-sm btn-outline-custom me-2" do %>
+                <%= link_to edit_institute_admin_trainer_path(trainer), class: "btn btn-sm btn-outline-custom me-2" do %>
                   <i class="bi bi-pencil"></i>
                 <% end %>
-                <%= button_to institute_admin_trainer_path(trainer.user), 
+                <%= button_to institute_admin_trainer_path(trainer), 
                     method: :delete, 
                     class: "btn btn-sm btn-outline-danger",
                     form: { style: 'display: inline-block' },

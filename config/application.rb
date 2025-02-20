@@ -23,5 +23,8 @@ module SoulErp
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Add pdfs and lib directories to autoload paths
+    config.autoload_paths += %W[#{config.root}/app/pdfs #{config.root}/lib]
   end
 end

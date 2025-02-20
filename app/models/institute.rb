@@ -1,12 +1,14 @@
 class Institute < ApplicationRecord
   # Associations
   has_many :users
-  has_many :sections
-  has_many :training_programs
-  has_many :trainers
-  has_many :participants
+  has_many :sections, dependent: :destroy
+  has_many :training_programs, dependent: :destroy
+  has_many :trainers, dependent: :destroy
+  has_many :participants, dependent: :destroy
   has_many :trainer_profiles
   has_many :participant_profiles
+  has_many :questions, dependent: :destroy
+  has_many :question_sets, dependent: :destroy
 
   # Validations
   validates :name, presence: true

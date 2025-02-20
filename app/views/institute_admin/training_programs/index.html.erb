@@ -1,0 +1,114 @@
+<div class="card card-custom">
+  <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Training Programs</h5>
+    <div class="btn-group">
+      <%= link_to new_institute_admin_training_program_path(program_type: :individual), 
+          class: "btn btn-custom-primary me-2" do %>
+        <i class="bi bi-person-video3"></i> New Individual Program
+      <% end %>
+      <%= link_to new_institute_admin_training_program_path(program_type: :section), 
+          class: "btn btn-custom-primary" do %>
+        <i class="bi bi-people-fill"></i> New Section Program
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <%= form_with(url: institute_admin_training_programs_path, method: :get, class: "row g-3 mb-4") do |f| %>
+      <div class="col-md-4">
+        <div class="form-group">
+          <%= f.label :search, "Search Title", class: "form-label" %>
+          <%= f.text_field :search, value: params[:search], class: "form-control" %>
+        </div>
+      </div>
+
+      <div class="col-md-2">
+        <div class="form-group">
+          <%= f.label :program_type, "Type", class: "form-label" %>
+          <%= f.select :program_type,
+              TrainingProgram.program_types.keys.map { |t| [t.titleize, t] },
+              { include_blank: "All Types", selected: params[:program_type] },
+              { class: "form-select" } %>
+        </div>
+      </div>
+
+      <div class="col-md-2">
+        <div class="form-group">
+          <%= f.label :status, "Status", class: "form-label" %>
+          <%= f.select :status,
+              TrainingProgram.statuses.keys.map { |s| [s.titleize, s] },
+              { include_blank: "All Statuses", selected: params[:status] },
+              { class: "form-select" } %>
+        </div>
+      </div>
+
+      <div class="col-md-4 d-flex align-items-end">
+        <%= f.submit "Search", class: "btn btn-custom-primary me-2" %>
+        <%= link_to "Clear", institute_admin_training_programs_path, class: "btn btn-outline-secondary" %>
+      </div>
+    <% end %>
+
+    <% if @training_programs.any? %>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Trainer</th>
+              <th>Assigned To</th>
+              <th>Duration</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @training_programs.each do |program| %>
+              <tr>
+                <td>
+                  <%= link_to program.title, 
+                      institute_admin_training_program_path(program),
+                      class: "text-decoration-none" %>
+                </td>
+                <td><%= program.program_type.titleize %></td>
+                <td><%= program.trainer.user.full_name %></td>
+                <td>
+                  <% if program.individual? %>
+                    <%= program.participant.user.full_name %>
+                  <% else %>
+                    <%= program.section.name %>
+                  <% end %>
+                </td>
+                <td>
+                  <%= program.start_date.strftime("%b %d") %> - 
+                  <%= program.end_date.strftime("%b %d, %Y") %>
+                </td>
+                <td>
+                  <span class="badge <%= program.status == 'completed' ? 'badge-success' : 
+                    program.status == 'cancelled' ? 'badge-danger' : 'badge-warning' %>">
+                    <%= program.status.titleize %>
+                  </span>
+                </td>
+                <td>
+                  <%= link_to edit_institute_admin_training_program_path(program), 
+                      class: "btn btn-sm btn-outline-custom me-2" do %>
+                    <i class="bi bi-pencil"></i>
+                  <% end %>
+                  <%= button_to institute_admin_training_program_path(program),
+                      method: :delete,
+                      class: "btn btn-sm btn-outline-danger",
+                      form: { style: 'display: inline-block' },
+                      data: { turbo_confirm: "Are you sure?" } do %>
+                    <i class="bi bi-trash"></i>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-muted text-center mb-0">No training programs found</p>
+    <% end %>
+  </div>
+</div> 

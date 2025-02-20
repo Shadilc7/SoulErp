@@ -1,0 +1,80 @@
+<div class="card card-custom">
+  <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Question Set Details</h5>
+    <div>
+      <%= link_to edit_institute_admin_question_set_path(@question_set), class: "btn btn-outline-custom me-2" do %>
+        <i class="bi bi-pencil"></i> Edit
+      <% end %>
+      <%= link_to institute_admin_question_sets_path, class: "btn btn-outline-custom" do %>
+        <i class="bi bi-arrow-left"></i> Back
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Title</h6>
+          <p class="fs-5"><%= @question_set.title %></p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Description</h6>
+          <p class="fs-5"><%= @question_set.description %></p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Status</h6>
+          <span class="badge <%= @question_set.active? ? 'badge-success' : 'badge-danger' %> fs-6">
+            <%= @question_set.active? ? 'Active' : 'Inactive' %>
+          </span>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Duration</h6>
+          <p class="fs-5"><%= pluralize(@question_set.duration_minutes, 'minute') %></p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Total Marks</h6>
+          <p class="fs-5"><%= @question_set.total_marks %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <h5 class="mb-3">Questions</h5>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Order</th>
+              <th>Question</th>
+              <th>Type</th>
+              <th>Marks</th>
+              <th>Difficulty</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @question_set.question_set_items.includes(:question).order(:order_number).each do |item| %>
+              <tr>
+                <td><%= item.order_number + 1 %></td>
+                <td>
+                  <%= link_to item.question.title, 
+                      institute_admin_question_path(item.question),
+                      class: "text-decoration-none" %>
+                </td>
+                <td><%= item.question.question_type.titleize %></td>
+                <td><%= item.marks_override || item.question.marks %></td>
+                <td><%= item.question.difficulty_level.titleize %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div> 

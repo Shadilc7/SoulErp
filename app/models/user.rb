@@ -2,7 +2,7 @@ class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable,
+         :recoverable, :rememberable, :validatable, :trackable,
          authentication_keys: [ :login ]
 
   belongs_to :institute, optional: true
@@ -18,6 +18,8 @@ class User < ApplicationRecord
 
   validates :username, presence: true, uniqueness: { case_sensitive: false }
   validates :email, presence: true, uniqueness: true
+  validates :first_name, length: { maximum: 50 }
+  validates :last_name, length: { maximum: 50 }
 
   attr_accessor :login
 
@@ -53,5 +55,25 @@ class User < ApplicationRecord
 
   def active_for_authentication?
     super && active?
+  end
+
+  def full_name
+    if first_name.present? || last_name.present?
+      [ first_name, last_name ].compact.join(" ")
+    else
+      username
+    end
+  end
+
+  def institute_admin?
+    role == "institute_admin"
+  end
+
+  def trainer?
+    role == "trainer"
+  end
+
+  def participant?
+    role == "participant"
   end
 end

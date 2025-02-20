@@ -1,0 +1,45 @@
+<nav class="navbar navbar-expand-lg fixed-top">
+  <div class="container-fluid">
+    <%= link_to trainer_portal_root_path, class: "navbar-brand" do %>
+      <%= current_institute.name %> - Trainer Portal
+    <% end %>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <%= link_to trainer_portal_root_path, class: "nav-link #{'active' if current_page?(trainer_portal_root_path)}" do %>
+            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+          <% end %>
+        </li>
+        <li class="nav-item">
+          <%= link_to trainer_portal_training_programs_path, class: "nav-link #{'active' if controller_name == 'training_programs'}" do %>
+            <i class="bi bi-journal-text me-1"></i> Training Programs
+          <% end %>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-person-circle"></i>
+            <%= current_user.full_name %>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <%= link_to edit_trainer_portal_profile_path, class: "dropdown-item" do %>
+              <i class="bi bi-person"></i> Profile
+            <% end %>
+            <%= button_to destroy_user_session_path, 
+                method: :delete, 
+                class: "dropdown-item text-danger" do %>
+              <i class="bi bi-box-arrow-right"></i> Logout
+            <% end %>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

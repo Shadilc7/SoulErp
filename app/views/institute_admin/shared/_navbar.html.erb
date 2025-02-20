@@ -1,0 +1,45 @@
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <%= link_to institute_admin_root_path, 
+            class: "nav-link #{active_link?('dashboard')}" do %>
+          <i class="bi bi-speedometer2"></i> Dashboard
+        <% end %>
+      </li>
+
+      <li class="nav-item">
+        <%= link_to institute_admin_sections_path, 
+            class: "nav-link #{active_link?('sections')}" do %>
+          <i class="bi bi-grid"></i> Sections
+        <% end %>
+      </li>
+
+      <li class="nav-item">
+        <%= link_to institute_admin_training_programs_path,
+            class: "nav-link #{active_link?('training_programs')}" do %>
+          <i class="bi bi-mortarboard"></i> Training Programs
+        <% end %>
+      </li>
+
+      <li class="nav-item">
+        <%= link_to institute_admin_trainers_path, 
+            class: "nav-link #{active_link?('trainers')}" do %>
+          <i class="bi bi-person-workspace"></i> Trainers
+        <% end %>
+      </li>
+
+      <li class="nav-item">
+        <%= link_to institute_admin_participants_path, 
+            class: "nav-link #{active_link?('participants')}" do %>
+          <i class="bi bi-people"></i> Participants
+        <% end %>
+      </li>
+
+      <li class="nav-item">
+        <%= link_to institute_admin_questions_path, 
+            class: "nav-link #{active_link?('questions')}" do %>
+          <i class="bi bi-question-circle"></i> Questions
+        <% end %>
+      </li>
+    </ul>
+  </div> 

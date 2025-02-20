@@ -1,0 +1,114 @@
+<div class="card card-custom">
+  <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Question Details</h5>
+    <div>
+      <%= link_to edit_institute_admin_question_path(@question), class: "btn btn-outline-custom me-2" do %>
+        <i class="bi bi-pencil"></i> Edit
+      <% end %>
+      <%= link_to institute_admin_questions_path, class: "btn btn-outline-custom" do %>
+        <i class="bi bi-arrow-left"></i> Back
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-8">
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Title</h6>
+          <p class="fs-5"><%= @question.title %></p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Description</h6>
+          <p class="fs-5"><%= @question.description %></p>
+        </div>
+
+        <% if @question.multiple_choice? || @question.single_choice? %>
+          <div class="mb-4">
+            <h6 class="text-muted mb-2">Options</h6>
+            <div class="list-group">
+              <% @question.options.each_with_index do |option, index| %>
+                <div class="list-group-item <%= index == @question.correct_option ? 'list-group-item-success' : '' %>">
+                  <div class="d-flex align-items-center">
+                    <% if index == @question.correct_option %>
+                      <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <% else %>
+                      <i class="bi bi-circle me-2"></i>
+                    <% end %>
+                    <%= option %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <% if @question.true_false? || @question.short_answer? || @question.long_answer? || @question.fill_in_blank? %>
+          <div class="mb-4">
+            <h6 class="text-muted mb-2">Correct Answer</h6>
+            <div class="card bg-light">
+              <div class="card-body">
+                <%= @question.correct_answer %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card bg-light mb-4">
+          <div class="card-body">
+            <div class="mb-3">
+              <h6 class="text-muted mb-2">Question Type</h6>
+              <span class="badge bg-primary"><%= @question.question_type.titleize %></span>
+            </div>
+
+            <div class="mb-3">
+              <h6 class="text-muted mb-2">Marks</h6>
+              <span class="badge bg-success"><%= @question.marks %> marks</span>
+            </div>
+
+            <div class="mb-3">
+              <h6 class="text-muted mb-2">Difficulty Level</h6>
+              <span class="badge <%= case @question.difficulty_level
+                when 'easy' then 'bg-success'
+                when 'medium' then 'bg-warning'
+                when 'hard' then 'bg-danger'
+                end %>">
+                <%= @question.difficulty_level.titleize %>
+              </span>
+            </div>
+
+            <div class="mb-3">
+              <h6 class="text-muted mb-2">Status</h6>
+              <span class="badge <%= @question.active? ? 'badge-success' : 'badge-danger' %>">
+                <%= @question.active? ? 'Active' : 'Inactive' %>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-light">
+          <div class="card-body">
+            <h6 class="text-muted mb-3">Used in Question Sets</h6>
+            <% if @question.question_sets.any? %>
+              <div class="list-group list-group-flush">
+                <% @question.question_sets.each do |set| %>
+                  <%= link_to institute_admin_question_set_path(set), class: "list-group-item list-group-item-action" do %>
+                    <div class="d-flex w-100 justify-content-between">
+                      <h6 class="mb-1"><%= set.title %></h6>
+                      <small class="text-muted"><%= pluralize(set.total_marks, 'mark') %></small>
+                    </div>
+                  <% end %>
+                <% end %>
+              </div>
+            <% else %>
+              <p class="text-muted mb-0">Not used in any question sets yet</p>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

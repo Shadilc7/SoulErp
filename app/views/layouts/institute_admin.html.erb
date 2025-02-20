@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SOUL ERP - Institute Admin</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+
+    <style>
+      :root {
+        --primary-color: #98D8AA;      /* Pastel Green */
+        --secondary-color: #F3E99F;    /* Light Yellow */
+        --accent-color: #D7B290;       /* Light Brown */
+        --highlight-color: #B7E5B4;    /* Light Pastel Green */
+        --danger-color: #FF6D60;       /* Light Red */
+        --success-color: #98D8AA;      /* Pastel Green */
+        --warning-color: #F3E99F;      /* Light Yellow */
+        --info-color: #B7E5B4;         /* Light Pastel Green */
+        --light-color: #FFFFFF;        /* White */
+        --dark-color: #2C3639;         /* Dark Gray */
+      }
+
+      .navbar-custom {
+        background-color: var(--primary-color) !important;
+      }
+
+      .navbar-custom .nav-link,
+      .navbar-custom .navbar-brand,
+      .navbar-custom .navbar-text {
+        color: var(--dark-color) !important;
+      }
+
+      .btn-custom-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: var(--dark-color);
+        transition: all 0.3s ease;
+      }
+
+      .btn-custom-primary:hover {
+        background-color: #7BC5A0;
+        border-color: #7BC5A0;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .btn-outline-custom {
+        border-color: var(--primary-color);
+        color: var(--dark-color);
+      }
+
+      .btn-outline-custom:hover {
+        background-color: var(--primary-color);
+        color: var(--dark-color);
+      }
+
+      .card-custom {
+        border-color: var(--highlight-color);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+      }
+
+      .card-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      }
+
+      .card-header-custom {
+        background-color: var(--primary-color);
+        color: var(--dark-color);
+        border-bottom: none;
+      }
+
+      .badge-success {
+        background-color: var(--success-color) !important;
+        color: var(--dark-color);
+      }
+
+      .badge-danger {
+        background-color: var(--danger-color) !important;
+        color: var(--dark-color);
+      }
+
+      .icon-primary {
+        color: var(--primary-color);
+      }
+
+      .nav-link.active {
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+      }
+
+      .display-1 {
+        font-size: 4rem;
+      }
+
+      .text-primary {
+        color: var(--primary-color) !important;
+      }
+
+      .list-group-item-action:hover {
+        background-color: rgba(152, 216, 170, 0.1);
+      }
+
+      .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+      }
+
+      .card-custom:hover .display-1 {
+        transform: scale(1.1);
+        transition: transform 0.3s ease;
+      }
+    </style>
+  </head>
+
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-custom">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+          <i class="bi bi-building me-2"></i>
+          <%= current_user.institute.name %>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <%= link_to institute_admin_root_path, class: "nav-link #{current_page?(institute_admin_root_path) ? 'active' : ''}" do %>
+                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+              <% end %>
+            </li>
+            <li class="nav-item">
+              <%= link_to institute_admin_sections_path, class: "nav-link #{controller_name == 'sections' ? 'active' : ''}" do %>
+                <i class="bi bi-grid me-1"></i> Sections
+              <% end %>
+            </li>
+            <li class="nav-item">
+              <%= link_to institute_admin_trainers_path, class: "nav-link #{controller_name == 'trainers' ? 'active' : ''}" do %>
+                <i class="bi bi-person-workspace me-1"></i> Trainers
+              <% end %>
+            </li>
+            <li class="nav-item">
+              <%= link_to institute_admin_participants_path, class: "nav-link #{controller_name == 'participants' ? 'active' : ''}" do %>
+                <i class="bi bi-people me-1"></i> Participants
+              <% end %>
+            </li>
+            <li class="nav-item">
+              <%= link_to institute_admin_questions_path, class: "nav-link #{controller_name == 'questions' ? 'active' : ''}" do %>
+                <i class="bi bi-question-circle me-1"></i> Questions
+              <% end %>
+            </li>
+            <li class="nav-item">
+              <%= link_to institute_admin_question_sets_path, class: "nav-link #{controller_name == 'question_sets' ? 'active' : ''}" do %>
+                <i class="bi bi-collection me-1"></i> Question Sets
+              <% end %>
+            </li>
+          </ul>
+          <div class="d-flex align-items-center">
+            <span class="navbar-text me-3">
+              <i class="bi bi-person-circle me-1"></i>
+              <%= current_user.username %>
+            </span>
+            <%= button_to destroy_user_session_path, method: :delete, class: "btn btn-outline-dark" do %>
+              <i class="bi bi-box-arrow-right me-1"></i> Logout
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+      <% if notice %>
+        <div class="alert alert-success alert-dismissible fade show">
+          <%= notice %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% end %>
+      <% if alert %>
+        <div class="alert alert-danger alert-dismissible fade show">
+          <%= alert %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% end %>
+
+      <%= yield %>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html> 

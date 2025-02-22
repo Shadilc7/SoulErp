@@ -58,6 +58,11 @@ module Admin
       end
     end
 
+    def sections
+      @sections = Section.where(institute_id: params[:institute_id])
+      render json: @sections
+    end
+
     private
 
     def set_institute
@@ -65,7 +70,7 @@ module Admin
     end
 
     def institute_params
-      params.require(:institute).permit(:name, :code, :description, :address, :contact_number, :email, :active)
+      params.require(:institute).permit(:name, :code, :description, :address, :contact_number, :email, :active, :institution_type)
     end
   end
 end

@@ -45,6 +45,13 @@
           </div>
         </div>
 
+        <div class="col-md-6 mb-3">
+          <div class="form-group">
+            <%= f.label :institution_type, "Institution Type" %>
+            <%= f.select :institution_type, options_for_select([['School', 'School'], ['Hospital', 'Hospital']], @institute.institution_type), {}, { class: 'form-select' } %>
+          </div>
+        </div>
+
         <div class="col-12 mb-3">
           <div class="form-group">
             <%= f.label :address, class: "form-label" %>

@@ -1,0 +1,60 @@
+<div class="container mt-5">
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">Create New Assignment</h5>
+    </div>
+    <div class="card-body">
+      <%= form_with(model: @assignment, url: institute_admin_assignments_path, local: true, class: 'needs-validation', novalidate: true) do |f| %>
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <%= f.label :start_date, class: 'font-weight-bold' %>
+            <%= f.text_field :start_date, class: 'form-control flatpickr', required: true %>
+          </div>
+          <div class="form-group col-md-6">
+            <%= f.label :end_date, class: 'font-weight-bold' %>
+            <%= f.text_field :end_date, class: 'form-control flatpickr', required: true %>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <%= f.label :participants, class: 'font-weight-bold' %><br>
+          <% @participants.each do |participant| %>
+            <div class="form-check">
+              <%= check_box_tag 'assignment[participant_ids][]', participant.id, @assignment.participant_ids.include?(participant.id), class: 'form-check-input' %>
+              <%= label_tag "assignment_participant_#{participant.id}", "#{participant.user.first_name} #{participant.user.last_name}", class: 'form-check-label' %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="form-group">
+          <%= f.label :section, class: 'font-weight-bold' %>
+          <%= f.collection_select :section_id, @sections, :id, :name, {}, { class: 'form-control', required: true } %>
+        </div>
+
+        <div class="form-group">
+          <%= f.label :questions, class: 'font-weight-bold' %><br>
+          <% @questions.each do |question| %>
+            <div class="form-check">
+              <%= check_box_tag 'assignment[question_ids][]', question.id, @assignment.question_ids.include?(question.id), class: 'form-check-input' %>
+              <%= label_tag "assignment_question_#{question.id}", question.title, class: 'form-check-label' %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="form-group">
+          <%= f.label :question_sets, class: 'font-weight-bold' %><br>
+          <% @question_sets.each do |question_set| %>
+            <div class="form-check">
+              <%= check_box_tag 'assignment[question_set_ids][]', question_set.id, @assignment.question_set_ids.include?(question_set.id), class: 'form-check-input' %>
+              <%= label_tag "assignment_question_set_#{question_set.id}", question_set.title, class: 'form-check-label' %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="form-group">
+          <%= f.submit 'Create Assignment', class: 'btn btn-success btn-block' %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

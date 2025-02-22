@@ -15,6 +15,7 @@ class Institute < ApplicationRecord
   validates :code, presence: true, uniqueness: true
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :contact_number, presence: true
+  validates :institution_type, presence: true, inclusion: { in: ['School', 'Hospital'] }
 
   # Scopes
   scope :active, -> { where(active: true) }

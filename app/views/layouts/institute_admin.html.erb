@@ -161,6 +161,11 @@
                 <i class="bi bi-collection me-1"></i> Question Sets
               <% end %>
             </li>
+            <li class="nav-item">
+              <%= link_to institute_admin_training_programs_path, class: "nav-link #{controller_name == 'training_programs' ? 'active' : ''}" do %>
+                <i class="bi bi-collection me-1"></i> Training Programs
+              <% end %>
+            </li>
           </ul>
           <div class="d-flex align-items-center">
             <span class="navbar-text me-3">

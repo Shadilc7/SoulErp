@@ -1,0 +1,23 @@
+<h1>Assignments</h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @assignments.each do |assignment| %>
+      <tr>
+        <td><%= assignment.start_date %></td>
+        <td><%= assignment.end_date %></td>
+        <td>
+          <%= link_to 'Edit', edit_institute_admin_assignment_path(assignment) %> |
+          <%= link_to 'Delete', institute_admin_assignment_path(assignment), method: :delete, data: { confirm: 'Are you sure?' } %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<%= link_to 'New Assignment', new_institute_admin_assignment_path, class: 'btn btn-primary' %>

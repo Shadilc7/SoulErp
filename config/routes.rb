@@ -35,8 +35,11 @@ Rails.application.routes.draw do
           post "assign_admin"
           delete "unassign_admin"
         end
+        resources :sections
       end
       resources :users
+      resources :training_programs
+      resources :assignments
     end
   end
 
@@ -50,6 +53,7 @@ Rails.application.routes.draw do
       resources :questions
       resources :question_sets
       resources :training_programs
+      resources :assignments
     end
   end
 

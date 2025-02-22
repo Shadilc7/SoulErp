@@ -33,6 +33,22 @@
           <h6 class="text-muted mb-2">Contact Number</h6>
           <p class="fs-5"><%= @institute.contact_number %></p>
         </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Institution Type</h6>
+          <p class="fs-5"><%= @institute.institution_type %></p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Sections</h6>
+          <ul class="list-group">
+            <% @institute.sections.each do |section| %>
+              <li class="list-group-item">
+                <%= section.name %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
       </div>
 
       <div class="col-md-6">
@@ -120,14 +136,14 @@
       <div class="col-md-6">
         <div class="card">
           <div class="card-header bg-light">
-            <h6 class="mb-0">Active Training Programs</h6>
+            <h6 class="mb-0">Training Programs</h6>
           </div>
           <div class="card-body">
-            <% if @institute.training_programs.active.any? %>
+            <% if @institute.training_programs.any? %>
               <ul class="list-group list-group-flush">
-                <% @institute.training_programs.active.each do |program| %>
+                <% @institute.training_programs.each do |program| %>
                   <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <%= program.name %>
+                    <%= program.title %>
                     <small class="text-muted">
                       <%= program.start_date.strftime("%b %d, %Y") %> - 
                       <%= program.end_date.strftime("%b %d, %Y") %>
@@ -136,7 +152,7 @@
                 <% end %>
               </ul>
             <% else %>
-              <p class="text-muted mb-0">No active programs.</p>
+              <p class="text-muted mb-0">No programs.</p>
             <% end %>
           </div>
         </div>

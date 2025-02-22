@@ -16,7 +16,6 @@ class User < ApplicationRecord
     guardian: 4
   }, default: :participant
 
-  validates :username, presence: true, uniqueness: { case_sensitive: false }
   validates :email, presence: true, uniqueness: true
   validates :first_name, length: { maximum: 50 }
   validates :last_name, length: { maximum: 50 }

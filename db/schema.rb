@@ -10,9 +10,51 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_01_175538) do
+ActiveRecord::Schema[8.0].define(version: 2025_02_22_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "assignments", force: :cascade do |t|
+    t.datetime "start_date", precision: nil
+    t.datetime "end_date", precision: nil
+    t.bigint "participant_id"
+    t.bigint "section_id"
+    t.bigint "question_id"
+    t.bigint "question_set_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["participant_id"], name: "index_assignments_on_participant_id"
+    t.index ["question_id"], name: "index_assignments_on_question_id"
+    t.index ["question_set_id"], name: "index_assignments_on_question_set_id"
+    t.index ["section_id"], name: "index_assignments_on_section_id"
+  end
+
+  create_table "assignments_participants", force: :cascade do |t|
+    t.bigint "assignment_id", null: false
+    t.bigint "participant_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assignment_id"], name: "index_assignments_participants_on_assignment_id"
+    t.index ["participant_id"], name: "index_assignments_participants_on_participant_id"
+  end
+
+  create_table "assignments_question_sets", force: :cascade do |t|
+    t.bigint "assignment_id", null: false
+    t.bigint "question_set_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assignment_id"], name: "index_assignments_question_sets_on_assignment_id"
+    t.index ["question_set_id"], name: "index_assignments_question_sets_on_question_set_id"
+  end
+
+  create_table "assignments_questions", force: :cascade do |t|
+    t.bigint "assignment_id", null: false
+    t.bigint "question_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assignment_id"], name: "index_assignments_questions_on_assignment_id"
+    t.index ["question_id"], name: "index_assignments_questions_on_question_id"
+  end
 
   create_table "guardians", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -37,6 +79,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_01_175538) do
     t.boolean "active"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "institution_type"
   end
 
   create_table "participants", force: :cascade do |t|
@@ -164,12 +207,23 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_01_175538) do
     t.datetime "last_sign_in_at"
     t.string "current_sign_in_ip"
     t.string "last_sign_in_ip"
+    t.string "phone"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["first_name", "last_name"], name: "index_users_on_first_name_and_last_name"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["section_id"], name: "index_users_on_section_id"
   end
 
+  add_foreign_key "assignments", "participants"
+  add_foreign_key "assignments", "question_sets"
+  add_foreign_key "assignments", "questions"
+  add_foreign_key "assignments", "sections"
+  add_foreign_key "assignments_participants", "assignments"
+  add_foreign_key "assignments_participants", "participants"
+  add_foreign_key "assignments_question_sets", "assignments"
+  add_foreign_key "assignments_question_sets", "question_sets"
+  add_foreign_key "assignments_questions", "assignments"
+  add_foreign_key "assignments_questions", "questions"
   add_foreign_key "guardians", "participants"
   add_foreign_key "guardians", "users"
   add_foreign_key "participants", "institutes"

@@ -10,13 +10,33 @@
             <%= render "devise/shared/error_messages", resource: resource %>
 
             <div class="form-floating mb-3">
-              <%= f.text_field :username, autofocus: true, class: "form-control", placeholder: "Username" %>
-              <%= f.label :username %>
+              <%= f.text_field :first_name, autofocus: true, class: "form-control", placeholder: "First Name" %>
+              <%= f.label :first_name %>
+            </div>
+
+            <div class="form-floating mb-3">
+              <%= f.text_field :last_name, class: "form-control", placeholder: "Last Name" %>
+              <%= f.label :last_name %>
             </div>
 
             <div class="form-floating mb-3">
               <%= f.email_field :email, autocomplete: "email", class: "form-control", placeholder: "name@example.com" %>
               <%= f.label :email %>
+            </div>
+
+            <div class="form-floating mb-3">
+              <%= f.telephone_field :phone, class: "form-control", placeholder: "Phone Number" %>
+              <%= f.label :phone %>
+            </div>
+
+            <div class="form-floating mb-3">
+              <%= f.collection_select :institute_id, Institute.active, :id, :name, { prompt: 'Select Institution' }, { class: "form-select", id: "institute_select" } %>
+              <%= f.label :institute_id, "Institution" %>
+            </div>
+
+            <div class="form-floating mb-3">
+              <%= f.collection_select :section_id, [], :id, :name, { prompt: 'Select Section' }, { class: "form-select", id: "section_select" } %>
+              <%= f.label :section_id, "Section" %>
             </div>
 
             <div class="form-floating mb-3">
@@ -142,3 +162,24 @@
     }
   </style>
 <% end %>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('institute_select').addEventListener('change', function() {
+      var instituteId = this.value;
+      fetch(`/admin/institutes/${instituteId}/sections`)
+        .then(response => response.json())
+        .then(data => {
+          var sectionSelect = document.getElementById('section_select');
+          sectionSelect.innerHTML = ''; // Clear previous options
+          data.forEach(section => {
+            var option = document.createElement('option');
+            option.value = section.id; // Set the value to the section ID
+            option.textContent = section.name; // Display the section name
+            sectionSelect.appendChild(option);
+          });
+        })
+        .catch(error => console.error('Error fetching sections:', error));
+    });
+  });
+</script>

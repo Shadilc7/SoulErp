@@ -40,6 +40,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_22_140000) do
     t.string "institution_type"
   end
 
+  create_table "options", force: :cascade do |t|
+    t.bigint "question_id", null: false
+    t.text "text", null: false
+    t.boolean "correct", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["question_id"], name: "index_options_on_question_id"
+  end
+
   create_table "participants", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "section_id"
@@ -86,14 +95,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_22_140000) do
     t.string "title", null: false
     t.text "description"
     t.integer "question_type", default: 0, null: false
-    t.json "options"
-    t.integer "correct_option"
-    t.text "correct_answer"
     t.integer "marks", default: 1
-    t.integer "difficulty_level", default: 0
+    t.integer "difficulty_level", default: 1, null: false
     t.boolean "active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "required", default: false
     t.index ["institute_id"], name: "index_questions_on_institute_id"
   end
 
@@ -184,6 +191,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_22_140000) do
 
   add_foreign_key "guardians", "participants"
   add_foreign_key "guardians", "users"
+  add_foreign_key "options", "questions"
   add_foreign_key "participants", "institutes"
   add_foreign_key "participants", "sections"
   add_foreign_key "participants", "users"

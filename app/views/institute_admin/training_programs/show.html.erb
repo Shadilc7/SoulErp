@@ -134,24 +134,27 @@
               <h6 class="text-muted mb-2">
                 <%= @training_program.individual? ? 'Participant' : 'Section' %>
               </h6>
-              <% if @training_program.individual? %>
-                <%= link_to institute_admin_participant_path(@training_program.participant),
-                    class: "d-flex align-items-center text-decoration-none" do %>
-                  <i class="bi bi-person fs-4 me-2"></i>
-                  <p class="mb-0 text-dark"><%= @training_program.participant.user.full_name %></p>
+              <h6 class="card-subtitle mb-2 text-muted">
+                <% if @training_program.individual? %>
+                  <% if @training_program.participant&.user.present? %>
+                    <%= link_to institute_admin_participant_path(@training_program.participant),
+                        class: "text-decoration-none" do %>
+                      <%= @training_program.participant.user.full_name %>
+                    <% end %>
+                  <% else %>
+                    <span class="text-warning">No participant assigned</span>
+                  <% end %>
+                <% else %>
+                  <% if @training_program.section.present? %>
+                    <%= link_to institute_admin_section_path(@training_program.section),
+                        class: "text-decoration-none" do %>
+                      Section: <%= @training_program.section.name %>
+                    <% end %>
+                  <% else %>
+                    <span class="text-warning">No section assigned</span>
+                  <% end %>
                 <% end %>
-              <% else %>
-                <%= link_to institute_admin_section_path(@training_program.section),
-                    class: "d-flex align-items-center text-decoration-none" do %>
-                  <i class="bi bi-people fs-4 me-2"></i>
-                  <div>
-                    <p class="mb-0 text-dark"><%= @training_program.section.name %></p>
-                    <small class="text-muted">
-                      <%= pluralize(@training_program.section.participants.count, 'participant') %>
-                    </small>
-                  </div>
-                <% end %>
-              <% end %>
+              </h6>
             </div>
           </div>
         </div>

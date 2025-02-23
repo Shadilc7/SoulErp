@@ -1,9 +1,21 @@
 <div class="card card-custom">
-  <div class="card-header card-header-custom">
-    <h5 class="mb-0">Edit Question</h5>
+  <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+      <div class="header-icon">
+        <i class="bi bi-pencil-square"></i>
+      </div>
+      <h5 class="mb-0">Edit Question</h5>
+    </div>
+    <%= link_to institute_admin_question_path(@question), class: "btn btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left"></i> Back to Question
+    <% end %>
   </div>
-  
-  <div class="card-body">
-    <%= render 'form' %>
+
+  <div class="card-body py-4">
+    <div class="row justify-content-center">
+      <div class="col-xxl-10">
+        <%= render 'form' %>
+      </div>
+    </div>
   </div>
 </div> 

@@ -3,7 +3,7 @@ module InstituteAdmin
     before_action :set_question, only: [ :show, :edit, :update, :destroy ]
 
     def index
-      @questions = current_institute.questions.order(created_at: :desc)
+      @questions = current_institute.questions.includes(:options).order(created_at: :desc)
     end
 
     def show
@@ -42,14 +42,18 @@ module InstituteAdmin
     private
 
     def set_question
-      @question = current_institute.questions.find(params[:id])
+      @question = current_institute.questions.includes(:options).find(params[:id])
     end
 
     def question_params
       params.require(:question).permit(
-        :title, :description, :question_type, :marks,
-        :difficulty_level, :active, :correct_option,
-        :correct_answer, options: []
+        :title,
+        :question_type,
+        :marks,
+        :difficulty_level,
+        :active,
+        :required,
+        options_attributes: [ :id, :text, :correct, :_destroy ]
       )
     end
   end

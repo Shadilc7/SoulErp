@@ -9,7 +9,14 @@ module InstituteAdmin
     before_action :set_section, only: [ :show, :edit, :update, :destroy ]
 
     def index
-      @sections = current_institute.sections.includes(:participants)
+      @sections = current_institute.sections
+        .select("sections.*, (
+          SELECT COUNT(*)
+          FROM users
+          WHERE users.section_id = sections.id
+          AND users.role = #{User.roles[:participant]}
+        ) as participants_count")
+        .includes(:participants)
 
       respond_to do |format|
         format.html
@@ -24,6 +31,7 @@ module InstituteAdmin
           send_data generate_csv(@sections),
             filename: "sections_report_#{Date.current}.csv"
         end
+        format.json { render json: @sections }
       end
     end
 

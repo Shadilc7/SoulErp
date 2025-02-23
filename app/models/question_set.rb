@@ -4,7 +4,7 @@ class QuestionSet < ApplicationRecord
   has_many :questions, through: :question_set_items
 
   validates :title, presence: true
-  validates :duration_minutes, presence: true, numericality: { greater_than: 0 }
+  validates :questions, presence: true
 
   validate :no_duplicate_questions
   validate :valid_total_marks

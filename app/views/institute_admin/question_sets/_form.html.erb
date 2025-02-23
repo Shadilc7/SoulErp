@@ -1,4 +1,4 @@
-<%= form_with(model: [:institute_admin, @question_set], local: true) do |f| %>
+<%= form_with(model: [:institute_admin, @question_set], local: true, data: { controller: "question-set" }) do |f| %>
   <% if @question_set.errors.any? %>
     <div class="alert alert-danger">
       <h6>Please fix the following errors:</h6>
@@ -10,59 +10,96 @@
     </div>
   <% end %>
 
-  <div class="row">
-    <div class="col-md-12 mb-3">
-      <div class="form-group">
-        <%= f.label :title, class: "form-label" %>
-        <%= f.text_field :title, class: "form-control" %>
-      </div>
+  <!-- Title Input -->
+  <div class="form-section mb-4">
+    <%= f.text_field :title, 
+        class: "form-control form-control-lg",
+        placeholder: "Enter question set title",
+        data: { 
+          question_set_target: "titleInput",
+          action: "input->question-set#validateForm"
+        } %>
+  </div>
+
+  <!-- Questions Selection -->
+  <div class="form-section">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="mb-0">Select Questions</h6>
+      <span class="badge bg-primary" data-question-set-target="counter">
+        <%= @question_set.questions.count %> Selected
+      </span>
     </div>
 
-    <div class="col-md-12 mb-3">
-      <div class="form-group">
-        <%= f.label :description, class: "form-label" %>
-        <%= f.text_area :description, class: "form-control", rows: 3 %>
-      </div>
-    </div>
-
-    <div class="col-md-6 mb-3">
-      <div class="form-group">
-        <%= f.label :duration_minutes, "Duration (minutes)", class: "form-label" %>
-        <%= f.number_field :duration_minutes, class: "form-control", min: 1 %>
-      </div>
-    </div>
-
-    <div class="col-12 mb-3">
-      <div class="form-check">
-        <%= f.check_box :active, class: "form-check-input" %>
-        <%= f.label :active, class: "form-check-label" %>
-      </div>
-    </div>
-
-    <div class="col-12">
-      <h5 class="mb-3">Questions</h5>
-      <div id="question-items" data-controller="nested-form">
-        <template data-nested-form-target="template">
-          <%= f.fields_for :question_set_items, QuestionSetItem.new, child_index: 'NEW_RECORD' do |item| %>
-            <%= render 'question_set_item_fields', f: item %>
-          <% end %>
-        </template>
-
-        <%= f.fields_for :question_set_items do |item| %>
-          <%= render 'question_set_item_fields', f: item %>
-        <% end %>
-
-        <div class="mb-3">
-          <button type="button" class="btn btn-outline-custom btn-sm" data-action="nested-form#add">
-            <i class="bi bi-plus"></i> Add Question
-          </button>
+    <div class="questions-list">
+      <% current_institute.questions.active.each do |question| %>
+        <div class="question-item">
+          <div class="form-check">
+            <%= check_box_tag "question_set[question_ids][]", 
+                question.id, 
+                @question_set.question_ids.include?(question.id),
+                class: "form-check-input",
+                data: { action: "change->question-set#updateCounter" } %>
+            <label class="form-check-label">
+              <%= question.title %>
+            </label>
+          </div>
         </div>
-      </div>
+      <% end %>
     </div>
   </div>
 
-  <div class="mt-4">
-    <%= f.submit class: "btn btn-custom-primary" %>
-    <%= link_to "Cancel", institute_admin_question_sets_path, class: "btn btn-outline-custom ms-2" %>
+  <!-- Action Buttons -->
+  <div class="mt-4 d-flex justify-content-end gap-2">
+    <%= link_to "Cancel", 
+        @question_set.new_record? ? institute_admin_question_sets_path : institute_admin_question_set_path(@question_set), 
+        class: "btn btn-outline-secondary" %>
+    <%= f.submit @question_set.new_record? ? "Create Question Set" : "Update Question Set", 
+        class: "btn btn-custom-primary",
+        data: { question_set_target: "submitButton" } %>
   </div>
+<% end %>
+
+<% content_for :styles do %>
+  <style>
+    .form-section {
+      background: white;
+      border-radius: 8px;
+      padding: 1.25rem;
+      border: 1px solid #dee2e6;
+    }
+
+    .questions-list {
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 0.5rem;
+    }
+
+    .question-item {
+      padding: 0.75rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    .question-item:last-child {
+      border-bottom: none;
+    }
+
+    .form-check-label {
+      cursor: pointer;
+      padding-left: 0.5rem;
+    }
+
+    /* Custom scrollbar */
+    .questions-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .questions-list::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    .questions-list::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 3px;
+    }
+  </style>
 <% end %> 

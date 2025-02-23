@@ -1,9 +1,73 @@
 <div class="card card-custom">
-  <div class="card-header card-header-custom">
-    <h5 class="mb-0">New Question</h5>
+  <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+      <div class="header-icon">
+        <i class="bi bi-plus-circle"></i>
+      </div>
+      <h5 class="mb-0">Create New Question</h5>
+    </div>
+    <%= link_to institute_admin_questions_path, class: "btn btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left"></i> Back to Questions
+    <% end %>
   </div>
-  
-  <div class="card-body">
-    <%= render 'form' %>
+
+  <div class="card-body py-4">
+    <div class="row justify-content-center">
+      <div class="col-xxl-10">
+        <%= render 'form' %>
+      </div>
+    </div>
   </div>
-</div> 
+</div>
+
+<% content_for :styles do %>
+  <style>
+    .question-input-group {
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 1rem;
+      background: white;
+      transition: all 0.3s ease;
+    }
+
+    .question-input-group:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(152, 216, 170, 0.25);
+    }
+
+    .question-type-selector {
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 0.5rem;
+      background: white;
+    }
+
+    .answer-preview {
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 1rem;
+      background: #f8f9fa;
+    }
+
+    .option-item {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 0.75rem;
+      transition: all 0.3s ease;
+    }
+
+    .option-item:hover {
+      border-color: var(--primary-color);
+    }
+
+    .option-indicator {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6c757d;
+    }
+  </style>
+<% end %> 

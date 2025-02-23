@@ -1,4 +1,4 @@
-<%= form_with(model: [:institute_admin, @question], local: true) do |f| %>
+<%= form_with(model: [:institute_admin, @question], local: true, data: { controller: "question-form" }) do |f| %>
   <% if @question.errors.any? %>
     <div class="alert alert-danger">
       <h6>Please fix the following errors:</h6>
@@ -10,89 +10,281 @@
     </div>
   <% end %>
 
-  <div class="row">
-    <div class="col-md-12 mb-3">
-      <div class="form-group">
-        <%= f.label :title, class: "form-label" %>
-        <%= f.text_field :title, class: "form-control" %>
+  <!-- Question Title -->
+  <div class="question-preview-card mb-4">
+    <div class="mb-4">
+      <div class="question-input-group">
+        <%= f.text_field :title, 
+            class: "form-control form-control-lg",
+            placeholder: "Enter your question",
+            data: { 
+              question_form_target: "titleInput",
+              action: "input->question-form#validateForm"
+            } %>
       </div>
     </div>
 
-    <div class="col-md-12 mb-3">
-      <div class="form-group">
-        <%= f.label :description, class: "form-label" %>
-        <%= f.text_area :description, class: "form-control", rows: 3 %>
+    <!-- Question Type Selection -->
+    <div class="mb-4">
+      <label class="form-label text-muted small text-uppercase">Question Type</label>
+      <div class="question-type-select">
+        <%= f.select :question_type,
+            Question.question_types.keys.map { |type| 
+              [
+                content_tag(:i, '', class: "bi #{
+                  type == 'short_answer' ? 'bi-input-cursor' :
+                  type == 'paragraph' ? 'bi-text-paragraph' :
+                  type == 'multiple_choice' ? 'bi-record-circle' :
+                  type == 'checkboxes' ? 'bi-check-square' :
+                  type == 'dropdown' ? 'bi-chevron-down' :
+                  type == 'date' ? 'bi-calendar' : 'bi-clock'
+                }") + 
+                content_tag(:span, type.titleize),
+                type
+              ]
+            },
+            {},
+            class: "form-select question-type-dropdown",
+            data: { action: "change->question-form#handleTypeChange" } %>
       </div>
     </div>
 
-    <div class="col-md-6 mb-3">
-      <div class="form-group">
-        <%= f.label :question_type, class: "form-label" %>
-        <%= f.select :question_type, 
-            Question.question_types.keys.map { |t| [t.titleize, t] },
-            {}, 
-            { class: "form-select", data: { controller: "question-type" } } %>
+    <!-- Dynamic Answer Options -->
+    <div class="answer-options-wrapper mt-4" 
+        data-question-form-target="optionsWrapper">
+      
+      <!-- Short Answer Preview -->
+      <div class="answer-preview short-answer d-none"
+          data-question-form-target="shortAnswerPreview">
+        <input type="text" class="form-control" 
+            placeholder="Short answer text" disabled>
       </div>
-    </div>
 
-    <div class="col-md-6 mb-3">
-      <div class="form-group">
-        <%= f.label :marks, class: "form-label" %>
-        <%= f.number_field :marks, class: "form-control", min: 1 %>
+      <!-- Paragraph Preview -->
+      <div class="answer-preview paragraph d-none"
+          data-question-form-target="paragraphPreview">
+        <textarea class="form-control" rows="3" 
+            placeholder="Long answer text" disabled></textarea>
       </div>
-    </div>
 
-    <div class="col-md-6 mb-3">
-      <div class="form-group">
-        <%= f.label :difficulty_level, class: "form-label" %>
-        <%= f.select :difficulty_level, 
-            Question.difficulty_levels.keys.map { |d| [d.titleize, d] },
-            {}, 
-            { class: "form-select" } %>
-      </div>
-    </div>
+      <!-- Multiple Choice/Checkbox Options -->
+      <div class="options-section d-none" 
+          data-question-form-target="optionsSection"
+          data-controller="nested-form">
+        
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <label class="form-label text-muted small text-uppercase mb-0">Answer Options</label>
+          <button type="button" 
+              class="btn btn-outline-custom btn-sm"
+              data-action="nested-form#add">
+            <i class="bi bi-plus-lg"></i> Add Option
+          </button>
+        </div>
 
-    <div class="col-md-12 mb-3" data-question-type-target="optionsContainer">
-      <div class="form-group">
-        <label class="form-label">Options</label>
-        <div id="options-container">
-          <% (@question.options || [""]).each_with_index do |option, index| %>
-            <div class="input-group mb-2">
-              <%= text_field_tag "question[options][]", option, class: "form-control" %>
-              <button type="button" class="btn btn-outline-danger remove-option">
-                <i class="bi bi-trash"></i>
-              </button>
+        <template data-nested-form-target="template">
+          <%= f.fields_for :options, Option.new, child_index: 'NEW_RECORD' do |option| %>
+            <div class="option-item mb-3">
+              <div class="d-flex align-items-center gap-3">
+                <div class="option-indicator">
+                  <i class="bi bi-circle"></i>
+                </div>
+                <%= option.text_field :text, 
+                    class: "form-control",
+                    placeholder: "Option text" %>
+                <div class="form-check">
+                  <%= option.check_box :correct, class: "form-check-input" %>
+                  <label class="form-check-label small">Correct</label>
+                </div>
+                <button type="button" 
+                    class="btn btn-outline-danger btn-sm"
+                    data-action="nested-form#remove">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          <% end %>
+        </template>
+
+        <div data-nested-form-target="items">
+          <%= f.fields_for :options do |option| %>
+            <div class="option-item mb-3">
+              <div class="d-flex align-items-center gap-3">
+                <div class="option-indicator">
+                  <i class="bi bi-circle"></i>
+                </div>
+                <%= option.text_field :text, 
+                    class: "form-control",
+                    placeholder: "Option text" %>
+                <div class="form-check">
+                  <%= option.check_box :correct, class: "form-check-input" %>
+                  <label class="form-check-label small">Correct</label>
+                </div>
+                <button type="button" 
+                    class="btn btn-outline-danger btn-sm"
+                    data-action="nested-form#remove">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
             </div>
           <% end %>
         </div>
-        <button type="button" class="btn btn-outline-custom btn-sm mt-2" id="add-option">
-          <i class="bi bi-plus"></i> Add Option
-        </button>
       </div>
 
-      <div class="form-group mt-3">
-        <%= f.label :correct_option, "Correct Option", class: "form-label" %>
-        <%= f.number_field :correct_option, class: "form-control", min: 0 %>
+      <!-- Date Preview -->
+      <div class="answer-preview date d-none"
+          data-question-form-target="datePreview">
+        <input type="date" class="form-control" disabled>
       </div>
-    </div>
 
-    <div class="col-md-12 mb-3" data-question-type-target="answerContainer">
-      <div class="form-group">
-        <%= f.label :correct_answer, class: "form-label" %>
-        <%= f.text_area :correct_answer, class: "form-control", rows: 3 %>
-      </div>
-    </div>
-
-    <div class="col-12 mb-3">
-      <div class="form-check">
-        <%= f.check_box :active, class: "form-check-input" %>
-        <%= f.label :active, class: "form-check-label" %>
+      <!-- Time Preview -->
+      <div class="answer-preview time d-none"
+          data-question-form-target="timePreview">
+        <input type="time" class="form-control" disabled>
       </div>
     </div>
   </div>
 
-  <div class="mt-4">
-    <%= f.submit class: "btn btn-custom-primary" %>
-    <%= link_to "Cancel", institute_admin_questions_path, class: "btn btn-outline-custom ms-2" %>
+  <!-- Question Settings -->
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="detail-card">
+        <div class="detail-icon">
+          <i class="bi bi-speedometer2"></i>
+        </div>
+        <div class="detail-content">
+          <h6>Difficulty Level</h6>
+          <%= f.select :difficulty_level,
+              Question.difficulty_levels.keys.map { |level| [level.titleize, level] },
+              {},
+              class: "form-select" %>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="detail-card">
+        <div class="detail-icon">
+          <i class="bi bi-award"></i>
+        </div>
+        <div class="detail-content">
+          <h6>Marks</h6>
+          <%= f.number_field :marks, 
+              class: "form-control",
+              min: 1,
+              placeholder: "Points" %>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="detail-card">
+        <div class="detail-icon">
+          <i class="bi bi-asterisk"></i>
+        </div>
+        <div class="detail-content">
+          <h6>Required</h6>
+          <div class="form-check form-switch">
+            <%= f.check_box :required, class: "form-check-input" %>
+            <label class="form-check-label">Make this question required</label>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- Action Buttons -->
+  <div class="mt-5 d-flex justify-content-end gap-3">
+    <%= link_to "Cancel", 
+        @question.new_record? ? institute_admin_questions_path : institute_admin_question_path(@question), 
+        class: "btn btn-outline-secondary btn-lg" %>
+    <%= f.submit @question.new_record? ? "Create Question" : "Update Question", 
+        class: "btn btn-custom-primary btn-lg",
+        data: { question_form_target: "submitButton" } %>
+  </div>
+<% end %>
+
+<% content_for :styles do %>
+  <style>
+    .question-input-group {
+      border: 1px solid #dee2e6;
+      border-radius: 12px;
+      padding: 1.5rem;
+      background: white;
+      transition: all 0.3s ease;
+    }
+
+    .question-input-group:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(152, 216, 170, 0.25);
+    }
+
+    .question-type-card {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .question-type-card:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-2px);
+    }
+
+    .question-type-card.active {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+    }
+
+    .question-type-card .type-icon {
+      width: 48px;
+      height: 48px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      margin: 0 auto 1rem;
+      color: var(--primary-color);
+      transition: all 0.3s ease;
+    }
+
+    .question-type-card.active .type-icon {
+      background: white;
+    }
+
+    .question-type-card .type-label {
+      font-weight: 500;
+    }
+
+    .question-type-select {
+      position: relative;
+    }
+
+    .question-type-dropdown {
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      border: 1px solid #dee2e6;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .question-type-dropdown:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(152, 216, 170, 0.25);
+    }
+
+    .question-type-dropdown option {
+      padding: 10px;
+    }
+
+    /* Style for the select options */
+    select.question-type-dropdown option i {
+      margin-right: 8px;
+    }
+
+    /* Rest of the styles from show.html.erb */
+  </style>
 <% end %> 

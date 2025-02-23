@@ -1,0 +1,206 @@
+<div class="container py-4">
+  <!-- Current Assignments -->
+  <div class="card card-custom mb-4">
+    <div class="card-header card-header-custom">
+      <h5 class="mb-0">Current Assignments</h5>
+    </div>
+    <div class="card-body">
+      <% if @assignments.any? %>
+        <div class="assignments-list">
+          <% @assignments.each do |assignment| %>
+            <%= link_to participant_assignment_path(assignment), class: "assignment-card" do %>
+              <div class="assignment-content">
+                <h6 class="assignment-title"><%= assignment.title %></h6>
+                <div class="assignment-meta">
+                  <span class="badge bg-success">Active</span>
+                  <span class="text-muted">
+                    Ends in <%= distance_of_time_in_words(Time.current, assignment.end_date) %>
+                  </span>
+                </div>
+                <% if assignment.description.present? %>
+                  <p class="assignment-description"><%= truncate(assignment.description, length: 100) %></p>
+                <% end %>
+                <div class="assignment-stats">
+                  <% completed_count = current_participant.assignment_responses.where(assignment: assignment).count %>
+                  <% total_count = assignment.questions.count + assignment.question_sets.sum { |set| set.questions.count } %>
+                  <div class="progress">
+                    <div class="progress-bar bg-success" 
+                         style="width: <%= (completed_count.to_f / total_count * 100).round %>%">
+                    </div>
+                  </div>
+                  <small class="text-muted">
+                    <%= completed_count %> of <%= total_count %> questions completed
+                  </small>
+                </div>
+              </div>
+              <div class="assignment-arrow">
+                <i class="bi bi-chevron-right"></i>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center text-muted py-4">
+          <i class="bi bi-clipboard-check display-4"></i>
+          <p class="mt-2">No current assignments</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Upcoming Assignments -->
+  <div class="card card-custom mb-4">
+    <div class="card-header card-header-custom">
+      <h5 class="mb-0">Upcoming Assignments</h5>
+    </div>
+    <div class="card-body">
+      <% if @upcoming_assignments.any? %>
+        <div class="assignments-list">
+          <% @upcoming_assignments.each do |assignment| %>
+            <div class="assignment-card disabled">
+              <div class="assignment-content">
+                <h6 class="assignment-title"><%= assignment.title %></h6>
+                <div class="assignment-meta">
+                  <span class="badge bg-info">Upcoming</span>
+                  <span class="text-muted">
+                    Starts in <%= distance_of_time_in_words(Time.current, assignment.start_date) %>
+                  </span>
+                </div>
+                <% if assignment.description.present? %>
+                  <p class="assignment-description"><%= truncate(assignment.description, length: 100) %></p>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center text-muted py-4">
+          <i class="bi bi-calendar-event display-4"></i>
+          <p class="mt-2">No upcoming assignments</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Past Assignments -->
+  <div class="card card-custom">
+    <div class="card-header card-header-custom">
+      <h5 class="mb-0">Past Assignments</h5>
+    </div>
+    <div class="card-body">
+      <% if @past_assignments.any? %>
+        <div class="assignments-list">
+          <% @past_assignments.each do |assignment| %>
+            <%= link_to participant_assignment_path(assignment), class: "assignment-card completed" do %>
+              <div class="assignment-content">
+                <h6 class="assignment-title"><%= assignment.title %></h6>
+                <div class="assignment-meta">
+                  <span class="badge bg-secondary">Completed</span>
+                  <span class="text-muted">
+                    Ended <%= time_ago_in_words(assignment.end_date) %> ago
+                  </span>
+                </div>
+                <% if assignment.description.present? %>
+                  <p class="assignment-description"><%= truncate(assignment.description, length: 100) %></p>
+                <% end %>
+                <div class="assignment-stats">
+                  <% completed_count = current_participant.assignment_responses.where(assignment: assignment).count %>
+                  <% total_count = assignment.questions.count + assignment.question_sets.sum { |set| set.questions.count } %>
+                  <div class="progress">
+                    <div class="progress-bar bg-secondary" 
+                         style="width: <%= (completed_count.to_f / total_count * 100).round %>%">
+                    </div>
+                  </div>
+                  <small class="text-muted">
+                    <%= completed_count %> of <%= total_count %> questions completed
+                  </small>
+                </div>
+              </div>
+              <div class="assignment-arrow">
+                <i class="bi bi-chevron-right"></i>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center text-muted py-4">
+          <i class="bi bi-clock-history display-4"></i>
+          <p class="mt-2">No past assignments</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<% content_for :styles do %>
+  <style>
+    .assignments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .assignment-card {
+      display: flex;
+      align-items: center;
+      padding: 1.25rem;
+      border: 1px solid #dee2e6;
+      border-radius: 12px;
+      background: white;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s ease;
+    }
+
+    .assignment-card:not(.disabled):hover {
+      border-color: var(--primary-color);
+      transform: translateX(4px);
+    }
+
+    .assignment-content {
+      flex: 1;
+    }
+
+    .assignment-title {
+      margin-bottom: 0.5rem;
+      color: #2c3e50;
+    }
+
+    .assignment-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .assignment-description {
+      color: #6c757d;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .assignment-stats {
+      margin-top: 1rem;
+    }
+
+    .assignment-arrow {
+      color: #6c757d;
+      font-size: 1.25rem;
+      margin-left: 1rem;
+    }
+
+    .assignment-card.disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .assignment-card.completed {
+      background: #f8f9fa;
+    }
+
+    .progress {
+      height: 6px;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+<% end %> 

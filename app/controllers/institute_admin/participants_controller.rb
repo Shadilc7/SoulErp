@@ -103,7 +103,8 @@ module InstituteAdmin
           :date_of_birth,
           :phone_number,
           :section_id,
-          :status
+          :status,
+          :institute_id
         ]
       )
     end

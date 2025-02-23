@@ -1,6 +1,6 @@
 class Institute < ApplicationRecord
   # Associations
-  has_many :users
+  has_many :users, dependent: :destroy
   has_many :sections, dependent: :destroy
   has_many :training_programs, dependent: :destroy
   has_many :trainers, dependent: :destroy
@@ -9,6 +9,7 @@ class Institute < ApplicationRecord
   has_many :participant_profiles
   has_many :questions, dependent: :destroy
   has_many :question_sets, dependent: :destroy
+  has_many :assignments, dependent: :destroy
 
   # Validations
   validates :name, presence: true

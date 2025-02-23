@@ -87,6 +87,18 @@ module InstituteAdmin
       render json: [], status: :not_found
     end
 
+    def participants
+      @section = current_institute.sections.find(params[:id])
+      @participants = @section.participants.includes(:user)
+
+      render json: @participants.map { |p|
+        {
+          id: p.id,
+          full_name: p.user.full_name
+        }
+      }
+    end
+
     private
 
     def set_section

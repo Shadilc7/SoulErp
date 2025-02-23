@@ -50,10 +50,7 @@
                       <div class="form-floating flex-grow-1">
                         <%= p.text_field :phone_number, 
                             class: "form-control #{p.object.errors[:phone_number].any? ? 'is-invalid' : ''}", 
-                            placeholder: "Phone Number",
-                            pattern: "\d{10}",
-                            maxlength: "10",
-                            oninput: "this.value = this.value.replace(/[^0-9]/g, '')" %>
+                            placeholder: "Phone Number" %>
                         <%= p.label :phone_number, "Phone Number" %>
                         <% if p.object.errors[:phone_number].any? %>
                           <div class="invalid-feedback">

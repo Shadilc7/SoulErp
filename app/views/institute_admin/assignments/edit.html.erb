@@ -1,30 +1,16 @@
-<h1>Edit Assignment</h1>
-<%= form_with(model: @assignment, url: institute_admin_assignment_path(@assignment), local: true) do |f| %>
-  <div class="form-group">
-    <%= f.label :start_date %>
-    <%= f.date_select :start_date %>
+<div class="card card-custom">
+  <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Edit Assignment</h5>
+    <%= link_to institute_admin_assignment_path(@assignment), class: "btn btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left"></i> Back
+    <% end %>
   </div>
-  <div class="form-group">
-    <%= f.label :end_date %>
-    <%= f.date_select :end_date %>
+
+  <div class="card-body py-4">
+    <div class="row justify-content-center">
+      <div class="col-xxl-10">
+        <%= render 'form' %>
+      </div>
+    </div>
   </div>
-  <div class="form-group">
-    <%= f.label :participants %>
-    <%= f.collection_select :participant_ids, @participants, :id, :name, {}, { multiple: true } %>
-  </div>
-  <div class="form-group">
-    <%= f.label :section %>
-    <%= f.collection_select :section_id, @sections, :id, :name %>
-  </div>
-  <div class="form-group">
-    <%= f.label :questions %>
-    <%= f.collection_select :question_ids, @questions, :id, :title, {}, { multiple: true } %>
-  </div>
-  <div class="form-group">
-    <%= f.label :question_sets %>
-    <%= f.collection_select :question_set_ids, @question_sets, :id, :title, {}, { multiple: true } %>
-  </div>
-  <div class="form-group">
-    <%= f.submit 'Update Assignment', class: 'btn btn-primary' %>
-  </div>
-<% end %>
+</div>

@@ -40,10 +40,7 @@
             <span class="input-group-text bg-light text-muted" style="width: 60px;">+91</span>
             <%= participant_form.text_field :phone_number, 
                 class: "form-control #{'is-invalid' if participant_form.object.errors[:phone_number].any?}", 
-                placeholder: "Enter 10-digit number",
-                pattern: "\d{10}",
-                maxlength: "10",
-                oninput: "this.value = this.value.replace(/[^0-9]/g, '')" %>
+                placeholder: "Enter 10-digit number" %>
             <% if participant_form.object.errors[:phone_number].any? %>
               <div class="invalid-feedback">
                 <%= participant_form.object.errors[:phone_number].first %>

@@ -57,6 +57,9 @@ Rails.application.routes.draw do
         collection do
           get :fetch
         end
+        member do
+          get :participants
+        end
       end
       resources :trainers
       resources :participants

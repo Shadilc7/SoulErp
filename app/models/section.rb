@@ -1,6 +1,7 @@
 class Section < ApplicationRecord
   belongs_to :institute
-  has_many :participants, -> { where(role: :participant) }, class_name: "User", foreign_key: "section_id", dependent: :nullify
+  has_many :users
+  has_many :participants, through: :users
   has_many :training_programs, dependent: :destroy
 
   enum :status, { active: 0, inactive: 1 }, default: :active

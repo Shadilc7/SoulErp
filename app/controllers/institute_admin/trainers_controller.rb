@@ -63,10 +63,18 @@ module InstituteAdmin
 
     def trainer_params
       params.require(:trainer).permit(
-        :specialization, :qualification, :experience_years, :status,
+        :specialization,
+        :qualification,
+        :experience_years,
+        :phone_number,
+        :status,
         user_attributes: [
-          :id, :username, :email, :password, :password_confirmation,
-          :first_name, :last_name, :active
+          :id,
+          :first_name,
+          :last_name,
+          :email,
+          :password,
+          :password_confirmation
         ]
       )
     end

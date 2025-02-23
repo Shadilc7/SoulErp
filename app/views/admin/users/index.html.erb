@@ -32,7 +32,23 @@
               </td>
               <td><%= user.created_at.strftime("%b %d, %Y") %></td>
               <td>
-                <%= link_to "Edit", edit_admin_user_path(user), class: "btn btn-sm btn-outline-custom" %>
+                <div class="d-flex gap-2">
+                  <%= link_to admin_user_path(user), 
+                      class: "btn btn-sm btn-outline-info" do %>
+                    <i class="bi bi-eye"></i>
+                  <% end %>
+                  <%= link_to "Edit", edit_admin_user_path(user), 
+                      class: "btn btn-sm btn-outline-custom" %>
+                  <%= button_to admin_user_path(user), 
+                      method: :delete,
+                      class: "btn btn-sm btn-outline-danger",
+                      form: { class: 'd-inline' },
+                      data: { 
+                        turbo_confirm: "Are you sure you want to remove this administrator?" 
+                      } do %>
+                    <i class="bi bi-trash"></i>
+                  <% end %>
+                </div>
               </td>
             </tr>
           <% end %>

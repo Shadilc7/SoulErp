@@ -6,7 +6,10 @@ class Trainer < ApplicationRecord
   validates :institute_id, presence: true
   validates :specialization, presence: true
   validates :qualification, presence: true
-  validates :experience_years, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :experience_years, presence: true,
+    numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :phone_number, presence: true,
+    format: { with: /\A\+?[\d\s-]{10,}\z/, message: "must be a valid phone number" }
 
   enum :status, {
     active: 0,

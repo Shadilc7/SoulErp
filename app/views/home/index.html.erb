@@ -3,17 +3,19 @@
   <div class="left-panel">
     <div class="logo-container">
       <div class="company-logo">
-        <i class="bi bi-fingerprint"></i>
-        <span>SOUL ERP</span>
+        <div class="logo-icon">
+          <div class="icon-stack">
+            <i class="bi bi-people-fill"></i>
+            <i class="bi bi-stars overlay-icon"></i>
+          </div>
+        </div>
       </div>
     </div>
     
     <div class="welcome-content">
-      <h1>Welcome</h1>
-
+      <h1>Welcome to SOUL</h1>
       <%= link_to "REGISTER HERE", new_user_registration_path, class: "register-btn" %>
     </div>
-
   </div>
 
   <!-- Right Panel -->
@@ -37,3 +39,146 @@
     </div>
   </div>
 </div>
+
+<% content_for :styles do %>
+  <style>
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .logo-container {
+      margin-bottom: 3rem;
+    }
+
+    .company-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-icon {
+      font-size: 3rem;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.2);
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .icon-stack {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-stack i {
+      font-size: 2.5rem;
+    }
+
+    .overlay-icon {
+      position: absolute;
+      font-size: 1.5rem !important;
+      top: -5px;
+      right: -5px;
+      color: #ffd700;
+      text-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    /* Animation for the icon */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .logo-icon:hover .icon-stack {
+      animation: pulse 1s infinite;
+    }
+
+    .logo-text {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    .logo-tagline {
+      font-size: 1rem;
+      opacity: 0.9;
+      letter-spacing: 1px;
+    }
+
+    .welcome-content {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .welcome-content h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .welcome-text {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+    }
+
+    .features {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .feature {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .feature i {
+      font-size: 1.5rem;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 1rem;
+      border-radius: 50%;
+    }
+
+    .feature span {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .register-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+    }
+
+    .register-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      color: white;
+    }
+  </style>
+<% end %>

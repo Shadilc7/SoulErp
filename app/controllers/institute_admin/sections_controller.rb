@@ -2,6 +2,10 @@ require "csv"
 
 module InstituteAdmin
   class SectionsController < InstituteAdmin::BaseController
+    skip_before_action :authenticate_user!, only: [ :fetch ]
+    skip_before_action :verify_authenticity_token, only: [ :fetch ]
+    skip_before_action :require_institute_admin, only: [ :fetch ]
+
     before_action :set_section, only: [ :show, :edit, :update, :destroy ]
 
     def index
@@ -60,6 +64,19 @@ module InstituteAdmin
       else
         redirect_to institute_admin_sections_path, alert: "Failed to delete section."
       end
+    end
+
+    def fetch
+      @sections = if params[:institute_id].present?
+        institute = Institute.find(params[:institute_id])
+        institute.sections.active.order(:name)
+      else
+        Section.none
+      end
+
+      render json: @sections.map { |s| { id: s.id, name: s.name } }
+    rescue ActiveRecord::RecordNotFound
+      render json: [], status: :not_found
     end
 
     private

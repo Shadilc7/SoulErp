@@ -41,6 +41,23 @@ module Admin
       end
     end
 
+    def destroy
+      @user = User.find(params[:id])
+      institute_name = @user.institute&.name
+
+      if @user.destroy
+        redirect_to admin_users_path,
+          notice: "Admin for #{institute_name} was successfully removed."
+      else
+        redirect_to admin_users_path,
+          alert: "Unable to remove admin. Please try again."
+      end
+    end
+
+    def show
+      @user = User.institute_admin.find(params[:id])
+    end
+
     private
 
     def set_user

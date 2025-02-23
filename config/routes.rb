@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  # Move this to the top, before any authenticate blocks
+  get "/sections/fetch", to: "institute_admin/sections#fetch"
+
   # Root path first
   root "home#index"
 
@@ -7,6 +10,8 @@ Rails.application.routes.draw do
     sign_in: "login",
     sign_out: "logout",
     sign_up: "register"
+  }, controllers: {
+    registrations: "registrations"
   }, skip: [ :sessions ]  # Skip sessions routes
 
   # Custom session routes
@@ -40,6 +45,7 @@ Rails.application.routes.draw do
       resources :users
       resources :training_programs
       resources :assignments
+      resource :registration_setting, only: [ :edit, :update ]
     end
   end
 
@@ -47,7 +53,11 @@ Rails.application.routes.draw do
   authenticate :user, lambda { |u| u.institute_admin? } do
     namespace :institute_admin do
       root "dashboard#index"
-      resources :sections
+      resources :sections do
+        collection do
+          get :fetch
+        end
+      end
       resources :trainers
       resources :participants
       resources :questions
@@ -82,6 +92,4 @@ Rails.application.routes.draw do
       resource :profile, only: [ :show, :edit, :update ]
     end
   end
-
-  # Add any additional routes below
 end

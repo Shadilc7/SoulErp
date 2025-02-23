@@ -1,6 +1,7 @@
 module Admin
   class InstitutesController < Admin::BaseController
     before_action :set_institute, only: [ :show, :edit, :update ]
+    skip_before_action :authenticate_user!, only: [:sections]
 
     def index
       @institutes = Institute.all
@@ -59,8 +60,13 @@ module Admin
     end
 
     def sections
+      Rails.logger.info "Fetching sections for institute_id: #{params[:institute_id]}"
       @sections = Section.where(institute_id: params[:institute_id])
-      render json: @sections
+      if @sections.any?
+        render json: @sections
+      else
+        render json: { error: 'No sections found for this institute.' }, status: :not_found
+      end
     end
 
     private

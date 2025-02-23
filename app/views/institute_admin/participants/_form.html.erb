@@ -13,8 +13,15 @@
   <div class="row">
     <div class="col-md-6 mb-3">
       <div class="form-group">
-        <%= f.label :username, class: "form-label" %>
-        <%= f.text_field :username, class: "form-control", placeholder: "Enter username" %>
+        <%= f.label :first_name, class: "form-label" %>
+        <%= f.text_field :first_name, class: "form-control", placeholder: "Enter first name" %>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <div class="form-group">
+        <%= f.label :last_name, class: "form-label" %>
+        <%= f.text_field :last_name, class: "form-control", placeholder: "Enter last name" %>
       </div>
     </div>
 
@@ -25,32 +32,28 @@
       </div>
     </div>
 
-    <% unless @user.persisted? %>
-      <div class="col-md-6 mb-3">
-        <div class="form-group">
-          <%= f.label :password, class: "form-label" %>
-          <%= f.password_field :password, class: "form-control" %>
-        </div>
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <div class="form-group">
-          <%= f.label :password_confirmation, class: "form-label" %>
-          <%= f.password_field :password_confirmation, class: "form-control" %>
-        </div>
-      </div>
-    <% end %>
-
-    <div class="col-md-6 mb-3">
-      <div class="form-group">
-        <%= f.label :section_id, "Section", class: "form-label" %>
-        <%= f.collection_select :section_id, @sections, :id, :name, 
-            { prompt: "Select a section" }, 
-            { class: "form-select" } %>
-      </div>
-    </div>
-
     <%= f.fields_for :participant do |participant_form| %>
+      <div class="col-md-6 mb-3">
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted" style="width: 60px;">+91</span>
+            <%= participant_form.text_field :phone_number, 
+                class: "form-control #{'is-invalid' if participant_form.object.errors[:phone_number].any?}", 
+                placeholder: "Enter 10-digit number",
+                pattern: "\d{10}",
+                maxlength: "10",
+                oninput: "this.value = this.value.replace(/[^0-9]/g, '')" %>
+            <% if participant_form.object.errors[:phone_number].any? %>
+              <div class="invalid-feedback">
+                <%= participant_form.object.errors[:phone_number].first %>
+              </div>
+            <% end %>
+          </div>
+          <small class="text-muted">Enter 10 digits without country code</small>
+        </div>
+      </div>
+
       <div class="col-md-6 mb-3">
         <div class="form-group">
           <%= participant_form.label :date_of_birth, class: "form-label" %>
@@ -60,18 +63,30 @@
 
       <div class="col-md-6 mb-3">
         <div class="form-group">
-          <%= participant_form.label :education_level, class: "form-label" %>
-          <%= participant_form.text_field :education_level, class: "form-control" %>
+          <%= participant_form.label :section_id, "Section", class: "form-label" %>
+          <%= participant_form.collection_select :section_id, 
+              @sections, :id, :name,
+              { prompt: "Select Section" }, 
+              { class: "form-select" } %>
         </div>
       </div>
+    <% end %>
 
-      <div class="col-md-6 mb-3">
-        <div class="form-group">
-          <%= participant_form.label :enrollment_date, class: "form-label" %>
-          <%= participant_form.date_field :enrollment_date, class: "form-control" %>
-        </div>
+    <div class="col-md-6 mb-3">
+      <div class="form-group">
+        <%= f.label :password, class: "form-label" %>
+        <%= f.password_field :password, class: "form-control", placeholder: "Enter password" %>
       </div>
+    </div>
 
+    <div class="col-md-6 mb-3">
+      <div class="form-group">
+        <%= f.label :password_confirmation, class: "form-label" %>
+        <%= f.password_field :password_confirmation, class: "form-control", placeholder: "Confirm password" %>
+      </div>
+    </div>
+
+    <%= f.fields_for :participant do |participant_form| %>
       <div class="col-md-6 mb-3">
         <div class="form-group">
           <%= participant_form.label :status, class: "form-label" %>
@@ -79,13 +94,6 @@
               Participant.statuses.keys.map { |s| [s.titleize, s] },
               {}, 
               { class: "form-select" } %>
-        </div>
-      </div>
-
-      <div class="col-12 mb-3">
-        <div class="form-group">
-          <%= participant_form.label :notes, class: "form-label" %>
-          <%= participant_form.text_area :notes, class: "form-control", rows: 3 %>
         </div>
       </div>
     <% end %>

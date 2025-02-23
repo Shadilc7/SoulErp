@@ -14,48 +14,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_22_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
-  create_table "assignments", force: :cascade do |t|
-    t.datetime "start_date", precision: nil
-    t.datetime "end_date", precision: nil
-    t.bigint "participant_id"
-    t.bigint "section_id"
-    t.bigint "question_id"
-    t.bigint "question_set_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["participant_id"], name: "index_assignments_on_participant_id"
-    t.index ["question_id"], name: "index_assignments_on_question_id"
-    t.index ["question_set_id"], name: "index_assignments_on_question_set_id"
-    t.index ["section_id"], name: "index_assignments_on_section_id"
-  end
-
-  create_table "assignments_participants", force: :cascade do |t|
-    t.bigint "assignment_id", null: false
-    t.bigint "participant_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["assignment_id"], name: "index_assignments_participants_on_assignment_id"
-    t.index ["participant_id"], name: "index_assignments_participants_on_participant_id"
-  end
-
-  create_table "assignments_question_sets", force: :cascade do |t|
-    t.bigint "assignment_id", null: false
-    t.bigint "question_set_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["assignment_id"], name: "index_assignments_question_sets_on_assignment_id"
-    t.index ["question_set_id"], name: "index_assignments_question_sets_on_question_set_id"
-  end
-
-  create_table "assignments_questions", force: :cascade do |t|
-    t.bigint "assignment_id", null: false
-    t.bigint "question_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["assignment_id"], name: "index_assignments_questions_on_assignment_id"
-    t.index ["question_id"], name: "index_assignments_questions_on_question_id"
-  end
-
   create_table "guardians", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "participant_id", null: false
@@ -93,7 +51,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_22_140000) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "phone_number"
     t.index ["institute_id"], name: "index_participants_on_institute_id"
+    t.index ["phone_number"], name: "index_participants_on_phone_number"
     t.index ["section_id"], name: "index_participants_on_section_id"
     t.index ["user_id"], name: "index_participants_on_user_id"
   end
@@ -137,6 +97,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_22_140000) do
     t.index ["institute_id"], name: "index_questions_on_institute_id"
   end
 
+  create_table "registration_settings", force: :cascade do |t|
+    t.text "enabled_institutes", default: "--- []", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "sections", force: :cascade do |t|
     t.string "name"
     t.string "code"
@@ -162,7 +128,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_22_140000) do
     t.integer "status", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "phone_number"
     t.index ["institute_id"], name: "index_trainers_on_institute_id"
+    t.index ["phone_number"], name: "index_trainers_on_phone_number"
     t.index ["user_id"], name: "index_trainers_on_user_id"
   end
 
@@ -214,16 +182,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_22_140000) do
     t.index ["section_id"], name: "index_users_on_section_id"
   end
 
-  add_foreign_key "assignments", "participants"
-  add_foreign_key "assignments", "question_sets"
-  add_foreign_key "assignments", "questions"
-  add_foreign_key "assignments", "sections"
-  add_foreign_key "assignments_participants", "assignments"
-  add_foreign_key "assignments_participants", "participants"
-  add_foreign_key "assignments_question_sets", "assignments"
-  add_foreign_key "assignments_question_sets", "question_sets"
-  add_foreign_key "assignments_questions", "assignments"
-  add_foreign_key "assignments_questions", "questions"
   add_foreign_key "guardians", "participants"
   add_foreign_key "guardians", "users"
   add_foreign_key "participants", "institutes"

@@ -15,8 +15,13 @@
     <div class="row">
       <div class="col-md-6">
         <div class="mb-4">
-          <h6 class="text-muted mb-2">Username</h6>
-          <p class="fs-5"><%= @user.username %></p>
+          <h6 class="text-muted mb-2">First Name</h6>
+          <p class="fs-5"><%= @user.first_name %></p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Last Name</h6>
+          <p class="fs-5"><%= @user.last_name %></p>
         </div>
 
         <div class="mb-4">
@@ -25,37 +30,27 @@
         </div>
 
         <div class="mb-4">
-          <h6 class="text-muted mb-2">Section</h6>
-          <p class="fs-5"><%= @user.section&.name || 'Not Assigned' %></p>
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="mb-4">
-          <h6 class="text-muted mb-2">Status</h6>
-          <span class="badge badge-<%= @participant.status == 'active' ? 'success' : 'warning' %> fs-6">
-            <%= @participant.status.titleize %>
-          </span>
-        </div>
-
-        <div class="mb-4">
           <h6 class="text-muted mb-2">Date of Birth</h6>
           <p class="fs-5"><%= @participant.date_of_birth&.strftime("%B %d, %Y") %></p>
         </div>
 
         <div class="mb-4">
-          <h6 class="text-muted mb-2">Education Level</h6>
-          <p class="fs-5"><%= @participant.education_level %></p>
+          <h6 class="text-muted mb-2">Phone Number</h6>
+          <p class="fs-5"><%= @participant.phone_number %></p>
         </div>
 
         <div class="mb-4">
-          <h6 class="text-muted mb-2">Enrollment Date</h6>
-          <p class="fs-5"><%= @participant.enrollment_date&.strftime("%B %d, %Y") %></p>
+          <h6 class="text-muted mb-2">Section</h6>
+          <p class="fs-5"><%= @participant.section&.name || "Not Assigned" %></p>
         </div>
 
         <div class="mb-4">
-          <h6 class="text-muted mb-2">Notes</h6>
-          <p class="fs-5"><%= @participant.notes %></p>
+          <h6 class="text-muted mb-2">Status</h6>
+          <p class="fs-5">
+            <span class="badge <%= @participant.active? ? 'badge-success' : 'badge-warning' %>">
+              <%= @participant.status.titleize %>
+            </span>
+          </p>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ require "csv"
 
 module InstituteAdmin
   class ParticipantsController < InstituteAdmin::BaseController
-    before_action :set_participant, only: [ :show, :edit, :update ]
+    before_action :set_participant, only: [ :show, :edit, :update, :destroy ]
     before_action :set_sections, only: [ :new, :create, :edit, :update ]
 
     def index
@@ -25,25 +25,23 @@ module InstituteAdmin
     end
 
     def show
-      @guardian = @participant.guardian&.user
+      @user = @participant.user
+      @guardian = @participant.guardian
     end
 
     def new
       @user = User.new
-      @user.build_participant(institute_id: current_institute.id)
+      @user.build_participant
     end
 
     def create
-      @user = User.new(participant_params)
-      @user.institute = current_institute
+      @user = User.new(user_params)
       @user.role = :participant
-      if @user.participant
-        @user.participant.institute = current_institute
-        @user.participant.enrollment_date ||= Date.current
-      end
+      @user.institute = current_institute
+      @user.participant.institute = current_institute if @user.participant
 
       if @user.save
-        redirect_to institute_admin_participant_path(@user),
+        redirect_to institute_admin_participants_path,
           notice: "Participant was successfully created."
       else
         render :new, status: :unprocessable_entity
@@ -51,12 +49,20 @@ module InstituteAdmin
     end
 
     def edit
-      # @participant and @user are set by set_participant
+      @user = @participant.user
     end
 
     def update
-      if @user.update(participant_params)
-        redirect_to institute_admin_participant_path(@user),
+      @user = @participant.user
+
+      # Only include password params if they're present
+      update_params = user_params
+      if update_params[:password].blank? && update_params[:password_confirmation].blank?
+        update_params = update_params.except(:password, :password_confirmation)
+      end
+
+      if @user.update(update_params)
+        redirect_to institute_admin_participants_path,
           notice: "Participant was successfully updated."
       else
         render :edit, status: :unprocessable_entity
@@ -64,13 +70,12 @@ module InstituteAdmin
     end
 
     def destroy
-      @user = current_institute.users.find(params[:id])
-      @participant = @user.participant
-
       if @user.destroy
-        redirect_to institute_admin_participants_path, notice: "Participant was successfully deleted."
+        redirect_to institute_admin_participants_path,
+          notice: "Participant was successfully deleted."
       else
-        redirect_to institute_admin_participants_path, alert: "Failed to delete participant."
+        redirect_to institute_admin_participants_path,
+          alert: "Failed to delete participant."
       end
     end
 
@@ -86,13 +91,19 @@ module InstituteAdmin
       @sections = current_institute.sections.active
     end
 
-    def participant_params
+    def user_params
       params.require(:user).permit(
-        :id, :username, :email, :password, :password_confirmation,
-        :first_name, :last_name, :active, :section_id,
+        :first_name,
+        :last_name,
+        :email,
+        :password,
+        :password_confirmation,
         participant_attributes: [
-          :id, :institute_id, :date_of_birth, :education_level,
-          :enrollment_date, :status, :notes
+          :id,
+          :date_of_birth,
+          :phone_number,
+          :section_id,
+          :status
         ]
       )
     end

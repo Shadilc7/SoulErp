@@ -6,6 +6,10 @@ class User < ApplicationRecord
          authentication_keys: [ :login ]
 
   belongs_to :institute, optional: true
+  has_one :trainer, dependent: :destroy
+  has_one :participant, dependent: :destroy
+  has_one :guardian, dependent: :destroy
+  belongs_to :section, optional: true
   has_many :training_programs, foreign_key: :trainer_id
 
   enum :role, {
@@ -17,8 +21,8 @@ class User < ApplicationRecord
   }, default: :participant
 
   validates :email, presence: true, uniqueness: true
-  validates :first_name, length: { maximum: 50 }
-  validates :last_name, length: { maximum: 50 }
+  validates :first_name, presence: true, length: { maximum: 50 }
+  validates :last_name, presence: true, length: { maximum: 50 }
 
   attr_accessor :login
 
@@ -28,11 +32,6 @@ class User < ApplicationRecord
   scope :trainer, -> { where(role: :trainer) }
   scope :participant, -> { where(role: :participant) }
   scope :guardian, -> { where(role: :guardian) }
-
-  has_one :trainer, dependent: :destroy
-  has_one :participant, dependent: :destroy
-  has_one :guardian, dependent: :destroy
-  belongs_to :section, optional: true
 
   accepts_nested_attributes_for :participant
   accepts_nested_attributes_for :trainer
@@ -57,11 +56,7 @@ class User < ApplicationRecord
   end
 
   def full_name
-    if first_name.present? || last_name.present?
-      [ first_name, last_name ].compact.join(" ")
-    else
-      username
-    end
+    "#{first_name} #{last_name}"
   end
 
   def institute_admin?

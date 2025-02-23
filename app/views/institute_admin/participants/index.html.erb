@@ -9,7 +9,7 @@
         <% end %>
         <%= link_to institute_admin_participants_path(format: :csv), 
             class: "btn btn-outline-custom" do %>
-          <i class="bi bi-file-spreadsheet"></i> Export CSV
+          <i class="bi bi-file-csv"></i> Export CSV
         <% end %>
       </div>
       <%= link_to new_institute_admin_participant_path, class: "btn btn-custom-primary" do %>
@@ -27,23 +27,19 @@
             <th>Email</th>
             <th>Section</th>
             <th>Status</th>
-            <th>Enrolled On</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <% @participants.each do |participant| %>
             <tr>
-              <td><%= participant.user.username %></td>
+              <td><%= participant.user.full_name %></td>
               <td><%= participant.user.email %></td>
               <td><%= participant.section&.name || 'Not Assigned' %></td>
               <td>
-                <span class="badge badge-<%= participant.status == 'active' ? 'success' : 'warning' %>">
+                <span class="badge <%= participant.active? ? 'badge-success' : 'badge-warning' %>">
                   <%= participant.status.titleize %>
                 </span>
-              </td>
-              <td>
-                <%= participant.enrollment_date&.strftime("%b %d, %Y") %>
               </td>
               <td>
                 <%= link_to institute_admin_participant_path(participant.user), class: "btn btn-sm btn-custom-primary me-2" do %>

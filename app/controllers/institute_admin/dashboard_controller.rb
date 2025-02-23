@@ -22,6 +22,10 @@ module InstituteAdmin
         .includes(:trainer, :section, :participant)
         .order(created_at: :desc)
         .limit(5)
+
+      @participants = current_institute.participants.includes(:user).active
+      @sections = current_institute.sections.includes(:participants)
+      @training_programs = current_institute.training_programs.includes(:trainer, :participant)
     end
   end
 end

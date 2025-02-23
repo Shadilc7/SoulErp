@@ -131,7 +131,12 @@
                     <td><%= program.trainer.user.full_name %></td>
                     <td>
                       <% if program.individual? %>
-                        <%= program.participant.user.full_name %>
+                        <% participant = program.participant %>
+                        <% if participant && participant.user %>
+                          <%= participant.user.full_name %>
+                        <% else %>
+                          N/A
+                        <% end %>
                       <% else %>
                         <%= program.section.name %>
                       <% end %>

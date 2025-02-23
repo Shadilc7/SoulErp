@@ -19,22 +19,23 @@
             <h6 class="card-title mb-4">Personal Information</h6>
             
             <div class="mb-3">
-              <h6 class="text-muted mb-1">Full Name</h6>
-              <p class="mb-0 fs-5"><%= @trainer.user.full_name %></p>
+              <h6 class="text-muted mb-1">First Name</h6>
+              <p class="mb-0 fs-5"><%= @trainer.user.first_name %></p>
             </div>
 
             <div class="mb-3">
-              <h6 class="text-muted mb-1">Username</h6>
-              <p class="mb-0"><%= @trainer.user.username %></p>
+              <h6 class="text-muted mb-1">Last Name</h6>
+              <p class="mb-0 fs-5"><%= @trainer.user.last_name %></p>
             </div>
 
             <div class="mb-3">
               <h6 class="text-muted mb-1">Email</h6>
-              <p class="mb-0">
-                <a href="mailto:<%= @trainer.user.email %>" class="text-decoration-none">
-                  <%= @trainer.user.email %>
-                </a>
-              </p>
+              <p class="mb-0 fs-5"><%= @trainer.user.email %></p>
+            </div>
+
+            <div class="mb-3">
+              <h6 class="text-muted mb-1">Phone Number</h6>
+              <p class="mb-0 fs-5"><%= @trainer.phone_number %></p>
             </div>
 
             <div class="mb-0">
@@ -59,18 +60,17 @@
 
             <div class="mb-3">
               <h6 class="text-muted mb-1">Qualification</h6>
-              <p class="mb-0"><%= @trainer.qualification %></p>
+              <p class="mb-0 fs-5"><%= @trainer.qualification %></p>
             </div>
 
             <div class="mb-3">
               <h6 class="text-muted mb-1">Experience</h6>
-              <p class="mb-0"><%= pluralize(@trainer.experience_years, 'year') %></p>
+              <p class="mb-0 fs-5"><%= @trainer.experience_years %> years</p>
             </div>
 
             <div class="mb-0">
               <h6 class="text-muted mb-1">Status</h6>
-              <span class="badge <%= @trainer.active? ? 'badge-success' : 
-                @trainer.on_leave? ? 'badge-warning' : 'badge-danger' %>">
+              <span class="badge <%= @trainer.active? ? 'badge-success' : 'badge-warning' %>">
                 <%= @trainer.status.titleize %>
               </span>
             </div>

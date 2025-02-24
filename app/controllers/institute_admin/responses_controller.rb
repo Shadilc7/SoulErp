@@ -5,11 +5,11 @@ module InstituteAdmin
     def index
       base_query = if @assignment
         @assignment.assignment_responses
-          .includes(participant: [:section, :user])
+          .includes(participant: [ :section, :user ])
       else
         AssignmentResponse.joins(:participant)
           .where(participants: { institute_id: current_institute.id })
-          .includes(:assignment, participant: [:section, :user])
+          .includes(:assignment, participant: [ :section, :user ])
       end
 
       @responses = base_query
@@ -21,12 +21,12 @@ module InstituteAdmin
     def show
       @response = if @assignment
         @assignment.assignment_responses
-          .includes(participant: [:section, :user])
+          .includes(participant: [ :section, :user ])
           .find(params[:id])
       else
         AssignmentResponse.joins(:participant)
           .where(participants: { institute_id: current_institute.id })
-          .includes(:assignment, participant: [:section, :user])
+          .includes(:assignment, participant: [ :section, :user ])
           .find(params[:id])
       end
     end

@@ -238,7 +238,6 @@ export default class extends Controller {
         <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
           <div>
             <h6 class="mb-0 section-name"></h6>
-            <small class="text-muted">Section Participants</small>
           </div>
           <div class="d-flex align-items-center gap-2">
             <div class="form-check mb-0">
@@ -252,7 +251,7 @@ export default class extends Controller {
                 Select All
               </label>
             </div>
-            <span class="badge bg-secondary">${participants.length} participants</span>
+           
           </div>
         </div>
         <div class="card-body">

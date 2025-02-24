@@ -1,0 +1,57 @@
+<% if assignment.present? %>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead>
+        <tr>
+          <th>Assignment</th>
+          <th>Date Range</th>
+          <th>Questions</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <h6 class="mb-1"><%= assignment.title %></h6>
+            <small class="text-muted"><%= assignment.description&.truncate(50) %></small>
+          </td>
+          <td>
+            <%= assignment.start_date.strftime("%B %d") %> - 
+            <%= assignment.end_date.strftime("%B %d, %Y") %>
+          </td>
+          <td>
+            <%= pluralize(
+              assignment.questions.count + 
+              assignment.question_sets.sum { |qs| qs.questions.count }, 
+              'question'
+            ) %>
+          </td>
+          <td>
+            <% if assignment.answered_by_on_date?(current_participant, selected_date) %>
+              <span class="badge bg-success">Completed</span>
+            <% elsif selected_date == Date.current %>
+              <span class="badge bg-primary">Available Today</span>
+            <% elsif selected_date > Date.current %>
+              <span class="badge bg-info">Future Date</span>
+            <% else %>
+              <span class="badge bg-warning">Past Date Available</span>
+            <% end %>
+          </td>
+          <td>
+            <% if assignment.available_for_date?(current_participant, selected_date) %>
+              <%= link_to "Start Assignment",
+                  participant_portal_assignment_path(assignment, date: selected_date),
+                  class: "btn btn-sm btn-primary" %>
+            <% end %>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="text-center py-4">
+    <i class="bi bi-calendar-x fs-1 text-muted mb-2"></i>
+    <p class="text-muted mb-0">No assignment available for this date.</p>
+  </div>
+<% end %> 

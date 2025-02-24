@@ -29,6 +29,18 @@
                 } %>
           </div>
 
+          <div class="mb-3">
+            <%= f.text_area :description, class: "form-control", rows: 3,
+                placeholder: "Description",
+                data: { 
+                  assignment_form_target: "descriptionInput",
+                  action: "input->assignment-form#validateForm"
+                } %>
+            <div class="form-text">
+              Describe what participants need to do daily during this assignment's duration.
+            </div>
+          </div>
+
           <div class="row g-3">
             <div class="col-md-6">
               <div class="form-floating">
@@ -37,6 +49,9 @@
                     data: { assignment_form_target: "startDate" } %>
                 <%= f.label :start_date, "Start Date" %>
               </div>
+              <div class="form-text">
+                Participants will start completing this task daily from this date.
+              </div>
             </div>
             <div class="col-md-6">
               <div class="form-floating">
@@ -44,6 +59,9 @@
                     class: "form-control",
                     data: { assignment_form_target: "endDate" } %>
                 <%= f.label :end_date, "End Date" %>
+              </div>
+              <div class="form-text">
+                Last day participants can complete this daily task.
               </div>
             </div>
           </div>

@@ -1,0 +1,222 @@
+<div class="container py-4">
+  <div class="card shadow-sm">
+    <!-- Assignment Header -->
+    <div class="card-header bg-white border-bottom">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h4 class="mb-1"><%= @assignment.title %></h4>
+          <div class="text-muted">
+            <i class="bi bi-calendar3"></i>
+            <%= @selected_date.strftime("%B %d, %Y") %>
+          </div>
+        </div>
+        <span class="badge bg-primary px-3 py-2">
+          <%= pluralize(@questions.count, 'Question') %>
+        </span>
+      </div>
+    </div>
+
+    <!-- Assignment Description -->
+    <% if @assignment.description.present? %>
+      <div class="card-body border-bottom bg-light">
+        <div class="d-flex align-items-start">
+          <i class="bi bi-info-circle-fill text-primary me-2 mt-1"></i>
+          <div><%= @assignment.description %></div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Questions Form -->
+    <div class="card-body">
+      <%= form_with url: submit_participant_portal_assignment_path(@assignment, date: @selected_date),
+          method: :post,
+          class: "assignment-form",
+          data: { turbo: false } do |f| %>
+
+        <div class="questions-list">
+          <% @questions.each do |question| %>
+            <div class="question-block mb-4">
+              <div class="question-content mb-3">
+                <p class="mb-3 fs-5"><%= question.title %></p>
+
+                <div class="answers">
+                  <% case question.question_type %>
+                  <% when "short_answer" %>
+                    <div class="form-group">
+                      <%= text_field_tag "responses[#{question.id}][answer]",
+                          nil,
+                          class: "form-control",
+                          required: true,
+                          placeholder: "Enter your answer..." %>
+                    </div>
+
+                  <% when "paragraph" %>
+                    <div class="form-group">
+                      <%= text_area_tag "responses[#{question.id}][answer]",
+                          nil,
+                          class: "form-control",
+                          rows: 4,
+                          required: true,
+                          placeholder: "Type your detailed answer here..." %>
+                    </div>
+
+                  <% when "multiple_choice" %>
+                    <div class="options-list">
+                      <% question.options.each do |option| %>
+                        <div class="form-check mb-3">
+                          <label class="form-check-label d-flex align-items-center">
+                            <%= radio_button_tag "responses[#{question.id}][selected_options]",
+                                option.value,
+                                false,
+                                required: true,
+                                class: "form-check-input me-3" %>
+                            <span><%= option.value %></span>
+                          </label>
+                        </div>
+                      <% end %>
+                    </div>
+
+                  <% when "checkboxes" %>
+                    <div class="options-list">
+                      <% question.options.each do |option| %>
+                        <div class="form-check mb-3">
+                          <label class="form-check-label d-flex align-items-center">
+                            <%= check_box_tag "responses[#{question.id}][selected_options][]",
+                                option.value,
+                                false,
+                                class: "form-check-input me-3" %>
+                            <span><%= option.value %></span>
+                          </label>
+                        </div>
+                      <% end %>
+                    </div>
+
+                  <% when "dropdown" %>
+                    <div class="form-group">
+                      <%= select_tag "responses[#{question.id}][selected_options]",
+                          options_for_select(question.options.pluck(:value)),
+                          include_blank: "Select an option",
+                          required: true,
+                          class: "form-select" %>
+                    </div>
+
+                  <% when "date" %>
+                    <div class="form-group">
+                      <%= date_field_tag "responses[#{question.id}][answer]",
+                          nil,
+                          class: "form-control",
+                          required: true %>
+                    </div>
+
+                  <% when "time" %>
+                    <div class="form-group">
+                      <%= time_field_tag "responses[#{question.id}][answer]",
+                          nil,
+                          class: "form-control",
+                          required: true %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+
+              <% unless question == @questions.last %>
+                <hr class="my-4">
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="mt-5 d-flex gap-3">
+          <%= link_to participant_portal_root_path, 
+              class: "btn btn-light px-4" do %>
+            <i class="bi bi-arrow-left me-2"></i>Back
+          <% end %>
+          <%= f.button type: "submit",
+              class: "btn btn-primary px-4",
+              data: { confirm: "Are you sure you want to submit your answers?" } do %>
+            Submit Answers
+            <i class="bi bi-arrow-right ms-2"></i>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<% content_for :styles do %>
+  <style>
+    .question-content {
+      font-size: 1rem;
+    }
+
+    .options-list {
+      padding-left: 0.5rem;
+    }
+
+    .form-control,
+    .form-select {
+      border-color: #dee2e6;
+      padding: 0.75rem;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    }
+
+    .form-select {
+      cursor: pointer;
+    }
+
+    .form-check {
+      margin-bottom: 1rem;
+    }
+
+    .form-check-input {
+      width: 1.2em;
+      height: 1.2em;
+      cursor: pointer;
+    }
+
+    .form-check-label {
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .form-check-input:checked {
+      background-color: #0d6efd;
+      border-color: #0d6efd;
+    }
+
+    hr {
+      opacity: 0.15;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0.5rem;
+      }
+
+      .question-content {
+        font-size: 0.95rem;
+      }
+
+      .form-control,
+      .form-select {
+        padding: 0.5rem;
+      }
+    }
+
+    input[type="date"],
+    input[type="time"] {
+      min-height: 40px;
+      padding: 0.5rem;
+    }
+
+    .form-control::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+    }
+  </style>
+<% end %> 

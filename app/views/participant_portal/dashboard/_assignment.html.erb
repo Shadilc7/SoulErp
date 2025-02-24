@@ -1,0 +1,29 @@
+<% if assignment %>
+  <div class="assignment-details">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+      <div>
+        <h5 class="mb-2"><%= assignment.title %></h5>
+        <p class="text-muted mb-0"><%= assignment.description %></p>
+      </div>
+      <%= link_to "Start Assignment", 
+          participant_portal_assignment_path(assignment), 
+          class: "btn btn-primary" %>
+    </div>
+
+    <div class="assignment-meta">
+      <div class="meta-item">
+        <i class="bi bi-calendar-range me-2"></i>
+        Available: <%= assignment.start_date.strftime("%B %d") %> - <%= assignment.end_date.strftime("%B %d, %Y") %>
+      </div>
+      <div class="meta-item">
+        <i class="bi bi-list-check me-2"></i>
+        <%= pluralize(assignment.questions.count + assignment.question_sets.sum { |qs| qs.questions.count }, 'question') %>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div class="text-center py-4">
+    <i class="bi bi-calendar-x fs-1 text-muted mb-2"></i>
+    <p class="text-muted mb-0">No assignment available for this date.</p>
+  </div>
+<% end %> 

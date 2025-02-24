@@ -1,0 +1,26 @@
+<div class="assignment-details completed">
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h5 class="mb-2">
+        <%= assignment.title %>
+        <span class="badge bg-success ms-2">Completed</span>
+      </h5>
+      <p class="text-muted mb-0"><%= assignment.description %></p>
+    </div>
+  </div>
+
+  <div class="assignment-meta">
+    <div class="meta-item">
+      <i class="bi bi-calendar-check me-2"></i>
+      Completed for: <%= completed_date.strftime("%B %d, %Y") %>
+    </div>
+    <div class="meta-item">
+      <i class="bi bi-calendar-range me-2"></i>
+      Available: <%= assignment.start_date.strftime("%B %d") %> - <%= assignment.end_date.strftime("%B %d, %Y") %>
+    </div>
+    <div class="meta-item">
+      <i class="bi bi-list-check me-2"></i>
+      <%= pluralize(assignment.questions.count + assignment.question_sets.sum { |qs| qs.questions.count }, 'question') %> answered
+    </div>
+  </div>
+</div> 

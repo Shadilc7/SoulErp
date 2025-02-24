@@ -93,6 +93,12 @@ Rails.application.routes.draw do
         resources :sessions, only: [ :show ]
       end
       resource :profile, only: [ :show, :edit, :update ]
+      resources :assignments, only: [ :index, :show ] do
+        member do
+          get :take_assignment, as: :take
+          post :submit
+        end
+      end
     end
   end
 end

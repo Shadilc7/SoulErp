@@ -113,6 +113,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_23_145551) do
     t.boolean "correct", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "value"
     t.index ["question_id"], name: "index_options_on_question_id"
   end
 

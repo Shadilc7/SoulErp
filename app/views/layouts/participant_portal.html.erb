@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- ... head content ... -->
+  </head>
+  <body>
+    <!-- ... navigation ... -->
+    
+    <main>
+      <%= turbo_frame_tag "main_content" do %>
+        <%= yield %>
+      <% end %>
+    </main>
+
+    <!-- ... footer ... -->
+  </body>
+</html> 

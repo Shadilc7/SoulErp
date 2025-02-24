@@ -1,0 +1,82 @@
+<div class="container py-4">
+  <div class="card">
+    <div class="card-header bg-white py-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><%= @assignment.title %></h5>
+        <span class="badge bg-primary">
+          <%= @selected_date.strftime("%B %d, %Y") %>
+        </span>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <%= form_with url: submit_participant_portal_assignment_path(@assignment, date: @selected_date),
+          method: :post,
+          data: { turbo: false } do |f| %>
+        
+        <% if @assignment.description.present? %>
+          <div class="alert alert-info mb-4">
+            <%= @assignment.description %>
+          </div>
+        <% end %>
+
+        <% @questions.each_with_index do |question, index| %>
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title">
+                Question <%= index + 1 %>
+              </h6>
+              <p class="card-text mb-4"><%= question.title %></p>
+
+              <% case question.question_type %>
+              <% when "multiple_choice" %>
+                <div class="list-group">
+                  <% question.options.each do |option| %>
+                    <label class="list-group-item">
+                      <%= radio_button_tag "responses[#{question.id}][selected_options]",
+                          option,
+                          false,
+                          required: true,
+                          class: "form-check-input me-2" %>
+                      <%= option %>
+                    </label>
+                  <% end %>
+                </div>
+
+              <% when "checkbox" %>
+                <div class="list-group">
+                  <% question.options.each do |option| %>
+                    <label class="list-group-item">
+                      <%= check_box_tag "responses[#{question.id}][selected_options][]",
+                          option,
+                          false,
+                          class: "form-check-input me-2" %>
+                      <%= option %>
+                    </label>
+                  <% end %>
+                </div>
+
+              <% when "text" %>
+                <div class="form-group">
+                  <%= text_area_tag "responses[#{question.id}][answer]",
+                      nil,
+                      class: "form-control",
+                      rows: 3,
+                      required: true %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <div class="d-flex justify-content-between align-items-center mt-4">
+          <%= link_to "Cancel", participant_portal_root_path, 
+              class: "btn btn-light" %>
+          <%= f.submit "Submit Assignment", 
+              class: "btn btn-primary",
+              data: { confirm: "Are you sure you want to submit your answers?" } %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div> 

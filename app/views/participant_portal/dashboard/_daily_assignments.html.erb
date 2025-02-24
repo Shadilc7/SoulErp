@@ -1,0 +1,78 @@
+<div class="card-body">
+  <% if assignments.any? %>
+    <div class="assignments-list">
+      <% assignments.each do |assignment| %>
+        <div class="card assignment-card mb-3 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <h6 class="card-title mb-1"><%= assignment.title %></h6>
+                <p class="text-muted small mb-0"><%= assignment.description %></p>
+              </div>
+              <% if assignment.answered_by_on_date?(current_participant, selected_date) %>
+                <span class="badge bg-success">Completed</span>
+              <% else %>
+                <span class="badge bg-primary">Pending</span>
+              <% end %>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-calendar-range text-primary me-2"></i>
+                  <small>
+                    <%= assignment.start_date.strftime("%b %d") %> - 
+                    <%= assignment.end_date.strftime("%b %d, %Y") %>
+                  </small>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-question-circle text-primary me-2"></i>
+                  <small>
+                    <%= pluralize(
+                      assignment.questions.count + 
+                      assignment.question_sets.sum { |qs| qs.questions.count },
+                      'question'
+                    ) %>
+                  </small>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-check2-circle text-primary me-2"></i>
+                  <small>
+                    <%= assignment.completed_days(current_participant) %> of 
+                    <%= assignment.total_days %> days completed
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <div class="progress-indicator mb-3">
+              <div class="progress-bar bg-success" 
+                   style="width: <%= assignment.completion_percentage(current_participant) %>%">
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+              <% if !assignment.answered_by_on_date?(current_participant, selected_date) && 
+                    selected_date <= Date.current %>
+                <%= link_to take_participant_portal_assignment_path(id: assignment, date: selected_date),
+                    class: "btn btn-primary btn-sm",
+                    data: { turbo_frame: "_top" } do %>
+                  <i class="bi bi-play-fill me-1"></i>Start Assignment
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-5">
+      <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
+      <p class="text-muted mb-0">No assignments available for <%= selected_date.strftime("%B %d, %Y") %></p>
+    </div>
+  <% end %>
+</div> 

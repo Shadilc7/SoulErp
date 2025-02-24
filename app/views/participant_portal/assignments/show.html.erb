@@ -1,0 +1,131 @@
+<div class="container py-4">
+  <div class="card card-custom">
+    <div class="card-header card-header-custom">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><%= @assignment.title %></h5>
+        <span class="badge bg-primary">
+          Assignment for <%= @selected_date.strftime("%B %d, %Y") %>
+        </span>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <% if @assignment.description.present? %>
+        <div class="assignment-description mb-4">
+          <%= @assignment.description %>
+        </div>
+      <% end %>
+
+      <%= form_with url: submit_participant_portal_assignment_path(@assignment, date: @selected_date), 
+          method: :post, 
+          class: "assignment-form" do |f| %>
+        
+        <% all_questions = @individual_questions + @question_set_questions %>
+        
+        <% all_questions.each_with_index do |question, index| %>
+          <div class="question-card mb-4">
+            <div class="question-header mb-3">
+              <h6 class="mb-1">Question <%= index + 1 %></h6>
+              <div class="question-title"><%= question.title %></div>
+            </div>
+
+            <% case question.question_type %>
+            <% when "multiple_choice" %>
+              <div class="options-list">
+                <% question.options.each do |option| %>
+                  <div class="form-check mb-2">
+                    <%= radio_button_tag "responses[#{question.id}][selected_options]",
+                        option,
+                        false,
+                        class: "form-check-input",
+                        required: true %>
+                    <%= label_tag "responses[#{question.id}][selected_options_#{option}]",
+                        option,
+                        class: "form-check-label" %>
+                  </div>
+                <% end %>
+              </div>
+
+            <% when "checkbox" %>
+              <div class="options-list">
+                <% question.options.each do |option| %>
+                  <div class="form-check mb-2">
+                    <%= check_box_tag "responses[#{question.id}][selected_options][]",
+                        option,
+                        false,
+                        class: "form-check-input" %>
+                    <%= label_tag "responses[#{question.id}][selected_options_#{option}]",
+                        option,
+                        class: "form-check-label" %>
+                  </div>
+                <% end %>
+              </div>
+
+            <% when "text" %>
+              <div class="form-group">
+                <%= text_area_tag "responses[#{question.id}][answer]",
+                    nil,
+                    class: "form-control",
+                    rows: 3,
+                    required: true %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <div class="form-actions text-end">
+          <%= link_to "Cancel",
+              participant_portal_root_path,
+              class: "btn btn-light me-2" %>
+          <%= f.submit "Submit Answers",
+              class: "btn btn-primary",
+              data: { confirm: "Are you sure you want to submit your answers?" } %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<% content_for :styles do %>
+  <style>
+    .question-card {
+      background: #fff;
+      border: 1px solid #e5e9f2;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+    }
+
+    .question-header {
+      border-bottom: 1px solid #e5e9f2;
+      padding-bottom: 1rem;
+    }
+
+    .question-title {
+      font-size: 1.1rem;
+      color: #2c3e50;
+    }
+
+    .options-list {
+      padding-top: 1rem;
+    }
+
+    .form-check-label {
+      color: #495057;
+    }
+
+    .assignment-description {
+      color: #6c757d;
+      font-size: 1rem;
+      line-height: 1.6;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 0.5rem;
+    }
+
+    .form-actions {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e9f2;
+    }
+  </style>
+<% end %> 

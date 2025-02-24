@@ -123,4 +123,57 @@
       </div>
     </div>
   </div>
+
+  <!-- Daily Assignments Section -->
+  <div class="card">
+    <div class="card-header bg-white py-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Daily Assignments</h5>
+        <div class="date-picker">
+          <%= date_field_tag :selected_date, 
+              @selected_date,
+              class: "form-control",
+              max: Date.current,
+              data: {
+                controller: "assignment-date",
+                action: "change->assignment-date#fetchAssignment"
+              } %>
+        </div>
+      </div>
+    </div>
+
+    <%= turbo_frame_tag "assignment_content" do %>
+      <%= render "daily_assignments", 
+          assignments: @assignments,
+          selected_date: @selected_date %>
+    <% end %>
+  </div>
 </div>
+
+<% content_for :styles do %>
+  <style>
+    .date-picker {
+      width: 200px;
+    }
+
+    .assignment-card {
+      transition: transform 0.2s;
+    }
+
+    .assignment-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .progress-indicator {
+      height: 4px;
+      border-radius: 2px;
+      background: #e9ecef;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+  </style>
+<% end %>

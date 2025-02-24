@@ -16,6 +16,7 @@ export default class extends Controller {
   connect() {
     this.updateAllCounters()
     this.validateForm()
+    this.validateDates()
   }
 
   handleTypeChange(event) {
@@ -101,13 +102,23 @@ export default class extends Controller {
   }
 
   validateDates() {
-    const startDate = new Date(this.startDateTarget.value)
-    const endDate = new Date(this.endDateTarget.value)
+    const startDate = this.element.querySelector('#assignment_start_date')
+    const endDate = this.element.querySelector('#assignment_end_date')
 
-    if (endDate < startDate) {
-      this.endDateTarget.value = this.startDateTarget.value
-    }
-    this.validateForm()
+    startDate.addEventListener('change', () => {
+      const minEnd = startDate.value
+      endDate.min = minEnd
+      if (endDate.value && endDate.value < minEnd) {
+        endDate.value = minEnd
+      }
+    })
+
+    endDate.addEventListener('change', () => {
+      const maxStart = endDate.value
+      if (startDate.value && startDate.value > maxStart) {
+        startDate.value = maxStart
+      }
+    })
   }
 
   updateQuestionsCount() {

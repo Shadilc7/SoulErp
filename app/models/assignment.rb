@@ -34,6 +34,19 @@ class Assignment < ApplicationRecord
   scope :current, -> { active.where("start_date <= ? AND end_date >= ?", Time.current, Time.current) }
   scope :upcoming, -> { active.where("start_date > ?", Time.current) }
   scope :past, -> { active.where("end_date < ?", Time.current) }
+  scope :for_date, ->(date) {
+    where("DATE(start_date) <= :date AND DATE(end_date) >= :date", date: date)
+  }
+
+  scope :for_participant, ->(participant) {
+    active
+      .joins("LEFT JOIN assignment_participants ON assignments.id = assignment_participants.assignment_id")
+      .joins("LEFT JOIN assignment_sections ON assignments.id = assignment_sections.assignment_id")
+      .where("assignment_participants.participant_id = :participant_id OR assignment_sections.section_id = :section_id",
+        participant_id: participant.id,
+        section_id: participant.section_id)
+      .distinct
+  }
 
   def self.permitted_attributes
     [
@@ -42,6 +55,75 @@ class Assignment < ApplicationRecord
       section_ids: [], participant_ids: [],
       question_ids: [], question_set_ids: []
     ]
+  end
+
+  def available_for?(participant)
+    return false unless active?
+    return false if Date.current < start_date || Date.current > end_date
+
+    if assignment_type == "individual"
+      participants.include?(participant)
+    else
+      sections.include?(participant.section)
+    end
+  end
+
+  def answered_by?(participant)
+    questions_count = questions.count + question_sets.sum { |qs| qs.questions.count }
+    assignment_responses.where(participant: participant).count == questions_count
+  end
+
+  def answered_by_on_date?(participant, selected_date)
+    assignment_responses.exists?(
+      participant: participant,
+      created_at: selected_date.beginning_of_day..selected_date.end_of_day
+    )
+  end
+
+  def available_for_date?(participant, date)
+    return false unless active?
+    return false if date > Date.current # Can't do future dates
+    return false if date < start_date || date > end_date
+    return false if answered_by_on_date?(participant, date)
+
+    if assignment_type == "individual"
+      participants.include?(participant)
+    else
+      sections.include?(participant.section)
+    end
+  end
+
+  def total_days
+    (end_date.to_date - start_date.to_date).to_i + 1
+  end
+
+  def completed_days(participant)
+    assignment_responses
+      .where(participant: participant)
+      .distinct
+      .pluck("DATE(created_at)")
+      .count
+  end
+
+  def completion_percentage(participant)
+    ((completed_days(participant).to_f / total_days) * 100).round(2)
+  end
+
+  def days_remaining
+    [ (end_date.to_date - Date.current).to_i + 1, 0 ].max
+  end
+
+  def missed_days(participant)
+    return 0 if Date.current <= start_date
+
+    expected_days = [ (Date.current - start_date.to_date).to_i + 1, total_days ].min
+    expected_days - completed_days(participant)
+  end
+
+  def all_questions
+    # Combine direct questions and questions from question sets
+    questions.order(:created_at) +
+    question_sets.includes(:questions).flat_map { |qs| qs.questions.order(:created_at) }
   end
 
   private

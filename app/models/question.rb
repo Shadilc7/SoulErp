@@ -6,7 +6,9 @@ class Question < ApplicationRecord
   accepts_nested_attributes_for :options, allow_destroy: true, reject_if: :all_blank
 
   validates :title, presence: true
-  validates :question_type, presence: true
+  validates :question_type, presence: true, inclusion: {
+    in: %w[short_answer paragraph multiple_choice checkbox dropdown]
+  }
   validates :marks, presence: true, numericality: { greater_than: 0 }
   validates :options, presence: true, if: :requires_options?
 
@@ -31,6 +33,11 @@ class Question < ApplicationRecord
 
   def requires_options?
     %w[multiple_choice checkboxes dropdown].include?(question_type)
+  end
+
+  def formatted_options
+    return [] unless options.any?
+    options.ordered.pluck(:value)
   end
 
   private

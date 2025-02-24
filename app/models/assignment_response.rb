@@ -1,11 +1,14 @@
 class AssignmentResponse < ApplicationRecord
-  belongs_to :assignment
   belongs_to :participant
+  belongs_to :assignment
   belongs_to :question
+  has_one :section, through: :participant
 
-  validates :participant, presence: true
-  validates :question, presence: true
-  validates :assignment, presence: true
+  validates :participant_id, presence: true
+  validates :assignment_id, presence: true
+  validates :question_id, presence: true
+
+  scope :ordered, -> { order(created_at: :desc) }
 
   validate :validate_response_format
 

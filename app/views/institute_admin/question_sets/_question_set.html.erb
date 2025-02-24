@@ -1,0 +1,9 @@
+<%= button_to institute_admin_question_set_path(question_set), 
+    method: :delete,
+    class: "btn btn-danger btn-sm",
+    data: { 
+      turbo: false,
+      confirm: "Are you sure you want to delete this question set?" 
+    } do %>
+  <i class="bi bi-trash"></i> Delete
+<% end %> 

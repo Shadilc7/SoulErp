@@ -66,7 +66,10 @@ Rails.application.routes.draw do
       resources :questions
       resources :question_sets
       resources :training_programs
-      resources :assignments
+      resources :assignments do
+        resources :responses, only: [ :index, :show ]
+      end
+      resources :responses, only: [ :index, :show ]
     end
   end
 

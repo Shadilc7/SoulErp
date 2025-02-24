@@ -1,9 +1,11 @@
 class Question < ApplicationRecord
   belongs_to :institute
-  has_many :question_set_items, dependent: :destroy
+  has_many :question_set_items, dependent: :restrict_with_error
   has_many :question_sets, through: :question_set_items
   has_many :options, dependent: :destroy
   accepts_nested_attributes_for :options, allow_destroy: true, reject_if: :all_blank
+  has_many :assignment_questions, dependent: :restrict_with_error
+  has_many :assignments, through: :assignment_questions
 
   validates :title, presence: true
   validates :question_type, presence: true, inclusion: {
@@ -31,6 +33,8 @@ class Question < ApplicationRecord
   # Add scope for active questions
   scope :active, -> { where(active: true) }
 
+  before_destroy :check_assignment_associations
+
   def requires_options?
     %w[multiple_choice checkboxes dropdown].include?(question_type)
   end
@@ -45,6 +49,16 @@ class Question < ApplicationRecord
   def validate_options_and_answers
     if requires_options? && options.size < 2
       errors.add(:options, "must have at least 2 options")
+    end
+  end
+
+  def check_assignment_associations
+    if assignments.exists?
+      errors.add(:base, "This question cannot be deleted because it is being used in #{assignments.count} #{'assignment'.pluralize(assignments.count)}")
+      throw :abort
+    elsif question_sets.joins(:assignments).exists?
+      errors.add(:base, "This question cannot be deleted because it is being used in question sets that are assigned to assignments")
+      throw :abort
     end
   end
 end

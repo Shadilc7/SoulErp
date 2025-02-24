@@ -75,24 +75,27 @@
                   <span class="badge bg-secondary">Completed</span>
                 <% end %>
               </td>
-              <td>
-                <div class="d-flex gap-2">
-                  <%= link_to institute_admin_assignment_path(assignment), 
-                      class: "btn btn-sm btn-custom-primary" do %>
-                    <i class="bi bi-eye"></i>
-                  <% end %>
-                  <%= link_to edit_institute_admin_assignment_path(assignment), 
-                      class: "btn btn-sm btn-outline-custom" do %>
-                    <i class="bi bi-pencil"></i>
-                  <% end %>
-                  <%= button_to institute_admin_assignment_path(assignment),
-                      method: :delete,
-                      class: "btn btn-sm btn-outline-danger",
-                      form: { class: 'd-inline' },
-                      data: { turbo_confirm: "Are you sure?" } do %>
-                    <i class="bi bi-trash"></i>
-                  <% end %>
-                </div>
+              <td class="text-end">
+                <%= link_to institute_admin_assignment_responses_path(assignment),
+                    class: "btn btn-icon btn-icon-primary me-2",
+                    title: "View Responses" do %>
+                  <i class="bi bi-clipboard-data"></i>
+                <% end %>
+                <%= link_to institute_admin_assignment_path(assignment), 
+                    class: "btn btn-sm btn-custom-primary" do %>
+                  <i class="bi bi-eye"></i>
+                <% end %>
+                <%= link_to edit_institute_admin_assignment_path(assignment), 
+                    class: "btn btn-sm btn-outline-custom" do %>
+                  <i class="bi bi-pencil"></i>
+                <% end %>
+                <%= button_to institute_admin_assignment_path(assignment),
+                    method: :delete,
+                    class: "btn btn-sm btn-outline-danger",
+                    form: { class: 'd-inline' },
+                    data: { turbo_confirm: "Are you sure?" } do %>
+                  <i class="bi bi-trash"></i>
+                <% end %>
               </td>
             </tr>
           <% end %>

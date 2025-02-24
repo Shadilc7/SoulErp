@@ -35,8 +35,15 @@ module InstituteAdmin
     end
 
     def destroy
-      @question.destroy
-      redirect_to institute_admin_questions_path, notice: "Question was successfully deleted."
+      @question = current_institute.questions.find(params[:id])
+
+      if @question.destroy
+        flash[:success] = "Question was successfully deleted."
+        redirect_to institute_admin_questions_path
+      else
+        flash[:error] = @question.errors.full_messages.to_sentence
+        redirect_to institute_admin_questions_path
+      end
     end
 
     private

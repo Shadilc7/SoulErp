@@ -2,6 +2,8 @@ class QuestionSet < ApplicationRecord
   belongs_to :institute
   has_many :question_set_items, dependent: :destroy
   has_many :questions, through: :question_set_items
+  has_many :assignment_question_sets, dependent: :restrict_with_error
+  has_many :assignments, through: :assignment_question_sets
 
   validates :title, presence: true
   validates :questions, presence: true
@@ -10,6 +12,7 @@ class QuestionSet < ApplicationRecord
   validate :valid_total_marks
 
   before_save :calculate_total_marks
+  before_destroy :check_assignment_associations
 
   accepts_nested_attributes_for :question_set_items,
     allow_destroy: true,
@@ -38,6 +41,13 @@ class QuestionSet < ApplicationRecord
       self.total_marks = question_set_items.sum { |item| item.marks_override || item.question&.marks.to_i }
     else
       self.total_marks = 0
+    end
+  end
+
+  def check_assignment_associations
+    if assignments.exists?
+      errors.add(:base, "This question set cannot be deleted because it is being used in #{assignments.count} #{'assignment'.pluralize(assignments.count)}")
+      throw :abort
     end
   end
 end

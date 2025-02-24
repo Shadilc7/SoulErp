@@ -1,206 +1,483 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>SOUL ERP - Institute Admin</title>
+    <title>SOUL ERP | Admin</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application" %>
     <%= javascript_importmap_tags %>
 
     <style>
       :root {
-        --primary-color: #98D8AA;      /* Pastel Green */
-        --secondary-color: #F3E99F;    /* Light Yellow */
-        --accent-color: #D7B290;       /* Light Brown */
-        --highlight-color: #B7E5B4;    /* Light Pastel Green */
-        --danger-color: #FF6D60;       /* Light Red */
-        --success-color: #98D8AA;      /* Pastel Green */
-        --warning-color: #F3E99F;      /* Light Yellow */
-        --info-color: #B7E5B4;         /* Light Pastel Green */
-        --light-color: #FFFFFF;        /* White */
-        --dark-color: #2C3639;         /* Dark Gray */
+        --sidebar-width: 280px;
+        --topbar-height: 60px;
+        --primary-color: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary-color: #64748b;
+        --success-color: #22c55e;
+        --danger-color: #ef4444;
+        --warning-color: #f59e0b;
+        --info-color: #3b82f6;
+        --sidebar-bg: #1e293b;
+        --topbar-bg: #ffffff;
+        --body-bg: #f1f5f9;
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
       }
 
-      .navbar-custom {
-        background-color: var(--primary-color) !important;
+      body {
+        min-height: 100vh;
+        background: var(--body-bg);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       }
 
-      .navbar-custom .nav-link,
-      .navbar-custom .navbar-brand,
-      .navbar-custom .navbar-text {
-        color: var(--dark-color) !important;
+      /* Sidebar Styles */
+      #sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: var(--sidebar-width);
+        background: var(--sidebar-bg);
+        border-right: 1px solid rgba(255,255,255,0.1);
+        transform: translateX(0);
+        transition: all 0.3s ease-in-out;
+        z-index: 1045;
+        overflow-y: auto;
       }
 
-      .btn-custom-primary {
-        background-color: var(--primary-color);
-        border-color: var(--primary-color);
-        color: var(--dark-color);
-        transition: all 0.3s ease;
+      #sidebar.collapsed {
+        transform: translateX(-100%);
       }
 
-      .btn-custom-primary:hover {
-        background-color: #7BC5A0;
-        border-color: #7BC5A0;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      .sidebar-header {
+        height: var(--topbar-height);
+        padding: 0 1.5rem;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
       }
 
-      .btn-outline-custom {
-        border-color: var(--primary-color);
-        color: var(--dark-color);
+      .sidebar-header a {
+        color: var(--text-primary);
       }
 
-      .btn-outline-custom:hover {
-        background-color: var(--primary-color);
-        color: var(--dark-color);
+      .nav-link {
+        padding: 0.8rem 1.5rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.2s;
+        border-radius: 0.5rem;
+        margin: 0.25rem 0.75rem;
       }
 
-      .card-custom {
-        border-color: var(--highlight-color);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
-      }
-
-      .card-custom:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      }
-
-      .card-header-custom {
-        background-color: var(--primary-color);
-        color: var(--dark-color);
-        border-bottom: none;
-      }
-
-      .badge-success {
-        background-color: var(--success-color) !important;
-        color: var(--dark-color);
-      }
-
-      .badge-danger {
-        background-color: var(--danger-color) !important;
-        color: var(--dark-color);
-      }
-
-      .icon-primary {
-        color: var(--primary-color);
+      .nav-link:hover {
+        color: var(--text-primary);
+        background: rgba(255,255,255,0.1);
       }
 
       .nav-link.active {
-        background-color: rgba(0, 0, 0, 0.1);
-        border-radius: 4px;
+        color: var(--text-primary);
+        background: var(--primary-color);
+        font-weight: 500;
       }
 
-      .display-1 {
-        font-size: 4rem;
+      /* Main Content Styles */
+      #main-content {
+        margin-left: var(--sidebar-width);
+        min-height: 100vh;
+        transition: margin 0.3s ease;
+        background: var(--body-bg);
       }
 
-      .text-primary {
-        color: var(--primary-color) !important;
+      #main-content.expanded {
+        margin-left: 0;
       }
 
-      .list-group-item-action:hover {
-        background-color: rgba(152, 216, 170, 0.1);
+      .topbar {
+        height: var(--topbar-height);
+        background: var(--topbar-bg);
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+        padding: 0 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       }
 
-      .btn-lg {
-        padding: 0.75rem 1.5rem;
-        font-size: 1.1rem;
+      .content-wrapper {
+        padding: 1.5rem;
       }
 
-      .card-custom:hover .display-1 {
-        transform: scale(1.1);
-        transition: transform 0.3s ease;
+      /* Card Styles */
+      .card {
+        border: none;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: all 0.2s;
+      }
+
+      .card:hover {
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+
+      /* Button Styles */
+      .btn-primary {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
+      }
+
+      /* Dropdown Styles */
+      .dropdown-menu {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+
+      .dropdown-item {
+        padding: 0.5rem 1rem;
+      }
+
+      .dropdown-item:hover {
+        background: var(--body-bg);
+      }
+
+      /* Mobile Styles */
+      @media (max-width: 992px) {
+        #sidebar {
+          transform: translateX(-100%);
+          box-shadow: none;
+        }
+
+        #sidebar.show {
+          transform: translateX(0);
+          box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+
+        .sidebar-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0,0,0,0.5);
+          z-index: 1040;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s ease-in-out;
+        }
+
+        .sidebar-backdrop.show {
+          opacity: 1;
+          visibility: visible;
+        }
+
+        #main-content {
+          margin-left: 0 !important;
+        }
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--secondary-color);
+        border-radius: 3px;
+      }
+
+      /* User Menu */
+      .user-menu {
+        color: var(--secondary-color);
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+      }
+
+      .user-menu:hover {
+        background: var(--body-bg);
+      }
+
+      /* Table Styles */
+      .table-container {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        overflow: hidden;
+      }
+
+      .table {
+        margin-bottom: 0;
+      }
+
+      .table thead th {
+        background: var(--sidebar-bg);
+        color: var(--text-primary);
+        font-weight: 500;
+        border: none;
+        padding: 1rem 1.5rem;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .table tbody td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        vertical-align: middle;
+      }
+
+      .table tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .table tbody tr:hover {
+        background-color: rgba(99, 102, 241, 0.05);
+      }
+
+      /* Badge Styles */
+      .badge {
+        padding: 0.35em 0.65em;
+        font-size: 0.75em;
+        font-weight: 500;
+        border-radius: 0.375rem;
+      }
+
+      .badge-primary {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary-color);
+      }
+
+      .badge-success {
+        background: rgba(34, 197, 94, 0.1);
+        color: var(--success-color);
+      }
+
+      .badge-warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--warning-color);
+      }
+
+      .badge-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger-color);
+      }
+
+      /* Action Buttons */
+      .btn-icon {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.375rem;
+        transition: all 0.2s;
+      }
+
+      .btn-icon-primary {
+        color: var(--primary-color);
+        background: rgba(99, 102, 241, 0.1);
+      }
+
+      .btn-icon-primary:hover {
+        color: white;
+        background: var(--primary-color);
+      }
+
+      .btn-icon-danger {
+        color: var(--danger-color);
+        background: rgba(239, 68, 68, 0.1);
+      }
+
+      .btn-icon-danger:hover {
+        color: white;
+        background: var(--danger-color);
+      }
+
+      /* Page Header */
+      .page-header {
+        margin-bottom: 1.5rem;
+      }
+
+      .page-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--sidebar-bg);
+        margin-bottom: 0.5rem;
+      }
+
+      /* Search and Filter */
+      .search-box {
+        position: relative;
+      }
+
+      .search-box .form-control {
+        padding-left: 2.5rem;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(0,0,0,0.1);
+      }
+
+      .search-box .bi-search {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--secondary-color);
+      }
+
+      /* Pagination */
+      .pagination {
+        margin-bottom: 0;
+      }
+
+      .page-link {
+        border: none;
+        padding: 0.5rem 0.75rem;
+        color: var(--secondary-color);
+        border-radius: 0.375rem;
+        margin: 0 0.25rem;
+      }
+
+      .page-link:hover {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary-color);
+      }
+
+      .page-item.active .page-link {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      /* Form Styles */
+      .form-control, .form-select {
+        border-radius: 0.5rem;
+        border: 1px solid rgba(0,0,0,0.1);
+        padding: 0.75rem 1rem;
+      }
+
+      .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.15);
+      }
+
+      .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: var(--sidebar-bg);
       }
     </style>
   </head>
 
-  <body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-custom">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">
-          <i class="bi bi-building me-2"></i>
-          <%= current_user.institute.name %>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <%= link_to institute_admin_root_path, class: "nav-link #{current_page?(institute_admin_root_path) ? 'active' : ''}" do %>
-                <i class="bi bi-speedometer2 me-1"></i> Dashboard
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to institute_admin_sections_path, class: "nav-link #{controller_name == 'sections' ? 'active' : ''}" do %>
-                <i class="bi bi-grid me-1"></i> Sections
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to institute_admin_trainers_path, class: "nav-link #{controller_name == 'trainers' ? 'active' : ''}" do %>
-                <i class="bi bi-person-workspace me-1"></i> Trainers
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to institute_admin_participants_path, class: "nav-link #{controller_name == 'participants' ? 'active' : ''}" do %>
-                <i class="bi bi-people me-1"></i> Participants
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to institute_admin_questions_path, class: "nav-link #{controller_name == 'questions' ? 'active' : ''}" do %>
-                <i class="bi bi-question-circle me-1"></i> Questions
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to institute_admin_question_sets_path, class: "nav-link #{controller_name == 'question_sets' ? 'active' : ''}" do %>
-                <i class="bi bi-collection me-1"></i> Question Sets
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to institute_admin_training_programs_path, class: "nav-link #{controller_name == 'training_programs' ? 'active' : ''}" do %>
-                <i class="bi bi-collection me-1"></i> Training Programs
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to institute_admin_assignments_path, class: "nav-link #{active_link?('assignments')}" do %>
-                <i class="bi bi-clipboard-check me-2"></i>
-                <span>Assignments</span>
-              <% end %>
-            </li>
-          </ul>
-          <div class="d-flex align-items-center">
-            <span class="navbar-text me-3">
-              <i class="bi bi-person-circle me-1"></i>
-              <%= current_user.username %>
-            </span>
-            <%= button_to destroy_user_session_path, method: :delete, class: "btn btn-outline-dark" do %>
-              <i class="bi bi-box-arrow-right me-1"></i> Logout
+  <body>
+    <div data-controller="sidebar">
+      <!-- Sidebar -->
+      <div id="sidebar" class="d-flex flex-column">
+        <div class="sidebar-header">
+          <%= link_to institute_admin_root_path, class: "text-decoration-none" do %>
+            <h5 class="mb-0 text-primary">SOUL ERP</h5>
+          <% end %>
+        </div>
+
+        <div class="py-3">
+          <nav class="nav flex-column">
+            <%= link_to institute_admin_root_path, 
+                class: "nav-link #{'active' if active_link?('dashboard')}" do %>
+              <i class="bi bi-speedometer2"></i>
+              <span>Dashboard</span>
             <% end %>
-          </div>
+
+            <%= link_to institute_admin_sections_path,
+                class: "nav-link #{'active' if active_link?('sections')}" do %>
+              <i class="bi bi-grid"></i>
+              <span>Sections</span>
+            <% end %>
+
+            <%= link_to institute_admin_trainers_path,
+                class: "nav-link #{'active' if active_link?('trainers')}" do %>
+              <i class="bi bi-person-workspace"></i>
+              <span>Trainers</span>
+            <% end %>
+
+            <%= link_to institute_admin_participants_path,
+                class: "nav-link #{'active' if active_link?('participants')}" do %>
+              <i class="bi bi-people"></i>
+              <span>Participants</span>
+            <% end %>
+
+            <%= link_to institute_admin_questions_path,
+                class: "nav-link #{'active' if active_link?('questions')}" do %>
+              <i class="bi bi-question-circle"></i>
+              <span>Questions</span>
+            <% end %>
+
+            <%= link_to institute_admin_question_sets_path,
+                class: "nav-link #{'active' if controller.controller_name == 'question_sets'}" do %>
+              <i class="bi bi-collection"></i>
+              <span>Question Sets</span>
+            <% end %>
+
+            <%= link_to institute_admin_assignments_path,
+                class: "nav-link #{'active' if controller.controller_name == 'assignments'}" do %>
+              <i class="bi bi-journal-check"></i>
+              <span>Assignments</span>
+            <% end %>
+
+            <%= link_to institute_admin_responses_path,
+                class: "nav-link #{'active' if controller.controller_name == 'responses'}" do %>
+              <i class="bi bi-clipboard2-check"></i>
+              <span>Responses</span>
+            <% end %>
+          </nav>
         </div>
       </div>
-    </nav>
 
-    <div class="container-fluid mt-4">
-      <% if notice %>
-        <div class="alert alert-success alert-dismissible fade show">
-          <%= notice %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      <% end %>
-      <% if alert %>
-        <div class="alert alert-danger alert-dismissible fade show">
-          <%= alert %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      <% end %>
+      <!-- Backdrop with data-sidebar-target -->
+      <div class="sidebar-backdrop" data-sidebar-target="backdrop" data-action="click->sidebar#hide"></div>
 
-      <%= yield %>
+      <!-- Main Content -->
+      <div id="main-content" data-sidebar-target="content">
+        <div class="topbar d-flex align-items-center">
+          <button class="btn btn-link text-dark p-0 me-3 d-lg-none" 
+              type="button"
+              data-action="sidebar#toggle">
+            <i class="bi bi-list fs-4"></i>
+          </button>
+          <div class="ms-auto d-flex align-items-center">
+            <div class="dropdown">
+              <button class="btn btn-link text-dark dropdown-toggle p-0" data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle fs-5 me-2"></i>
+                <span><%= current_user.full_name %></span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <%= button_to destroy_user_session_path, 
+                      method: :delete,
+                      class: "dropdown-item text-danger" do %>
+                    <i class="bi bi-box-arrow-right me-2"></i>
+                    Sign Out
+                  <% end %>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-wrapper">
+          <%= yield %>
+        </div>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

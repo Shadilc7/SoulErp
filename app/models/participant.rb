@@ -2,6 +2,8 @@ class Participant < ApplicationRecord
   belongs_to :user
   belongs_to :institute
   has_one :guardian, dependent: :destroy
+  belongs_to :section
+  has_many :assignment_responses, dependent: :destroy
 
   # Get section through user
   has_one :section, through: :user
@@ -36,6 +38,8 @@ class Participant < ApplicationRecord
 
   scope :active, -> { where(status: :active) }
   scope :with_user, -> { includes(:user) }
+
+  delegate :full_name, :email, to: :user
 
   # Helper method to get all training programs (both individual and section)
   def all_training_programs

@@ -1,0 +1,78 @@
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h1 class="page-title">Assignment Responses</h1>
+    <p class="text-secondary mb-0">
+      <% if @assignment %>
+        Responses for <%= @assignment.title %>
+      <% else %>
+        All Assignment Responses
+      <% end %>
+    </p>
+  </div>
+  <%= link_to (@assignment ? institute_admin_assignments_path : institute_admin_responses_path), 
+      class: "btn btn-outline-primary" do %>
+    <i class="bi bi-arrow-left me-2"></i>
+    <%= @assignment ? "Back to Assignments" : "Back" %>
+  <% end %>
+</div>
+
+<div class="table-container">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Participant</th>
+        <% unless @assignment %><th>Assignment</th><% end %>
+        <th>Section</th>
+        <th>Question</th>
+        <th>Answer</th>
+        <th>Submitted At</th>
+        <th class="text-end">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @responses.each do |response| %>
+        <tr>
+          <td>
+            <div class="d-flex align-items-center">
+              <div>
+                <div class="fw-medium"><%= response.participant.full_name %></div>
+                <div class="text-secondary small"><%= response.participant.email %></div>
+              </div>
+            </div>
+          </td>
+          <% unless @assignment %>
+            <td><%= response.assignment.title %></td>
+          <% end %>
+          <td>
+            <span class="badge badge-primary">
+              <%= response.participant.section.name %>
+            </span>
+          </td>
+          <td>
+            <div class="fw-medium"><%= truncate(response.question.title, length: 30) %></div>
+          </td>
+          <td>
+            <div class="fw-medium"><%= truncate(response.answer, length: 30) %></div>
+          </td>
+          <td>
+            <div class="text-secondary">
+              <%= response.created_at.strftime("%b %d, %Y %H:%M") %>
+            </div>
+          </td>
+          <td class="text-end">
+            <%= link_to (@assignment ? 
+                institute_admin_assignment_response_path(@assignment, response) : 
+                institute_admin_response_path(response)),
+                class: "btn btn-icon btn-icon-primary" do %>
+              <i class="bi bi-eye"></i>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<div class="d-flex justify-content-center mt-4">
+  <%= paginate @responses %>
+</div> 

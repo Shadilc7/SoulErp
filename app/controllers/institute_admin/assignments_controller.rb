@@ -13,17 +13,62 @@ module InstituteAdmin
     end
 
     def new
-      @assignment = current_institute.assignments.build(assignment_type: "individual")
+      @assignment = current_institute.assignments.new
     end
 
     def create
-      @assignment = current_institute.assignments.build(assignment_params)
+      cleaned_params = assignment_params.to_h
+      cleaned_params["question_ids"]&.reject!(&:blank?)
+      cleaned_params["question_set_ids"]&.reject!(&:blank?)
+      cleaned_params["participant_ids"]&.reject!(&:blank?)
 
-      if @assignment.save
-        redirect_to institute_admin_assignments_path, notice: "Assignment was successfully created."
-      else
-        render :new, status: :unprocessable_entity
+      # Extract the association IDs
+      question_ids = cleaned_params.delete("question_ids") || []
+      question_set_ids = cleaned_params.delete("question_set_ids") || []
+      participant_ids = cleaned_params.delete("participant_ids") || []
+
+      @assignment = current_institute.assignments.new(cleaned_params)
+
+      ActiveRecord::Base.transaction do
+        # First save the basic assignment
+        if @assignment.save
+          # Build all associations before validation
+          question_ids.each do |qid|
+            @assignment.assignment_questions.build(question_id: qid)
+          end
+
+          question_set_ids.each do |qsid|
+            @assignment.assignment_question_sets.build(question_set_id: qsid)
+          end
+
+          participant_ids.each do |pid|
+            @assignment.assignment_participants.build(participant_id: pid)
+          end
+
+          # Save all associations at once
+          if @assignment.assignment_questions.all?(&:valid?) &&
+             @assignment.assignment_question_sets.all?(&:valid?) &&
+             @assignment.assignment_participants.all?(&:valid?)
+
+            @assignment.assignment_questions.each(&:save!)
+            @assignment.assignment_question_sets.each(&:save!)
+            @assignment.assignment_participants.each(&:save!)
+
+            # Final validation of the complete assignment
+            if @assignment.valid?
+              redirect_to institute_admin_assignments_path, notice: "Assignment created successfully."
+              return
+            end
+          end
+
+          # If we get here, something failed
+          raise ActiveRecord::Rollback
+        end
       end
+
+      # If we get here, the transaction was rolled back
+      Rails.logger.debug "Assignment creation failed: #{@assignment.errors.full_messages}"
+      render :new
     end
 
     def edit
@@ -57,8 +102,10 @@ module InstituteAdmin
       params.require(:assignment).permit(
         :title, :description, :start_date, :end_date, :active, :assignment_type,
         :section_id,
-        section_ids: [], participant_ids: [],
-        question_ids: [], question_set_ids: []
+        section_ids: [],
+        participant_ids: [],
+        question_ids: [],
+        question_set_ids: []
       )
     end
   end

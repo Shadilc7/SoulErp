@@ -1,78 +1,180 @@
-<div class="page-header d-flex justify-content-between align-items-center">
-  <div>
-    <h1 class="page-title">Assignment Responses</h1>
-    <p class="text-secondary mb-0">
-      <% if @assignment %>
-        Responses for <%= @assignment.title %>
-      <% else %>
-        All Assignment Responses
-      <% end %>
-    </p>
+<div class="card card-custom">
+  <div class="card-header card-header-custom">
+    <h5 class="mb-0">View Responses</h5>
   </div>
-  <%= link_to (@assignment ? institute_admin_assignments_path : institute_admin_responses_path), 
-      class: "btn btn-outline-primary" do %>
-    <i class="bi bi-arrow-left me-2"></i>
-    <%= @assignment ? "Back to Assignments" : "Back" %>
-  <% end %>
-</div>
 
-<div class="table-container">
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Participant</th>
-        <% unless @assignment %><th>Assignment</th><% end %>
-        <th>Section</th>
-        <th>Question</th>
-        <th>Answer</th>
-        <th>Submitted At</th>
-        <th class="text-end">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @responses.each do |response| %>
-        <tr>
-          <td>
-            <div class="d-flex align-items-center">
-              <div>
-                <div class="fw-medium"><%= response.participant.full_name %></div>
-                <div class="text-secondary small"><%= response.participant.email %></div>
+  <div class="card-body">
+    <!-- Date Selection -->
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header bg-light">
+            <h6 class="mb-0">1. Select Date</h6>
+          </div>
+          <div class="card-body">
+            <%= form_tag institute_admin_responses_path, method: :get, class: "d-flex" do %>
+              <%= date_field_tag :date, @selected_date, class: "form-control" %>
+              <%= submit_tag "Select", class: "btn btn-primary ms-2" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Selection -->
+      <% if @sections.present? %>
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-header bg-light">
+              <h6 class="mb-0">2. Select Section</h6>
+            </div>
+            <div class="card-body">
+              <%= form_tag institute_admin_responses_path, method: :get do %>
+                <%= hidden_field_tag :date, @selected_date %>
+                <%= select_tag :section_id, 
+                    options_from_collection_for_select(@sections, :id, :name, params[:section_id]),
+                    prompt: "Choose a section",
+                    class: "form-select",
+                    data: { controller: "autosubmit" } %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Participant Selection -->
+      <% if @participants.present? %>
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-header bg-light">
+              <h6 class="mb-0">3. Select Participant</h6>
+            </div>
+            <div class="card-body">
+              <%= form_tag institute_admin_responses_path, method: :get do %>
+                <%= hidden_field_tag :date, @selected_date %>
+                <%= hidden_field_tag :section_id, @section.id %>
+                <%= select_tag :participant_id,
+                    options_from_collection_for_select(@participants, :id, :full_name, params[:participant_id]),
+                    prompt: "Choose a participant",
+                    class: "form-select",
+                    data: { controller: "autosubmit" } %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Assignment Selection -->
+    <% if @assignments.present? %>
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header bg-light">
+              <h6 class="mb-0">4. Select Assignment</h6>
+            </div>
+            <div class="card-body">
+              <div class="list-group">
+                <% @assignments.each do |assignment| %>
+                  <%= link_to institute_admin_responses_path(
+                        date: @selected_date,
+                        section_id: @section.id,
+                        participant_id: @participant.id,
+                        assignment_id: assignment.id
+                      ),
+                      class: "list-group-item list-group-item-action #{'active' if @assignment == assignment}" do %>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <h6 class="mb-1"><%= assignment.title %></h6>
+                        <small><%= pluralize(assignment.questions.count, 'question') %></small>
+                      </div>
+                      <span class="badge bg-primary rounded-pill">
+                        <%= assignment.assignment_responses.where(participant: @participant).count %> responses
+                      </span>
+                    </div>
+                  <% end %>
+                <% end %>
               </div>
             </div>
-          </td>
-          <% unless @assignment %>
-            <td><%= response.assignment.title %></td>
-          <% end %>
-          <td>
-            <span class="badge badge-primary">
-              <%= response.participant.section.name %>
-            </span>
-          </td>
-          <td>
-            <div class="fw-medium"><%= truncate(response.question.title, length: 30) %></div>
-          </td>
-          <td>
-            <div class="fw-medium"><%= truncate(response.answer, length: 30) %></div>
-          </td>
-          <td>
-            <div class="text-secondary">
-              <%= response.created_at.strftime("%b %d, %Y %H:%M") %>
-            </div>
-          </td>
-          <td class="text-end">
-            <%= link_to (@assignment ? 
-                institute_admin_assignment_response_path(@assignment, response) : 
-                institute_admin_response_path(response)),
-                class: "btn btn-icon btn-icon-primary" do %>
-              <i class="bi bi-eye"></i>
-            <% end %>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Responses Display -->
+    <% if @responses&.any? %>
+      <div class="card">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">
+            Responses for <%= @assignment.title %> by <%= @participant.full_name %>
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Question</th>
+                  <th>Response</th>
+                  <th>Submitted At</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @responses.each do |response| %>
+                  <tr>
+                    <td>
+                      <div class="fw-medium"><%= response.question.title %></div>
+                    </td>
+                    <td>
+                      <% if response.answer.present? %>
+                        <%= truncate(response.answer, length: 100) %>
+                      <% elsif response.selected_options.present? %>
+                        <%= response.selected_options.join(", ") %>
+                      <% else %>
+                        <span class="text-muted">No response</span>
+                      <% end %>
+                    </td>
+                    <td><%= response.submitted_at&.strftime("%I:%M %p") || "Not submitted" %></td>
+                    <td>
+                      <span class="badge bg-<%= response.submitted_at? ? 'success' : 'warning' %>">
+                        <%= response.submitted_at? ? 'Submitted' : 'Pending' %>
+                      </span>
+                    </td>
+                    <td>
+                      <%= link_to institute_admin_response_path(response), 
+                          class: "btn btn-sm btn-outline-primary" do %>
+                        <i class="bi bi-eye"></i>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
 </div>
 
-<div class="d-flex justify-content-center mt-4">
-  <%= paginate @responses %>
-</div> 
+<% content_for :styles do %>
+  <style>
+    .list-group-item {
+      transition: all 0.2s ease;
+    }
+
+    .list-group-item:hover {
+      background-color: #f8f9fa;
+      transform: translateX(5px);
+    }
+
+    .badge {
+      transition: all 0.2s ease;
+    }
+
+    .list-group-item:hover .badge {
+      transform: scale(1.1);
+    }
+  </style>
+<% end %> 

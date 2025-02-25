@@ -69,7 +69,10 @@ Rails.application.routes.draw do
       resources :assignments do
         resources :responses, only: [ :index, :show ]
       end
-      resources :responses, only: [ :index, :show ]
+      resources :responses do
+        get "section/:section_id", action: :index, on: :collection
+        get "section/:section_id/participant/:participant_id", action: :index, on: :collection
+      end
     end
   end
 
@@ -98,7 +101,7 @@ Rails.application.routes.draw do
       resource :profile, only: [ :show, :edit, :update ]
       resources :assignments, only: [ :index, :show ] do
         member do
-          get :take_assignment, as: :take
+          get :take_assignment
           post :submit
         end
       end

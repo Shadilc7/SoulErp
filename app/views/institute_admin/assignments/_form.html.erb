@@ -1,4 +1,8 @@
 <%= form_with(model: [:institute_admin, @assignment], local: true, data: { controller: "assignment-form" }) do |f| %>
+  <!-- Add hidden fields for empty arrays -->
+  <%= hidden_field_tag "assignment[question_ids][]", nil %>
+  <%= hidden_field_tag "assignment[question_set_ids][]", nil %>
+
   <div class="row g-4">
     <!-- Left Column -->
     <div class="col-lg-8">
@@ -93,19 +97,17 @@
                   </div>
                 </div>
                 <div class="card-body p-3 questions-list">
-                  <% current_institute.questions.each do |question| %>
+                  <%= f.collection_check_boxes :question_ids, 
+                      current_institute.questions.order(:title), 
+                      :id, 
+                      :title do |b| %>
                     <div class="form-check">
-                      <%= check_box_tag 'assignment[question_ids][]', 
-                          question.id,
-                          @assignment.question_ids.include?(question.id),
-                          class: "form-check-input question-checkbox",
-                          id: "question_#{question.id}",
+                      <%= b.check_box class: "form-check-input question-checkbox",
+                          id: "question_#{b.object.id}",
                           data: { 
                             action: "change->assignment-form#updateCounter change->assignment-form#updateSelectAllQuestions"
                           } %>
-                      <%= label_tag "question_#{question.id}",
-                          question.title,
-                          class: "form-check-label small" %>
+                      <%= b.label class: "form-check-label small", for: "question_#{b.object.id}" %>
                     </div>
                   <% end %>
                 </div>
@@ -130,19 +132,17 @@
                   </div>
                 </div>
                 <div class="card-body p-3 questions-list">
-                  <% current_institute.question_sets.each do |set| %>
+                  <%= f.collection_check_boxes :question_set_ids, 
+                      current_institute.question_sets.order(:title), 
+                      :id, 
+                      :title do |b| %>
                     <div class="form-check">
-                      <%= check_box_tag 'assignment[question_set_ids][]', 
-                          set.id,
-                          @assignment.question_set_ids.include?(set.id),
-                          class: "form-check-input question-set-checkbox",
-                          id: "set_#{set.id}",
+                      <%= b.check_box class: "form-check-input question-set-checkbox",
+                          id: "set_#{b.object.id}",
                           data: { 
                             action: "change->assignment-form#updateCounter change->assignment-form#updateSelectAllSets"
                           } %>
-                      <%= label_tag "set_#{set.id}",
-                          set.title,
-                          class: "form-check-label small" %>
+                      <%= b.label class: "form-check-label small", for: "set_#{b.object.id}" %>
                     </div>
                   <% end %>
                 </div>
@@ -316,6 +316,14 @@
       </div>
     </div>
   </div>
+
+  <!-- Debug info in development -->
+  <% if Rails.env.development? && @debug_info.present? %>
+    <div class="alert alert-info">
+      <strong>Debug Info:</strong>
+      <pre><%= @debug_info.inspect %></pre>
+    </div>
+  <% end %>
 <% end %>
 
 <% content_for :styles do %>

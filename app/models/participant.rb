@@ -59,6 +59,22 @@ class Participant < ApplicationRecord
     all_training_programs.ongoing
   end
 
+  def assignments_for_date(date)
+    individual_assignments = Assignment
+      .joins(:assignment_participants)
+      .where(assignment_participants: { participant_id: id })
+      .where("DATE(assignments.start_date) <= ? AND DATE(assignments.end_date) >= ?", date, date)
+
+    section_assignments = Assignment
+      .joins(:assignment_sections)
+      .where(assignment_sections: { section_id: section_id })
+      .where("DATE(assignments.start_date) <= ? AND DATE(assignments.end_date) >= ?", date, date)
+
+    Assignment.where(id: individual_assignments)
+      .or(Assignment.where(id: section_assignments))
+      .distinct
+  end
+
   private
 
   def sync_user_associations

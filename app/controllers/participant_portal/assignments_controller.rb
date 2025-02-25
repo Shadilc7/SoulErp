@@ -62,34 +62,60 @@ module ParticipantPortal
 
     def submit
       @selected_date = parse_date(params[:date])
+      @responses = params[:responses].to_unsafe_h
+
+      # First check if already submitted
+      if @assignment.answered_by_on_date?(current_participant, @selected_date)
+        flash[:alert] = "You have already submitted this assignment for #{@selected_date.strftime('%B %d, %Y')}"
+        redirect_to participant_portal_root_path
+        return
+      end
 
       ActiveRecord::Base.transaction do
-        params[:responses].each do |question_id, response_data|
-          @response = AssignmentResponse.new(
+        all_saved = true
+
+        @responses.each do |question_id, response_data|
+          response = current_participant.assignment_responses.find_or_initialize_by(
             assignment: @assignment,
-            participant: current_participant,
             question_id: question_id,
-            created_at: @selected_date
+            response_date: @selected_date
           )
 
-          if response_data[:selected_options].is_a?(Array)
-            @response.selected_options = response_data[:selected_options]
-          elsif response_data[:selected_options].present?
-            @response.selected_options = [ response_data[:selected_options] ]
+          # Handle selected options properly
+          selected_options = case response_data[:selected_options]
+          when Array
+            response_data[:selected_options]
+          when String
+            response_data[:selected_options].present? ? [ response_data[:selected_options] ] : []
+          else
+            []
           end
 
-          @response.answer = response_data[:answer] if response_data[:answer].present?
+          response.assign_attributes(
+            answer: response_data[:answer],
+            selected_options: selected_options,
+            submitted_at: Time.current
+          )
 
-          unless @response.save
-            raise ActiveRecord::Rollback
+          unless response.save
+            Rails.logger.error "Failed to save response: #{response.errors.full_messages}"
+            all_saved = false
+            break
           end
         end
 
-        flash[:success] = "Assignment completed successfully!"
-        redirect_to participant_portal_root_path
+        if all_saved
+          redirect_to participant_portal_root_path(date: @selected_date),
+                      notice: "Assignment submitted successfully!"
+        else
+          raise ActiveRecord::Rollback
+        end
       end
-    rescue ActiveRecord::Rollback
-      flash[:error] = "Failed to submit assignment. Please try again."
+
+    rescue => e
+      Rails.logger.error "Assignment submission error: #{e.message}"
+      flash.now[:alert] = "Error submitting assignment. Please try again."
+      @questions = @assignment.all_questions
       render :take_assignment
     end
 
@@ -102,6 +128,12 @@ module ParticipantPortal
     def check_date_availability
       @selected_date = parse_date(params[:date])
 
+      if @assignment.answered_by_on_date?(current_participant, @selected_date)
+        flash[:error] = "You have already submitted this assignment for #{@selected_date.strftime('%B %d, %Y')}"
+        redirect_to participant_portal_root_path
+        return
+      end
+
       unless @assignment.available_for_date?(current_participant, @selected_date)
         flash[:error] = "This assignment is not available for the selected date"
         redirect_to participant_portal_root_path
@@ -110,14 +142,9 @@ module ParticipantPortal
 
     def parse_date(date_param)
       return Date.current unless date_param.present?
-
-      begin
-        date = Date.parse(date_param)
-        # Ensure we're working with dates in the application's timezone
-        date.in_time_zone.to_date
-      rescue ArgumentError
-        Date.current
-      end
+      Date.parse(date_param)
+    rescue ArgumentError
+      Date.current
     end
   end
 end

@@ -1,4 +1,6 @@
 class Assignment < ApplicationRecord
+  attr_accessor :skip_association_validation
+
   belongs_to :institute
   belongs_to :section, optional: true
 
@@ -22,8 +24,7 @@ class Assignment < ApplicationRecord
   validates :assignment_type, presence: true, inclusion: { in: [ "individual", "section" ] }
 
   validate :end_date_after_start_date
-  validate :has_questions_or_question_sets
-  validate :has_sections_or_participants
+  validate :validate_associations
 
   accepts_nested_attributes_for :assignment_sections, allow_destroy: true
   accepts_nested_attributes_for :assignment_participants, allow_destroy: true
@@ -76,7 +77,7 @@ class Assignment < ApplicationRecord
   def answered_by_on_date?(participant, selected_date)
     assignment_responses.exists?(
       participant: participant,
-      created_at: selected_date.beginning_of_day..selected_date.end_of_day
+      response_date: selected_date
     )
   end
 
@@ -101,7 +102,7 @@ class Assignment < ApplicationRecord
     assignment_responses
       .where(participant: participant)
       .distinct
-      .pluck("DATE(created_at)")
+      .pluck("DATE(response_date)")
       .count
   end
 
@@ -128,26 +129,26 @@ class Assignment < ApplicationRecord
 
   private
 
+  def validate_associations
+    if persisted? # Only validate associations after initial save
+      if questions.empty? && question_sets.empty?
+        errors.add(:base, "Must have at least one question or question set")
+      end
+
+      if assignment_type == "section"
+        if section_id.blank? && sections.empty?
+          errors.add(:base, "Must select at least one section")
+        end
+      elsif assignment_type == "individual" && participants.empty?
+        errors.add(:base, "Must select at least one participant")
+      end
+    end
+  end
+
   def end_date_after_start_date
     return if end_date.blank? || start_date.blank?
     if end_date < start_date
       errors.add(:end_date, "must be after start date")
-    end
-  end
-
-  def has_questions_or_question_sets
-    if questions.empty? && question_sets.empty?
-      errors.add(:base, "Must have at least one question or question set")
-    end
-  end
-
-  def has_sections_or_participants
-    if assignment_type == "section"
-      if section_id.blank? && sections.empty?
-        errors.add(:base, "Must select at least one section")
-      end
-    elsif assignment_type == "individual" && participants.empty?
-      errors.add(:base, "Must select at least one participant")
     end
   end
 end

@@ -1,79 +1,101 @@
-<div class="page-header d-flex justify-content-between align-items-center">
-  <div>
-    <h1 class="page-title">Response Details</h1>
-    <p class="text-secondary mb-0">
-      <%= @response.participant.full_name %>'s response to <%= @response.assignment.title %>
-    </p>
+<div class="card card-custom">
+  <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Response Details</h5>
+    <%= link_to :back, class: "btn btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left"></i> Back
+    <% end %>
   </div>
-  <%= link_to (@assignment ? 
-      institute_admin_assignment_responses_path(@assignment) : 
-      institute_admin_responses_path), 
-      class: "btn btn-outline-primary" do %>
-    <i class="bi bi-arrow-left me-2"></i>Back to Responses
-  <% end %>
-</div>
 
-<div class="row g-4">
-  <div class="col-md-4">
-    <div class="card">
-      <div class="card-body">
-        <h6 class="card-subtitle mb-3 text-secondary">Response Summary</h6>
-        
-        <div class="mb-3">
-          <div class="text-secondary mb-1">Participant</div>
-          <div class="fw-medium"><%= @response.participant.full_name %></div>
-          <div class="small text-secondary"><%= @response.participant.email %></div>
-        </div>
-
-        <div class="mb-3">
-          <div class="text-secondary mb-1">Section</div>
-          <div class="fw-medium"><%= @response.participant.section.name %></div>
-        </div>
-
-        <div class="mb-3">
-          <div class="text-secondary mb-1">Assignment</div>
-          <div class="fw-medium"><%= @response.assignment.title %></div>
-        </div>
-
-        <div class="mb-3">
-          <div class="text-secondary mb-1">Submitted At</div>
-          <div class="fw-medium">
-            <%= @response.created_at.strftime("%B %d, %Y at %H:%M") %>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="card">
+          <div class="card-header bg-light">
+            <h6 class="mb-0">Assignment Information</h6>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="text-muted mb-1">Assignment Title</label>
+              <div class="fw-medium"><%= @response.assignment.title %></div>
+            </div>
+            <div class="mb-3">
+              <label class="text-muted mb-1">Question</label>
+              <div class="fw-medium"><%= @response.question.title %></div>
+            </div>
+            <div>
+              <label class="text-muted mb-1">Submission Date</label>
+              <div class="fw-medium">
+                <%= @response.submitted_at&.strftime("%B %d, %Y %I:%M %p") || "Not submitted" %>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div>
-          <div class="text-secondary mb-1">Score</div>
-          <% if @response.score.present? %>
-            <div class="d-flex align-items-center">
-              <h3 class="mb-0 me-2"><%= @response.score %>/<%= @response.assignment.total_marks %></h3>
-              <span class="badge badge-success">
-                <%= (@response.score.to_f / @response.assignment.total_marks * 100).round %>%
-              </span>
+      <div class="col-md-6 mb-4">
+        <div class="card">
+          <div class="card-header bg-light">
+            <h6 class="mb-0">Participant Information</h6>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="text-muted mb-1">Name</label>
+              <div class="fw-medium"><%= @response.participant.user.full_name %></div>
             </div>
-          <% else %>
-            <span class="badge badge-warning">Pending Evaluation</span>
-          <% end %>
+            <div class="mb-3">
+              <label class="text-muted mb-1">Email</label>
+              <div class="fw-medium"><%= @response.participant.user.email %></div>
+            </div>
+            <div>
+              <label class="text-muted mb-1">Section</label>
+              <div class="fw-medium"><%= @response.participant.section&.name || "No Section" %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header bg-light">
+            <h6 class="mb-0">Response</h6>
+          </div>
+          <div class="card-body">
+            <% if @response.answer.present? %>
+              <div class="response-content">
+                <%= @response.answer %>
+              </div>
+            <% elsif @response.selected_options.present? %>
+              <div class="selected-options">
+                <% @response.selected_options.each do |option| %>
+                  <div class="selected-option mb-2">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <%= option %>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="text-muted">No response provided</div>
+            <% end %>
+          </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <div class="col-md-8">
-    <div class="card">
-      <div class="card-body">
-        <h6 class="card-subtitle mb-4 text-secondary">Question Response</h6>
+<% content_for :styles do %>
+  <style>
+    .response-content {
+      background-color: #f8f9fa;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      white-space: pre-wrap;
+    }
 
-        <div class="mb-3">
-          <div class="text-secondary mb-2">Question</div>
-          <div class="fw-medium"><%= @response.question.title %></div>
-        </div>
-
-        <div class="mb-3">
-          <div class="text-secondary mb-2">Response</div>
-          <div class="fw-medium"><%= @response.answer %></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div> 
+    .selected-option {
+      background-color: #f8f9fa;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+    }
+  </style>
+<% end %> 

@@ -10,7 +10,8 @@ export default class extends Controller {
     "selectAllQuestions",
     "selectAllSets",
     "selectAllSections",
-    "sectionParticipantsContainer"
+    "sectionParticipantsContainer",
+    "error"
   ]
 
   connect() {
@@ -305,5 +306,40 @@ export default class extends Controller {
     const count = document.querySelectorAll('input[name="assignment[participant_ids][]"]:checked').length
     this.participantsCounterTarget.textContent = `${count} Selected`
     this.validateForm()
+  }
+
+  validateField(event) {
+    const field = event.target
+    const questionId = field.dataset.questionId
+    const errorDiv = this.errorTargets.find(el => el.dataset.questionId === questionId)
+
+    if (field.required && !field.value) {
+      field.classList.add('is-invalid')
+      errorDiv?.classList.add('d-block')
+    } else {
+      field.classList.remove('is-invalid')
+      errorDiv?.classList.remove('d-block')
+    }
+  }
+
+  validateForm(event) {
+    const form = event.target
+    const isValid = form.checkValidity()
+
+    if (!isValid) {
+      event.preventDefault()
+      this.showErrors()
+    }
+  }
+
+  showErrors() {
+    const requiredFields = this.element.querySelectorAll('[required]')
+    requiredFields.forEach(field => {
+      if (!field.value) {
+        field.classList.add('is-invalid')
+        const errorDiv = this.errorTargets.find(el => el.dataset.questionId === field.dataset.questionId)
+        errorDiv?.classList.add('d-block')
+      }
+    })
   }
 } 

@@ -7,6 +7,7 @@ class AssignmentResponse < ApplicationRecord
   validates :participant_id, presence: true
   validates :assignment_id, presence: true
   validates :question_id, presence: true
+  validates :response_date, presence: true
 
   scope :ordered, -> { order(created_at: :desc) }
 

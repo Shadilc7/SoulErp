@@ -52,9 +52,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_23_145551) do
     t.datetime "submitted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.date "response_date"
     t.index ["assignment_id"], name: "index_assignment_responses_on_assignment_id"
     t.index ["participant_id"], name: "index_assignment_responses_on_participant_id"
     t.index ["question_id"], name: "index_assignment_responses_on_question_id"
+    t.index ["response_date"], name: "index_assignment_responses_on_response_date"
   end
 
   create_table "assignment_sections", force: :cascade do |t|

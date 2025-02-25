@@ -12,7 +12,15 @@
               <% if assignment.answered_by_on_date?(current_participant, selected_date) %>
                 <span class="badge bg-success">Completed</span>
               <% else %>
-                <span class="badge bg-primary">Pending</span>
+                <% if selected_date <= Date.current %>
+                  <%= link_to take_assignment_participant_portal_assignment_path(assignment, date: selected_date),
+                      class: "btn btn-primary btn-sm",
+                      data: { turbo_frame: "_top" } do %>
+                    <i class="bi bi-play-fill me-1"></i>Start Assignment
+                  <% end %>
+                <% else %>
+                  <span class="badge bg-warning">Upcoming</span>
+                <% end %>
               <% end %>
             </div>
 
@@ -53,17 +61,6 @@
               <div class="progress-bar bg-success" 
                    style="width: <%= assignment.completion_percentage(current_participant) %>%">
               </div>
-            </div>
-
-            <div class="d-flex justify-content-end">
-              <% if !assignment.answered_by_on_date?(current_participant, selected_date) && 
-                    selected_date <= Date.current %>
-                <%= link_to take_participant_portal_assignment_path(id: assignment, date: selected_date),
-                    class: "btn btn-primary btn-sm",
-                    data: { turbo_frame: "_top" } do %>
-                  <i class="bi bi-play-fill me-1"></i>Start Assignment
-                <% end %>
-              <% end %>
             </div>
           </div>
         </div>

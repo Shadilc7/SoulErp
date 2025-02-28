@@ -20,131 +20,151 @@
     </div>
   </div>
   
-  <!-- Overview Stats -->
-  <div class="row mb-4">
-    <div class="col-md-3">
-      <div class="card shadow-sm h-100">
+  <!-- Top Stats Cards -->
+  <div class="row g-4 mb-4">
+    <!-- Total Participants Card -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card card-custom h-100">
         <div class="card-body">
-          <h6 class="card-subtitle mb-2 text-muted">Total Participants</h6>
-          <h2 class="card-title mb-0"><%= @total_participants %></h2>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h6 class="card-subtitle mb-2 text-muted">Total Assignments</h6>
-          <h2 class="card-title mb-0"><%= @total_assignments %></h2>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h6 class="card-subtitle mb-2 text-muted">Overall Completion Rate</h6>
-          <h2 class="card-title mb-0"><%= @completion_rate %>%</h2>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h6 class="card-subtitle mb-2 text-muted">Active Sections</h6>
-          <h2 class="card-title mb-0"><%= @sections.count %></h2>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Daily Submissions Chart -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card shadow-sm">
-        <div class="card-header bg-white">
-          <h5 class="card-title mb-0">Daily Submissions</h5>
-        </div>
-        <div class="card-body">
-          <canvas id="dailySubmissionsChart" height="100"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Section Performance and Top Participants -->
-  <div class="row mb-4">
-    <div class="col-md-6">
-      <div class="card shadow-sm h-100">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-          <h5 class="card-title mb-0">Section Performance</h5>
-          <%= link_to "View All", "#", class: "btn btn-sm btn-outline-primary" %>
-        </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover">
-              <thead>
-                <tr>
-                  <th>Section</th>
-                  <th>Participants</th>
-                  <th>Completion Rate</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <% @section_performance.each do |section| %>
-                  <tr>
-                    <td><%= section[:name] %></td>
-                    <td><%= section[:participant_count] %></td>
-                    <td>
-                      <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: <%= section[:completion_rate] %>%"></div>
-                      </div>
-                      <small class="text-muted"><%= section[:completion_rate] %>%</small>
-                    </td>
-                    <td>
-                      <%= link_to section_performance_institute_admin_analytics_path(section_id: section[:id]), class: "btn btn-sm btn-outline-secondary" do %>
-                        <i class="bi bi-bar-chart-fill"></i>
-                      <% end %>
-                    </td>
-                  </tr>
-                <% end %>
-              </tbody>
-            </table>
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <div class="avatar avatar-50 bg-primary bg-opacity-10 rounded">
+                <i class="bi bi-people fs-4 text-primary"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="mb-0">Total Participants</h6>
+              <h2 class="mb-0"><%= @total_participants %></h2>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    
-    <div class="col-md-6">
-      <div class="card shadow-sm h-100">
-        <div class="card-header bg-white">
-          <h5 class="card-title mb-0">Top Performing Participants</h5>
+
+    <!-- Total Assignments Card -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card card-custom h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <div class="avatar avatar-50 bg-success bg-opacity-10 rounded">
+                <i class="bi bi-journal-check fs-4 text-success"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="mb-0">Total Assignments</h6>
+              <h2 class="mb-0"><%= @total_assignments %></h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overall Completion Rate Card -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card card-custom h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <div class="avatar avatar-50 bg-info bg-opacity-10 rounded">
+                <i class="bi bi-graph-up fs-4 text-info"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="mb-0">Completion Rate</h6>
+              <h2 class="mb-0"><%= number_to_percentage(@completion_rate, precision: 1) %></h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Sections Card -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card card-custom h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <div class="avatar avatar-50 bg-warning bg-opacity-10 rounded">
+                <i class="bi bi-grid-3x3 fs-4 text-warning"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="mb-0">Active Sections</h6>
+              <h2 class="mb-0"><%= @sections.count %></h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Charts Row -->
+  <div class="row g-4 mb-4">
+    <!-- Daily Submissions Chart -->
+    <div class="col-12 col-lg-8">
+      <div class="card card-custom h-100">
+        <div class="card-header card-header-custom">
+          <h5 class="card-title mb-0">Daily Submissions</h5>
         </div>
         <div class="card-body">
+          <canvas id="dailySubmissionsChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Performance Chart -->
+    <div class="col-12 col-lg-4">
+      <div class="card card-custom h-100">
+        <div class="card-header card-header-custom">
+          <h5 class="card-title mb-0">Section Performance</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="sectionPerformanceChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Top Performers and Recent Assignments -->
+  <div class="row g-4">
+    <!-- Top Performers -->
+    <div class="col-12 col-lg-8">
+      <div class="card card-custom">
+        <div class="card-header card-header-custom">
+          <h5 class="card-title mb-0">Top Performers</h5>
+        </div>
+        <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-hover">
-              <thead>
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
                 <tr>
                   <th>Participant</th>
                   <th>Section</th>
-                  <th>Completion Rate</th>
-                  <th></th>
+                  <th class="text-end">Completion Rate</th>
                 </tr>
               </thead>
               <tbody>
                 <% @top_participants.each do |participant| %>
                   <tr>
-                    <td><%= participant[:name] %></td>
-                    <td><%= participant[:section] %></td>
                     <td>
-                      <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: <%= participant[:completion_rate] %>%"></div>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar avatar-40 bg-primary bg-opacity-10 rounded-circle me-2">
+                          <span class="text-primary"><%= participant[:name].first.upcase %></span>
+                        </div>
+                        <div><%= participant[:name] %></div>
                       </div>
-                      <small class="text-muted"><%= participant[:completion_rate] %>%</small>
                     </td>
-                    <td>
-                      <%= link_to participant_performance_institute_admin_analytics_path(participant_id: participant[:id]), class: "btn btn-sm btn-outline-secondary" do %>
-                        <i class="bi bi-bar-chart-fill"></i>
-                      <% end %>
+                    <td><%= participant[:section] || 'N/A' %></td>
+                    <td class="text-end">
+                      <div class="d-flex align-items-center justify-content-end">
+                        <div class="progress flex-grow-1 me-2" style="height: 6px; max-width: 100px;">
+                          <div class="progress-bar bg-success" 
+                               role="progressbar" 
+                               style="width: <%= participant[:completion_rate] %>%"></div>
+                        </div>
+                        <span><%= number_to_percentage(participant[:completion_rate], precision: 1) %></span>
+                      </div>
                     </td>
                   </tr>
                 <% end %>
@@ -154,50 +174,85 @@
         </div>
       </div>
     </div>
+
+    <!-- Recent Assignments -->
+    <div class="col-12 col-lg-4">
+      <div class="card card-custom">
+        <div class="card-header card-header-custom">
+          <h5 class="card-title mb-0">Recent Assignments</h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            <% @recent_assignments.each do |assignment| %>
+              <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-1"><%= assignment.title %></h6>
+                    <small class="text-muted">
+                      <%= assignment.start_date.strftime("%b %d") %> - <%= assignment.end_date.strftime("%b %d, %Y") %>
+                    </small>
+                  </div>
+                  <span class="badge bg-<%= {
+                    'active' => 'success',
+                    'upcoming' => 'info',
+                    'completed' => 'secondary',
+                    'inactive' => 'danger'
+                  }[assignment.status] %>">
+                    <%= assignment.status.titleize %>
+                  </span>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   
-  <!-- Recent Assignments -->
-  <div class="row">
+  <!-- Section Details -->
+  <div class="row mt-4">
     <div class="col-12">
-      <div class="card shadow-sm">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-          <h5 class="card-title mb-0">Recent Assignments</h5>
-          <%= link_to "View All", institute_admin_assignments_path, class: "btn btn-sm btn-outline-primary" %>
+      <div class="card card-custom">
+        <div class="card-header card-header-custom">
+          <h5 class="card-title mb-0">Section Details</h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-hover">
-              <thead>
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
                 <tr>
-                  <th>Title</th>
-                  <th>Date Range</th>
-                  <th>Type</th>
-                  <th>Completion</th>
-                  <th></th>
+                  <th>Section Name</th>
+                  <th>Participants</th>
+                  <th>Completion Rate</th>
+                  <th class="text-end">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <% @recent_assignments.each do |assignment| %>
+                <% @section_performance.each do |section| %>
                   <tr>
-                    <td><%= assignment.title %></td>
-                    <td><%= assignment.start_date.strftime("%b %d") %> - <%= assignment.end_date.strftime("%b %d, %Y") %></td>
-                    <td><%= assignment.assignment_type.titleize %></td>
                     <td>
-                      <% 
-                        completed_count = assignment.assignment_responses
-                          .select("DISTINCT participant_id")
-                          .size
-                        total_count = assignment.participants.count
-                        completion_rate = total_count > 0 ? (completed_count.to_f / total_count * 100).round(2) : 0
-                      %>
-                      <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: <%= completion_rate %>%"></div>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar avatar-40 bg-info bg-opacity-10 rounded-circle me-2">
+                          <span class="text-info"><%= section[:name].first.upcase %></span>
+                        </div>
+                        <div><%= section[:name] %></div>
                       </div>
-                      <small class="text-muted"><%= completion_rate %>%</small>
                     </td>
+                    <td><%= section[:participant_count] %></td>
                     <td>
-                      <%= link_to assignment_analytics_institute_admin_analytics_path(assignment_id: assignment.id), class: "btn btn-sm btn-outline-secondary" do %>
-                        <i class="bi bi-bar-chart-fill"></i>
+                      <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1 me-2" style="height: 6px; max-width: 100px;">
+                          <div class="progress-bar bg-success" 
+                               role="progressbar" 
+                               style="width: <%= section[:completion_rate] %>%"></div>
+                        </div>
+                        <span><%= number_to_percentage(section[:completion_rate], precision: 1) %></span>
+                      </div>
+                    </td>
+                    <td class="text-end">
+                      <%= link_to institute_admin_section_path(section[:id]), 
+                                class: "btn btn-sm btn-outline-primary" do %>
+                        <i class="bi bi-eye me-1"></i> View Details
                       <% end %>
                     </td>
                   </tr>
@@ -212,49 +267,127 @@
 </div>
 
 <% content_for :scripts do %>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('turbo:load', function() {
       // Daily Submissions Chart
-      const dailySubmissionsCtx = document.getElementById('dailySubmissionsChart').getContext('2d');
+      const dailyCtx = document.getElementById('dailySubmissionsChart').getContext('2d');
+      const dailyData = <%= raw @daily_submissions.transform_keys { |k| k.strftime("%Y-%m-%d") }.to_json %>;
       
-      // Generate dates between start and end date
-      const startDate = new Date('<%= @start_date.strftime("%Y-%m-%d") %>');
-      const endDate = new Date('<%= @end_date.strftime("%Y-%m-%d") %>');
-      const dateLabels = [];
-      const submissionData = [];
-      
-      for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
-        const dateString = date.toISOString().split('T')[0];
-        dateLabels.push(dateString);
-        submissionData.push(<%= raw @daily_submissions.to_json %>[dateString] || 0);
-      }
-      
-      new Chart(dailySubmissionsCtx, {
+      new Chart(dailyCtx, {
         type: 'line',
         data: {
-          labels: dateLabels,
+          labels: Object.keys(dailyData),
           datasets: [{
-            label: 'Daily Submissions',
-            data: submissionData,
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 2,
-            tension: 0.1
+            label: 'Submissions',
+            data: Object.values(dailyData),
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+            fill: true,
+            tension: 0.4
           }]
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
           scales: {
             y: {
               beginAtZero: true,
               ticks: {
-                precision: 0
+                stepSize: 1
               }
+            }
+          }
+        }
+      });
+
+      // Section Performance Chart
+      const sectionCtx = document.getElementById('sectionPerformanceChart').getContext('2d');
+      const sectionData = <%= raw @section_performance.to_json %>;
+      
+      new Chart(sectionCtx, {
+        type: 'doughnut',
+        data: {
+          labels: sectionData.map(s => s.name),
+          datasets: [{
+            data: sectionData.map(s => s.completion_rate),
+            backgroundColor: [
+              '#0d6efd', '#198754', '#ffc107', '#dc3545',
+              '#6610f2', '#fd7e14', '#20c997', '#0dcaf0'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
             }
           }
         }
       });
     });
   </script>
+<% end %>
+
+<% content_for :styles do %>
+  <style>
+    .avatar {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .avatar-50 {
+      width: 50px;
+      height: 50px;
+    }
+
+    .avatar-40 {
+      width: 40px;
+      height: 40px;
+    }
+
+    .card-custom {
+      border: none;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      border-radius: 0.5rem;
+    }
+
+    .card-header-custom {
+      background-color: transparent;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+      padding: 1rem;
+    }
+
+    .table > :not(caption) > * > * {
+      padding: 1rem;
+    }
+
+    .progress {
+      background-color: #e9ecef;
+      border-radius: 0.25rem;
+    }
+
+    .list-group-item {
+      border-left: none;
+      border-right: none;
+      padding: 1rem;
+    }
+
+    .list-group-item:first-child {
+      border-top: none;
+    }
+
+    .list-group-item:last-child {
+      border-bottom: none;
+    }
+  </style>
 <% end %> 

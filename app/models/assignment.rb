@@ -127,6 +127,18 @@ class Assignment < ApplicationRecord
     question_sets.includes(:questions).flat_map { |qs| qs.questions.order(:created_at) }
   end
 
+  def status
+    return 'inactive' unless active?
+    
+    if Time.current < start_date
+      'upcoming'
+    elsif Time.current > end_date
+      'completed'
+    else
+      'active'
+    end
+  end
+
   private
 
   def validate_associations

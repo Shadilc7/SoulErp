@@ -1,22 +1,17 @@
 <div class="card card-custom">
-  <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">Training Programs</h5>
-    <div class="btn-group">
-      <%= link_to new_institute_admin_training_program_path(program_type: :individual), 
-          class: "btn btn-custom-primary me-2" do %>
-        <i class="bi bi-person-video3"></i> New Individual Program
-      <% end %>
-      <%= link_to new_institute_admin_training_program_path(program_type: :section), 
-          class: "btn btn-custom-primary" do %>
-        <i class="bi bi-people-fill"></i> New Section Program
+  <div class="card-header card-header-custom py-3">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Training Programs</h5>
+      <%= link_to new_institute_admin_training_program_path, class: "btn btn-primary" do %>
+        <i class="bi bi-plus-lg"></i> New Program
       <% end %>
     </div>
   </div>
 
-
+  <div class="card-body">
     <% if @training_programs.any? %>
       <div class="table-responsive">
-        <table class="table">
+        <table class="table table-hover">
           <thead>
             <tr>
               <th>Title</th>
@@ -50,25 +45,25 @@
                   <%= program.end_date.strftime("%b %d, %Y") %>
                 </td>
                 <td>
-                  <span class="badge <%= program.status == 'completed' ? 'badge-success' : 
-                    program.status == 'cancelled' ? 'badge-danger' : 'badge-warning' %>">
+                  <span class="badge badge-<%= program.status == 'completed' ? 'success' : 
+                    program.status == 'cancelled' ? 'danger' : 'warning' %>">
                     <%= program.status.titleize %>
                   </span>
                 </td>
                 <td>
-                  <div class="d-flex gap-2">
+                  <div class="d-flex align-items-center">
                     <%= link_to institute_admin_training_program_path(program), 
-                        class: "btn btn-sm btn-custom-primary" do %>
+                        class: "btn btn-sm btn-custom-primary me-2" do %>
                       <i class="bi bi-eye"></i>
                     <% end %>
                     <%= link_to edit_institute_admin_training_program_path(program), 
-                        class: "btn btn-sm btn-outline-custom" do %>
+                        class: "btn btn-sm btn-outline-custom me-2" do %>
                       <i class="bi bi-pencil"></i>
                     <% end %>
                     <%= button_to institute_admin_training_program_path(program),
                         method: :delete,
                         class: "btn btn-sm btn-outline-danger",
-                        form: { class: 'd-inline' },
+                        form: { style: 'display: inline-block' },
                         data: { turbo_confirm: "Are you sure?" } do %>
                       <i class="bi bi-trash"></i>
                     <% end %>
@@ -80,7 +75,10 @@
         </table>
       </div>
     <% else %>
-      <p class="text-muted text-center mb-0">No training programs found</p>
+      <div class="text-center py-4">
+        <i class="bi bi-mortarboard fs-1 text-muted mb-3"></i>
+        <p class="text-muted mb-0">No training programs found</p>
+      </div>
     <% end %>
   </div>
 </div> 

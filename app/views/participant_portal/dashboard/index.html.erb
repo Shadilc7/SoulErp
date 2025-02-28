@@ -1,132 +1,32 @@
 <div class="container-fluid py-4">
-  <!-- Profile Overview Card -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card card-custom shadow-sm border-primary">
-        <div class="card-body">
-          <div class="row align-items-center">
-            <div class="col-md-2 text-center">
-              <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                <span class="h3 mb-0"><%= current_user.first_name&.first&.upcase || current_user.email.first.upcase %></span>
-              </div>
-            </div>
-            <div class="col-md-5">
-              <h4 class="mb-1"><%= current_user.first_name.present? ? "#{current_user.first_name} #{current_user.last_name}" : current_user.email %></h4>
-              <p class="text-muted mb-0">
-                <i class="bi bi-building me-2"></i><%= current_institute.name %>
-                <% if current_participant.section %>
-                  <span class="mx-2">|</span>
-                  <i class="bi bi-diagram-2 me-2"></i><%= current_participant.section.name %>
-                <% end %>
-              </p>
-            </div>
-            <div class="col-md-5">
-              <div class="row text-center">
-                <div class="col-4">
-                  <h5 class="mb-1"><%= @training_programs.completed.count %></h5>
-                  <p class="text-muted mb-0">Completed</p>
-                </div>
-                <div class="col-4">
-                  <h5 class="mb-1"><%= @training_programs.ongoing.count %></h5>
-                  <p class="text-muted mb-0">Ongoing</p>
-                </div>
-                <div class="col-4">
-                  <h5 class="mb-1"><%= @training_programs.count %></h5>
-                  <p class="text-muted mb-0">Total Programs</p>
-                </div>
-              </div>
-            </div>
+  <!-- Welcome Section -->
+  <div class="welcome-section mb-4">
+    <div class="card card-custom">
+      <div class="card-body py-4">
+        <div class="d-flex align-items-center">
+          <div class="avatar-circle me-3">
+            <span class="avatar-text">
+              <%= current_user.first_name&.first&.upcase || current_user.email.first.upcase %>
+            </span>
+          </div>
+          <div>
+            <h4 class="mb-1">Welcome, <%= current_user.first_name || "Participant" %>!</h4>
+            <p class="text-muted mb-0">
+              <i class="bi bi-building me-2"></i><%= current_institute.name %>
+              <% if current_participant.section %>
+                <span class="mx-2">|</span>
+                <i class="bi bi-diagram-2 me-2"></i><%= current_participant.section.name %>
+              <% end %>
+            </p>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Training Programs and Personal Info -->
-  <div class="row">
-    <!-- Training Programs -->
-    <div class="col-md-8">
-      <div class="card card-custom shadow-sm border-primary">
-        <div class="card-header card-header-custom">
-          <h5 class="mb-0">My Training Programs</h5>
-        </div>
-        <div class="card-body">
-          <% if @training_programs.any? %>
-            <div class="table-responsive">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Program</th>
-                    <th>Trainer</th>
-                    <th>Status</th>
-                    <th>Progress</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% @training_programs.each do |program| %>
-                    <tr>
-                      <td>
-                        <strong><%= program.name %></strong>
-                        <br>
-                        <small class="text-muted"><%= program.description&.truncate(50) %></small>
-                      </td>
-                      <td>
-                        <%= program.trainer.user.first_name.present? ? 
-                            "#{program.trainer.user.first_name} #{program.trainer.user.last_name}" : 
-                            program.trainer.user.email %>
-                      </td>
-                      <td>
-                        <span class="badge <%= program.status == 'completed' ? 'bg-success' : 'bg-primary' %>">
-                          <%= program.status.titleize %>
-                        </span>
-                      </td>
-                      <td>
-                        <div class="progress" style="height: 10px;">
-                          <div class="progress-bar bg-success" 
-                               role="progressbar" 
-                               style="width: <%= program.progress || 0 %>%" 
-                               aria-valuenow="<%= program.progress || 0 %>" 
-                               aria-valuemin="0" 
-                               aria-valuemax="100">
-                          </div>
-                        </div>
-                        <small class="text-muted"><%= program.progress || 0 %>% Complete</small>
-                      </td>
-                    </tr>
-                  <% end %>
-                </tbody>
-              </table>
-            </div>
-          <% else %>
-            <div class="alert alert-warning" role="alert">
-              No training programs found.
-            </div>
-          <% end %>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <!-- Personal Info Card -->
-      <div class="card card-custom shadow-sm mb-4">
-        <div class="card-header card-header-custom">
-          <h5 class="mb-0">Personal Information</h5>
-        </div>
-        <div class="card-body">
-          <p><strong>Name:</strong> <%= current_user.full_name %></p>
-          <p><strong>Email:</strong> <%= current_user.email %></p>
-          <p><strong>Institute:</strong> <%= current_institute.name %></p>
-          <% if current_participant.section %>
-            <p><strong>Section:</strong> <%= current_participant.section.name %></p>
-          <% end %>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Daily Assignments Section -->
-  <div class="card">
-    <div class="card-header bg-white py-3">
+  <div class="card card-custom mb-4">
+    <div class="card-header card-header-custom py-3">
       <div class="d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Daily Assignments</h5>
         <div class="date-picker">
@@ -143,37 +43,167 @@
     </div>
 
     <%= turbo_frame_tag "assignment_content" do %>
-      <%= render "daily_assignments", 
-          assignments: @assignments,
-          selected_date: @selected_date %>
+      <div class="card-body">
+        <% if @assignments.any? %>
+          <div class="assignments-list">
+            <% @assignments.each do |assignment| %>
+              <div class="card assignment-card mb-3">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                      <h6 class="card-title mb-1"><%= assignment.title %></h6>
+                      <p class="text-muted small mb-0"><%= assignment.description %></p>
+                    </div>
+                    <% if assignment.answered_by_on_date?(current_participant, @selected_date) %>
+                      <span class="badge bg-success">Completed</span>
+                    <% else %>
+                      <% if @selected_date <= Date.current %>
+                        <%= link_to take_assignment_participant_portal_assignment_path(assignment, date: @selected_date),
+                            class: "btn btn-primary btn-sm",
+                            data: { turbo_frame: "_top" } do %>
+                          <i class="bi bi-play-fill me-1"></i>Start Assignment
+                        <% end %>
+                      <% else %>
+                        <span class="badge bg-warning">Upcoming</span>
+                      <% end %>
+                    <% end %>
+                  </div>
+
+                  <div class="assignment-meta">
+                    <div class="meta-item">
+                      <i class="bi bi-calendar-range text-primary me-2"></i>
+                      <small>
+                        <%= assignment.start_date.strftime("%b %d") %> - 
+                        <%= assignment.end_date.strftime("%b %d, %Y") %>
+                      </small>
+                    </div>
+                    <div class="meta-item">
+                      <i class="bi bi-question-circle text-primary me-2"></i>
+                      <small>
+                        <%= pluralize(
+                          assignment.questions.count + 
+                          assignment.question_sets.sum { |qs| qs.questions.count },
+                          'question'
+                        ) %>
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-5">
+            <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
+            <p class="text-muted mb-0">No assignments available for <%= @selected_date.strftime("%B %d, %Y") %></p>
+          </div>
+        <% end %>
+      </div>
     <% end %>
+  </div>
+
+  <!-- Training Programs Section -->
+  <div class="card card-custom">
+    <div class="card-header card-header-custom">
+      <h5 class="mb-0">My Training Programs</h5>
+    </div>
+    <div class="card-body">
+      <% if @training_programs.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Program</th>
+                <th>Trainer</th>
+                <th>Status</th>
+                <th>Feedback</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @training_programs.each do |program| %>
+                <tr>
+                  <td>
+                    <strong><%= program.title %></strong>
+                    <br>
+                    <small class="text-muted"><%= program.description&.truncate(50) %></small>
+                  </td>
+                  <td><%= program.trainer.user.full_name %></td>
+                  <td>
+                    <span class="badge <%= program.status == 'completed' ? 'bg-success' : 'bg-primary' %>">
+                      <%= program.status.titleize %>
+                    </span>
+                  </td>
+                  <td>
+                    <% if program.feedback.present? %>
+                      <span class="badge bg-success">
+                        <i class="bi bi-check-circle me-1"></i>Feedback Submitted
+                      </span>
+                    <% else %>
+                      <%= link_to new_participant_portal_training_program_feedback_path(program), 
+                          class: "btn btn-sm btn-outline-primary" do %>
+                        <i class="bi bi-chat-square-text me-1"></i>Submit Feedback
+                      <% end %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="alert alert-info mb-0" role="alert">
+          <i class="bi bi-info-circle me-2"></i>No training programs found.
+        </div>
+      <% end %>
+    </div>
   </div>
 </div>
 
 <% content_for :styles do %>
   <style>
+    .welcome-section .avatar-circle {
+      width: 60px;
+      height: 60px;
+      background-color: var(--bs-primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .welcome-section .avatar-text {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+
     .date-picker {
       width: 200px;
     }
 
     .assignment-card {
-      transition: transform 0.2s;
+      border: 1px solid rgba(0,0,0,.1);
+      transition: transform 0.2s, box-shadow 0.2s;
     }
 
     .assignment-card:hover {
       transform: translateY(-2px);
+      box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
     }
 
-    .progress-indicator {
-      height: 4px;
-      border-radius: 2px;
-      background: #e9ecef;
-      overflow: hidden;
+    .assignment-meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
     }
 
-    .progress-bar {
-      height: 100%;
-      transition: width 0.3s ease;
+    .meta-item {
+      display: flex;
+      align-items: center;
+    }
+
+    .table > :not(caption) > * > * {
+      padding: 1rem 1.5rem;
     }
   </style>
 <% end %>

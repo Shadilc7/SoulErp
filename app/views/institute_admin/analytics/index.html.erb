@@ -1,0 +1,260 @@
+<div class="container-fluid py-4">
+  <h1 class="h3 mb-4">Analytics Dashboard</h1>
+  
+  <!-- Date Range Selector -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <%= form_with url: institute_admin_analytics_path, method: :get, class: "row g-3 align-items-center", data: { controller: "autosubmit" } do |f| %>
+        <div class="col-md-4">
+          <label class="form-label">Date Range</label>
+          <div class="input-group">
+            <%= f.date_field :start_date, value: @start_date, class: "form-control", data: { action: "change->autosubmit#submit" } %>
+            <span class="input-group-text">to</span>
+            <%= f.date_field :end_date, value: @end_date, class: "form-control", data: { action: "change->autosubmit#submit" } %>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <%= f.submit "Apply", class: "btn btn-primary mt-4" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Overview Stats -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Total Participants</h6>
+          <h2 class="card-title mb-0"><%= @total_participants %></h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Total Assignments</h6>
+          <h2 class="card-title mb-0"><%= @total_assignments %></h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Overall Completion Rate</h6>
+          <h2 class="card-title mb-0"><%= @completion_rate %>%</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Active Sections</h6>
+          <h2 class="card-title mb-0"><%= @sections.count %></h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Daily Submissions Chart -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="card-title mb-0">Daily Submissions</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="dailySubmissionsChart" height="100"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Section Performance and Top Participants -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Section Performance</h5>
+          <%= link_to "View All", "#", class: "btn btn-sm btn-outline-primary" %>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Section</th>
+                  <th>Participants</th>
+                  <th>Completion Rate</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @section_performance.each do |section| %>
+                  <tr>
+                    <td><%= section[:name] %></td>
+                    <td><%= section[:participant_count] %></td>
+                    <td>
+                      <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: <%= section[:completion_rate] %>%"></div>
+                      </div>
+                      <small class="text-muted"><%= section[:completion_rate] %>%</small>
+                    </td>
+                    <td>
+                      <%= link_to section_performance_institute_admin_analytics_path(section_id: section[:id]), class: "btn btn-sm btn-outline-secondary" do %>
+                        <i class="bi bi-bar-chart-fill"></i>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-white">
+          <h5 class="card-title mb-0">Top Performing Participants</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Participant</th>
+                  <th>Section</th>
+                  <th>Completion Rate</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @top_participants.each do |participant| %>
+                  <tr>
+                    <td><%= participant[:name] %></td>
+                    <td><%= participant[:section] %></td>
+                    <td>
+                      <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: <%= participant[:completion_rate] %>%"></div>
+                      </div>
+                      <small class="text-muted"><%= participant[:completion_rate] %>%</small>
+                    </td>
+                    <td>
+                      <%= link_to participant_performance_institute_admin_analytics_path(participant_id: participant[:id]), class: "btn btn-sm btn-outline-secondary" do %>
+                        <i class="bi bi-bar-chart-fill"></i>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Recent Assignments -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Recent Assignments</h5>
+          <%= link_to "View All", institute_admin_assignments_path, class: "btn btn-sm btn-outline-primary" %>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Date Range</th>
+                  <th>Type</th>
+                  <th>Completion</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @recent_assignments.each do |assignment| %>
+                  <tr>
+                    <td><%= assignment.title %></td>
+                    <td><%= assignment.start_date.strftime("%b %d") %> - <%= assignment.end_date.strftime("%b %d, %Y") %></td>
+                    <td><%= assignment.assignment_type.titleize %></td>
+                    <td>
+                      <% 
+                        completed_count = assignment.assignment_responses
+                          .select("DISTINCT participant_id")
+                          .size
+                        total_count = assignment.participants.count
+                        completion_rate = total_count > 0 ? (completed_count.to_f / total_count * 100).round(2) : 0
+                      %>
+                      <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: <%= completion_rate %>%"></div>
+                      </div>
+                      <small class="text-muted"><%= completion_rate %>%</small>
+                    </td>
+                    <td>
+                      <%= link_to assignment_analytics_institute_admin_analytics_path(assignment_id: assignment.id), class: "btn btn-sm btn-outline-secondary" do %>
+                        <i class="bi bi-bar-chart-fill"></i>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% content_for :scripts do %>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Daily Submissions Chart
+      const dailySubmissionsCtx = document.getElementById('dailySubmissionsChart').getContext('2d');
+      
+      // Generate dates between start and end date
+      const startDate = new Date('<%= @start_date.strftime("%Y-%m-%d") %>');
+      const endDate = new Date('<%= @end_date.strftime("%Y-%m-%d") %>');
+      const dateLabels = [];
+      const submissionData = [];
+      
+      for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+        const dateString = date.toISOString().split('T')[0];
+        dateLabels.push(dateString);
+        submissionData.push(<%= raw @daily_submissions.to_json %>[dateString] || 0);
+      }
+      
+      new Chart(dailySubmissionsCtx, {
+        type: 'line',
+        data: {
+          labels: dateLabels,
+          datasets: [{
+            label: 'Daily Submissions',
+            data: submissionData,
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 2,
+            tension: 0.1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
+        }
+      });
+    });
+  </script>
+<% end %> 

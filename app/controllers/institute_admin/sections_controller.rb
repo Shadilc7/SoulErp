@@ -17,22 +17,6 @@ module InstituteAdmin
           AND users.role = #{User.roles[:participant]}
         ) as participants_count")
         .includes(:participants)
-
-      respond_to do |format|
-        format.html
-        format.pdf do
-          pdf = SectionReportPdf.new(@sections, current_institute)
-          send_data pdf.render,
-            filename: "sections_report_#{Date.current}.pdf",
-            type: "application/pdf",
-            disposition: "inline"
-        end
-        format.csv do
-          send_data generate_csv(@sections),
-            filename: "sections_report_#{Date.current}.csv"
-        end
-        format.json { render json: @sections }
-      end
     end
 
     def show
@@ -109,30 +93,6 @@ module InstituteAdmin
       params.require(:section).permit(
         :name, :code, :capacity, :description, :status
       )
-    end
-
-    def generate_csv(sections)
-      CSV.generate(headers: true) do |csv|
-        csv << [
-          "ID", "Name", "Code", "Total Participants",
-          "Active Participants", "Training Programs",
-          "Active Programs", "Created Date", "Status"
-        ]
-
-        sections.each do |section|
-          csv << [
-            section.id,
-            section.name,
-            section.code,
-            section.participants.count,
-            section.participants.active.count,
-            section.training_programs.count,
-            section.training_programs.active.count,
-            section.created_at.strftime("%B %d, %Y"),
-            section.status.titleize
-          ]
-        end
-      end
     end
   end
 end

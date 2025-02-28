@@ -7,21 +7,6 @@ module InstituteAdmin
 
     def index
       @participants = current_institute.participants.includes(:user, :section)
-
-      respond_to do |format|
-        format.html
-        format.pdf do
-          pdf = ParticipantReportPdf.new(@participants, current_institute)
-          send_data pdf.render,
-            filename: "participants_report_#{Date.current}.pdf",
-            type: "application/pdf",
-            disposition: "inline"
-        end
-        format.csv do
-          send_data generate_csv(@participants),
-            filename: "participants_report_#{Date.current}.csv"
-        end
-      end
     end
 
     def show
@@ -107,31 +92,6 @@ module InstituteAdmin
           :institute_id
         ]
       )
-    end
-
-    def generate_csv(participants)
-      CSV.generate(headers: true) do |csv|
-        csv << [
-          "ID", "Name", "Email", "Section", "Training Programs",
-          "Completed Programs", "Active Programs", "Enrollment Date",
-          "Status", "Last Active"
-        ]
-
-        participants.each do |participant|
-          csv << [
-            participant.id,
-            participant.user.full_name,
-            participant.user.email,
-            participant.section&.name || "Not Assigned",
-            participant.all_training_programs.count,
-            participant.completed_programs.count,
-            participant.ongoing_programs.count,
-            participant.enrollment_date&.strftime("%B %d, %Y"),
-            participant.status.titleize,
-            participant.user.last_sign_in_at&.strftime("%B %d, %Y %I:%M %p") || "Never"
-          ]
-        end
-      end
     end
   end
 end

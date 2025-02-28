@@ -1,0 +1,221 @@
+<!-- Header -->
+<div class="container py-4">
+  <div class="card card-custom shadow-sm mb-4">
+    <div class="card-header card-header-custom py-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+          <%= link_to participant_portal_training_programs_path, class: "btn btn-outline-secondary btn-sm" do %>
+            <i class="bi bi-arrow-left"></i>
+          <% end %>
+          <h4 class="mb-0"><%= @training_program.title %></h4>
+        </div>
+        <span class="badge bg-<%= @training_program.status == 'completed' ? 'success' : 'primary' %>">
+          <%= @training_program.status.titleize %>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Program Details -->
+    <div class="col-12 col-lg-8">
+      <div class="card card-custom shadow-sm">
+        <div class="card-header card-header-custom py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-info-circle me-2"></i>
+            Program Details
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-4">
+            <h6 class="text-muted mb-3">Description</h6>
+            <p class="mb-0"><%= @training_program.description %></p>
+          </div>
+
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="list-group list-group-flush">
+                <div class="list-group-item px-0">
+                  <small class="text-muted d-block">Start Date</small>
+                  <span class="fw-medium">
+                    <i class="bi bi-calendar-check me-1"></i>
+                    <%= @training_program.start_date.strftime("%B %d, %Y") %>
+                  </span>
+                </div>
+                <div class="list-group-item px-0">
+                  <small class="text-muted d-block">End Date</small>
+                  <span class="fw-medium">
+                    <i class="bi bi-calendar-x me-1"></i>
+                    <%= @training_program.end_date.strftime("%B %d, %Y") %>
+                  </span>
+                </div>
+                <div class="list-group-item px-0">
+                  <small class="text-muted d-block">Duration</small>
+                  <span class="fw-medium">
+                    <i class="bi bi-clock me-1"></i>
+                    <%= (@training_program.end_date.to_date - @training_program.start_date.to_date).to_i + 1 %> days
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="list-group list-group-flush">
+                <div class="list-group-item px-0">
+                  <small class="text-muted d-block">Program Type</small>
+                  <span class="fw-medium">
+                    <i class="bi bi-people me-1"></i>
+                    <%= @training_program.program_type.titleize %>
+                  </span>
+                </div>
+                <% if @training_program.section.present? %>
+                  <div class="list-group-item px-0">
+                    <small class="text-muted d-block">Section</small>
+                    <span class="fw-medium">
+                      <i class="bi bi-grid me-1"></i>
+                      <%= @training_program.section.name %>
+                    </span>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trainer Information -->
+    <div class="col-12 col-lg-4">
+      <div class="card card-custom shadow-sm">
+        <div class="card-header card-header-custom py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-person-workspace me-2"></i>
+            Trainer Information
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="text-center mb-4">
+            <div class="trainer-avatar bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3">
+              <span class="text-white">
+                <%= @training_program.trainer.user.first_name&.first&.upcase || @training_program.trainer.user.email.first.upcase %>
+              </span>
+            </div>
+            <h5 class="mb-1"><%= @training_program.trainer.user.full_name %></h5>
+            <p class="text-muted mb-0"><%= @training_program.trainer.specialization %></p>
+          </div>
+
+          <div class="list-group list-group-flush">
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">Qualification</small>
+              <span class="fw-medium">
+                <i class="bi bi-mortarboard me-1"></i>
+                <%= @training_program.trainer.qualification %>
+              </span>
+            </div>
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">Experience</small>
+              <span class="fw-medium">
+                <i class="bi bi-briefcase me-1"></i>
+                <%= pluralize(@training_program.trainer.experience_years, 'year') %>
+              </span>
+            </div>
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">Contact</small>
+              <span class="fw-medium">
+                <i class="bi bi-telephone me-1"></i>
+                <%= @training_program.trainer.phone_number %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback Section -->
+      <% if @training_program.completed? %>
+        <div class="card card-custom shadow-sm mt-4">
+          <div class="card-header card-header-custom py-3">
+            <h5 class="mb-0">
+              <i class="bi bi-star me-2"></i>
+              Feedback
+            </h5>
+          </div>
+          <div class="card-body">
+            <% if @training_program.feedback.present? %>
+              <div class="text-center">
+                <div class="rating-display mb-3">
+                  <% @training_program.feedback.rating.times do %>
+                    <i class="bi bi-star-fill text-warning"></i>
+                  <% end %>
+                  <% (5 - @training_program.feedback.rating).times do %>
+                    <i class="bi bi-star text-warning"></i>
+                  <% end %>
+                </div>
+                <p class="mb-0"><%= @training_program.feedback.content %></p>
+              </div>
+            <% else %>
+              <div class="text-center">
+                <p class="text-muted mb-3">You haven't provided feedback for this program yet.</p>
+                <%= link_to new_participant_portal_training_program_feedback_path(@training_program), class: "btn btn-primary" do %>
+                  <i class="bi bi-star me-1"></i> Give Feedback
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<% content_for :styles do %>
+<style>
+  .card-custom {
+    border: none;
+    border-radius: 0.5rem;
+  }
+
+  .card-header-custom {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+
+  .list-group-item {
+    border: none;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .list-group-item:last-child {
+    border-bottom: none;
+  }
+
+  .trainer-avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bs-primary);
+    color: white;
+  }
+
+  .rating-display {
+    font-size: 1.5rem;
+  }
+
+  .badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .trainer-avatar {
+      width: 60px;
+      height: 60px;
+      font-size: 1.5rem;
+    }
+  }
+</style>
+<% end %> 

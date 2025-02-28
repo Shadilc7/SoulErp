@@ -191,13 +191,13 @@
   </div>
 
   <!-- Action Buttons -->
-  <div class="mt-5 d-flex justify-content-end gap-3">
+  <div class="form-actions mt-4 d-flex gap-2">
+    <%= f.submit @question.new_record? ? "Create Question" : "Update Question", 
+        class: "btn btn-primary",
+        data: { question_form_target: "submitButton" } %>
     <%= link_to "Cancel", 
         @question.new_record? ? institute_admin_questions_path : institute_admin_question_path(@question), 
-        class: "btn btn-outline-secondary btn-lg" %>
-    <%= f.submit @question.new_record? ? "Create Question" : "Update Question", 
-        class: "btn btn-custom-primary btn-lg",
-        data: { question_form_target: "submitButton" } %>
+        class: "btn btn-secondary" %>
   </div>
 <% end %>
 

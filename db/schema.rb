@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_23_145551) do
+ActiveRecord::Schema[8.0].define(version: 2025_02_23_145552) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -211,6 +211,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_23_145551) do
     t.index ["user_id"], name: "index_trainers_on_user_id"
   end
 
+  create_table "training_program_feedbacks", force: :cascade do |t|
+    t.bigint "training_program_id", null: false
+    t.bigint "participant_id", null: false
+    t.text "content", null: false
+    t.integer "rating", null: false
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["participant_id"], name: "index_training_program_feedbacks_on_participant_id"
+    t.index ["training_program_id", "participant_id"], name: "index_training_program_feedbacks_uniqueness", unique: true
+    t.index ["training_program_id"], name: "index_training_program_feedbacks_on_training_program_id"
+  end
+
   create_table "training_programs", force: :cascade do |t|
     t.bigint "institute_id", null: false
     t.bigint "trainer_id", null: false
@@ -284,6 +297,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_23_145551) do
   add_foreign_key "sections", "institutes"
   add_foreign_key "trainers", "institutes"
   add_foreign_key "trainers", "users"
+  add_foreign_key "training_program_feedbacks", "participants"
+  add_foreign_key "training_program_feedbacks", "training_programs"
   add_foreign_key "training_programs", "institutes"
   add_foreign_key "training_programs", "participants"
   add_foreign_key "training_programs", "sections"

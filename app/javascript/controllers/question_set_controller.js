@@ -12,7 +12,15 @@ export default class extends Controller {
     const title = this.titleInputTarget.value.trim()
     const selectedQuestions = document.querySelectorAll('input[name="question_set[question_ids][]"]:checked').length
     
-    this.submitButtonTarget.disabled = title.length === 0 || selectedQuestions === 0
+    if (title.length === 0 || selectedQuestions === 0) {
+      this.submitButtonTarget.disabled = true
+      this.submitButtonTarget.classList.remove('btn-primary')
+      this.submitButtonTarget.classList.add('btn-secondary')
+    } else {
+      this.submitButtonTarget.disabled = false
+      this.submitButtonTarget.classList.remove('btn-secondary')
+      this.submitButtonTarget.classList.add('btn-primary')
+    }
   }
 
   updateCounter() {

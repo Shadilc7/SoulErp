@@ -1,0 +1,148 @@
+<!-- Header -->
+<div class="container py-4">
+  <div class="card card-custom shadow-sm mb-4">
+    <div class="card-header card-header-custom py-3">
+      <div class="d-flex align-items-center">
+        <div class="me-3">
+          <i class="bi bi-mortarboard fs-4 text-primary"></i>
+        </div>
+        <div>
+          <h4 class="mb-1">Training Programs</h4>
+          <p class="text-muted mb-0">View all your training programs and their details</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Training Programs Grid -->
+  <div class="row g-4">
+    <% @training_programs.each do |program| %>
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="card card-custom shadow-sm h-100">
+          <!-- Card Header -->
+          <div class="card-header card-header-custom py-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0 text-truncate" title="<%= program.title %>">
+                <%= program.title %>
+              </h5>
+              <span class="badge bg-<%= program.status == 'completed' ? 'success' : 'primary' %>">
+                <%= program.status.titleize %>
+              </span>
+            </div>
+          </div>
+
+          <!-- Card Body -->
+          <div class="card-body">
+            <!-- Program Details -->
+            <div class="mb-4">
+              <p class="text-muted mb-3"><%= truncate(program.description, length: 100) %></p>
+              
+              <div class="list-group list-group-flush">
+                <!-- Trainer -->
+                <div class="list-group-item px-0">
+                  <small class="text-muted d-block">Trainer</small>
+                  <span class="fw-medium">
+                    <i class="bi bi-person-workspace me-1"></i>
+                    <%= program.trainer.user.full_name %>
+                  </span>
+                </div>
+
+                <!-- Dates -->
+                <div class="list-group-item px-0">
+                  <small class="text-muted d-block">Duration</small>
+                  <span class="fw-medium">
+                    <i class="bi bi-calendar-range me-1"></i>
+                    <%= program.start_date.strftime("%b %d") %> - <%= program.end_date.strftime("%b %d, %Y") %>
+                  </span>
+                </div>
+
+                <!-- Type -->
+                <div class="list-group-item px-0">
+                  <small class="text-muted d-block">Type</small>
+                  <span class="fw-medium">
+                    <i class="bi bi-people me-1"></i>
+                    <%= program.program_type.titleize %>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2">
+              <%= link_to participant_portal_training_program_path(program), class: "btn btn-outline-primary flex-grow-1" do %>
+                <i class="bi bi-eye me-1"></i> View Details
+              <% end %>
+
+              <% if program.completed? %>
+                <% if program.feedback.present? %>
+                  <button class="btn btn-success" disabled>
+                    <i class="bi bi-check-circle me-1"></i> Feedback Submitted
+                  </button>
+                <% else %>
+                  <%= link_to new_participant_portal_training_program_feedback_path(program), class: "btn btn-primary" do %>
+                    <i class="bi bi-star me-1"></i> Give Feedback
+                  <% end %>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @training_programs.empty? %>
+      <div class="col-12">
+        <div class="card card-custom shadow-sm">
+          <div class="card-body py-5">
+            <div class="text-center">
+              <i class="bi bi-mortarboard display-1 text-muted mb-3"></i>
+              <h5>No Training Programs Found</h5>
+              <p class="text-muted mb-0">You are not enrolled in any training programs yet.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<% content_for :styles do %>
+<style>
+  .card-custom {
+    border: none;
+    border-radius: 0.5rem;
+    transition: transform 0.2s;
+  }
+
+  .card-custom:hover {
+    transform: translateY(-2px);
+  }
+
+  .card-header-custom {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+
+  .list-group-item {
+    border: none;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .list-group-item:last-child {
+    border-bottom: none;
+  }
+
+  .badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .card-custom {
+      margin-bottom: 1rem;
+    }
+  }
+</style>
+<% end %> 

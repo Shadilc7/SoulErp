@@ -96,8 +96,8 @@
     <% end %>
   </div>
 
-  <div class="mt-4">
-    <%= f.submit @user.new_record? ? "Create Participant" : "Update Participant", class: "btn btn-custom-primary" %>
-    <%= link_to "Cancel", institute_admin_participants_path, class: "btn btn-outline-custom ms-2" %>
+  <div class="form-actions mt-4 d-flex gap-2">
+    <%= f.submit @user.new_record? ? "Create Participant" : "Update Participant", class: "btn btn-primary" %>
+    <%= link_to "Cancel", institute_admin_participants_path, class: "btn btn-secondary" %>
   </div>
 <% end %> 

@@ -3,6 +3,7 @@ class TrainingProgram < ApplicationRecord
   belongs_to :trainer
   belongs_to :section, optional: true
   belongs_to :participant, optional: true
+  has_one :feedback, class_name: "TrainingProgramFeedback", dependent: :destroy
 
   validates :title, presence: true
   validates :description, presence: true
@@ -26,6 +27,17 @@ class TrainingProgram < ApplicationRecord
   }, default: :pending
 
   scope :active, -> { where(status: [ :pending, :ongoing ]) }
+
+  def progress
+    return 100 if completed?
+    return 0 if pending? || cancelled? || start_date > Time.current
+
+    total_duration = (end_date - start_date).to_f
+    elapsed_time = (Time.current - start_date).to_f
+    progress = (elapsed_time / total_duration * 100).round
+
+    [ progress, 100 ].min
+  end
 
   private
 

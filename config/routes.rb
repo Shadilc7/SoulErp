@@ -73,6 +73,13 @@ Rails.application.routes.draw do
         get "section/:section_id", action: :index, on: :collection
         get "section/:section_id/participant/:participant_id", action: :index, on: :collection
       end
+      resources :analytics, only: [ :index ] do
+        collection do
+          get :participant_performance
+          get :section_performance
+          get :assignment_analytics
+        end
+      end
     end
   end
 
@@ -97,14 +104,15 @@ Rails.application.routes.draw do
       root "dashboard#index"
       resources :training_programs, only: [ :index, :show ] do
         resources :sessions, only: [ :show ]
+        resources :feedbacks, only: [ :new, :create ], controller: "training_program_feedbacks"
       end
-      resource :profile, only: [ :show, :edit, :update ]
       resources :assignments, only: [ :index, :show ] do
         member do
           get :take_assignment
           post :submit
         end
       end
+      resource :profile, only: [ :show ]
     end
   end
 end

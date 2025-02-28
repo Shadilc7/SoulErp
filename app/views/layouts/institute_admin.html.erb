@@ -134,6 +134,18 @@
         border-color: var(--primary-dark);
       }
 
+      .btn-custom-primary {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+      }
+
+      .btn-custom-primary:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
+        color: white;
+      }
+
       /* Dropdown Styles */
       .dropdown-menu {
         border: none;
@@ -410,6 +422,12 @@
               <span>Trainers</span>
             <% end %>
 
+            <%= link_to institute_admin_training_programs_path,
+                class: "nav-link #{'active' if active_link?('training_programs')}" do %>
+              <i class="bi bi-mortarboard"></i>
+              <span>Training Programs</span>
+            <% end %>
+
             <%= link_to institute_admin_participants_path,
                 class: "nav-link #{'active' if active_link?('participants')}" do %>
               <i class="bi bi-people"></i>
@@ -439,6 +457,12 @@
               <i class="bi bi-clipboard2-check"></i>
               <span>Responses</span>
             <% end %>
+
+            <%= link_to institute_admin_analytics_path,
+                class: "nav-link #{'active' if active_link?('analytics')}" do %>
+              <i class="bi bi-bar-chart-fill"></i>
+              <span>Analytics</span>
+            <% end %>
           </nav>
         </div>
       </div>
@@ -448,29 +472,27 @@
 
       <!-- Main Content -->
       <div id="main-content" data-sidebar-target="content">
-        <div class="topbar d-flex align-items-center">
-          <button class="btn btn-link text-dark p-0 me-3 d-lg-none" 
-              type="button"
-              data-action="sidebar#toggle">
+        <div class="topbar d-flex justify-content-between align-items-center">
+          <button class="btn btn-link text-secondary d-lg-none" data-bs-toggle="collapse" data-bs-target="#sidebar">
             <i class="bi bi-list fs-4"></i>
           </button>
-          <div class="ms-auto d-flex align-items-center">
-            <div class="dropdown">
-              <button class="btn btn-link text-dark dropdown-toggle p-0" data-bs-toggle="dropdown">
-                <i class="bi bi-person-circle fs-5 me-2"></i>
-                <span><%= current_user.full_name %></span>
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                  <%= button_to destroy_user_session_path, 
-                      method: :delete,
-                      class: "dropdown-item text-danger" do %>
-                    <i class="bi bi-box-arrow-right me-2"></i>
-                    Sign Out
-                  <% end %>
-                </li>
-              </ul>
-            </div>
+
+          <%= render "layouts/institute_admin/navigation" %>
+
+          <div class="dropdown">
+            <a href="#" class="user-menu d-flex align-items-center gap-2 text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle fs-5"></i>
+              <span><%= current_user.full_name %></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li>
+                <%= button_to destroy_user_session_path, 
+                    method: :delete, 
+                    class: "dropdown-item text-danger" do %>
+                  <i class="bi bi-box-arrow-right me-2"></i> Logout
+                <% end %>
+              </li>
+            </ul>
           </div>
         </div>
 

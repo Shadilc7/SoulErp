@@ -1,64 +1,180 @@
+<!-- Page Heading -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0 text-gray-800">Master Admin Dashboard</h1>
+  <div>
+    <%= link_to new_admin_institute_path, class: "btn btn-custom me-2", style: "background: var(--primary-color); color: var(--dark-color);" do %>
+      <i class="bi bi-plus-lg me-1"></i> New Institute
+    <% end %>
+  </div>
+</div>
+
+<!-- Statistics Cards -->
 <div class="row">
-  <div class="col-md-4 mb-4">
-    <div class="card card-custom">
-      <div class="card-body">
+  <!-- Total Institutes Card -->
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-custom h-100 stat-card">
+      <div class="card-body p-4">
         <div class="d-flex justify-content-between align-items-center">
           <div>
-            <h6 class="card-title mb-0">Total Institutes</h6>
-            <h2 class="mt-2 mb-0"><%= @institutes_count %></h2>
+            <div class="text-uppercase mb-2 fw-bold" style="color: var(--primary-color)">Total Institutes</div>
+            <h3 class="mb-0 fw-bold"><%= @institutes_count %></h3>
+            <%= link_to admin_institutes_path, class: "mt-3 text-decoration-none", style: "color: var(--dark-color);" do %>
+              View All <i class="bi bi-arrow-right ms-1"></i>
+            <% end %>
           </div>
-          <i class="bi bi-building fs-1 icon-primary"></i>
+          <div class="stat-icon" style="color: var(--primary-color)">
+            <i class="bi bi-building"></i>
+          </div>
         </div>
-        <div class="mt-3 d-flex gap-2">
-          <%= link_to "View All", admin_institutes_path, class: "btn btn-custom-primary" %>
-          <%= link_to new_admin_institute_path, class: "btn btn-outline-custom" do %>
-            <i class="bi bi-plus-lg"></i> Add Institute
+      </div>
+    </div>
+  </div>
+
+  <!-- Institute Admins Card -->
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-custom h-100 stat-card">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-uppercase mb-2 fw-bold" style="color: var(--success-color)">Institute Admins</div>
+            <h3 class="mb-0 fw-bold"><%= @institute_admins_count %></h3>
+            <%= link_to admin_users_path, class: "mt-3 text-decoration-none", style: "color: var(--dark-color);" do %>
+              Manage Admins <i class="bi bi-arrow-right ms-1"></i>
+            <% end %>
+          </div>
+          <div class="stat-icon" style="color: var(--success-color)">
+            <i class="bi bi-people"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Programs Card -->
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-custom h-100 stat-card">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-uppercase mb-2 fw-bold" style="color: var(--info-color)">Active Programs</div>
+            <h3 class="mb-0 fw-bold"><%= @active_programs_count %></h3>
+            <span class="mt-3 d-block text-muted">
+              Across All Institutes
+            </span>
+          </div>
+          <div class="stat-icon" style="color: var(--info-color)">
+            <i class="bi bi-mortarboard"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- System Health Card -->
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card card-custom h-100 stat-card">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-uppercase mb-2 fw-bold" style="color: var(--success-color)">System Health</div>
+            <h3 class="mb-0 fw-bold text-success">100%</h3>
+            <span class="mt-3 d-block text-success">
+              All Systems Operational
+            </span>
+          </div>
+          <div class="stat-icon text-success">
+            <i class="bi bi-check-circle"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions Grid -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card card-custom">
+      <div class="card-header card-header-custom">
+        <h5 class="mb-0 fw-bold" style="color: var(--dark-color)">Quick Actions</h5>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-4">
+          <!-- New Institute -->
+          <%= link_to new_admin_institute_path, class: "col-md-3 text-decoration-none" do %>
+            <div class="action-card p-4 text-center h-100">
+              <div class="mb-3">
+                <i class="bi bi-plus-circle" style="font-size: 2.5rem; color: var(--primary-color)"></i>
+              </div>
+              <h6 class="mb-2" style="color: var(--dark-color)">Create Institute</h6>
+              <p class="text-muted small mb-0">Add a new educational institute</p>
+            </div>
+          <% end %>
+
+          <!-- New Admin -->
+          <%= link_to new_admin_user_path, class: "col-md-3 text-decoration-none" do %>
+            <div class="action-card p-4 text-center h-100">
+              <div class="mb-3">
+                <i class="bi bi-person-plus" style="font-size: 2.5rem; color: var(--success-color)"></i>
+              </div>
+              <h6 class="mb-2" style="color: var(--dark-color)">Add Admin</h6>
+              <p class="text-muted small mb-0">Create institute administrator</p>
+            </div>
+          <% end %>
+
+          <!-- Registration Settings -->
+          <%= link_to edit_admin_registration_setting_path, class: "col-md-3 text-decoration-none" do %>
+            <div class="action-card p-4 text-center h-100">
+              <div class="mb-3">
+                <i class="bi bi-gear" style="font-size: 2.5rem; color: var(--info-color)"></i>
+              </div>
+              <h6 class="mb-2" style="color: var(--dark-color)">Settings</h6>
+              <p class="text-muted small mb-0">Manage registration settings</p>
+            </div>
+          <% end %>
+
+          <!-- View Reports -->
+          <%= link_to "#", class: "col-md-3 text-decoration-none" do %>
+            <div class="action-card p-4 text-center h-100">
+              <div class="mb-3">
+                <i class="bi bi-graph-up" style="font-size: 2.5rem; color: var(--warning-color)"></i>
+              </div>
+              <h6 class="mb-2" style="color: var(--dark-color)">Analytics</h6>
+              <p class="text-muted small mb-0">View system analytics</p>
+            </div>
           <% end %>
         </div>
       </div>
     </div>
   </div>
-
-  <div class="col-md-4 mb-4">
-    <div class="card card-custom">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h6 class="card-title mb-0">Institute Admins</h6>
-            <h2 class="mt-2 mb-0"><%= @institute_admins_count %></h2>
-          </div>
-          <i class="bi bi-people fs-1 icon-primary"></i>
-        </div>
-        <%= link_to "Manage Admins", admin_users_path, class: "btn btn-custom-primary mt-3" %>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-6 col-xl-4 mb-4">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="d-flex align-items-center">
-          <div class="flex-shrink-0 me-3">
-            <div class="avatar-sm">
-              <span class="avatar-title bg-success-subtle rounded">
-                <i class="bi bi-gear-fill text-success font-size-24"></i>
-              </span>
-            </div>
-          </div>
-          <div class="flex-grow-1">
-            <h5 class="mb-1">Registration Settings</h5>
-            <p class="text-muted mb-0">
-              Manage institutes available for registration
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="card-footer bg-transparent border-top-0">
-        <%= link_to edit_admin_registration_setting_path, 
-            class: "btn btn-success btn-sm w-100" do %>
-          <i class="bi bi-gear me-2"></i>Manage Registration
-        <% end %>
-      </div>
-    </div>
-  </div>
 </div>
+
+<% content_for :styles do %>
+  <style>
+    .stat-card {
+      overflow: hidden;
+      border: none;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+      z-index: 1;
+    }
+
+    .stat-icon {
+      position: relative;
+      z-index: 2;
+    }
+
+    .action-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+    }
+  </style>
+<% end %>

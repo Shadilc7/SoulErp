@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>SOUL ERP Admin</title>
+    <title>SOUL ERP - Admin</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -13,123 +13,270 @@
 
     <style>
       :root {
-        --primary-color: #98D8AA;      /* Pastel Green */
-        --secondary-color: #F3E99F;    /* Light Yellow */
-        --accent-color: #D7B290;       /* Light Brown */
-        --highlight-color: #B7E5B4;    /* Light Pastel Green */
-        --danger-color: #FF6D60;       /* Light Red */
-        --success-color: #98D8AA;      /* Pastel Green */
-        --warning-color: #F3E99F;      /* Light Yellow */
-        --info-color: #B7E5B4;         /* Light Pastel Green */
-        --light-color: #FFFFFF;        /* White */
-        --dark-color: #2C3639;         /* Dark Gray */
+        --sidebar-width: 280px;
+        --header-height: 60px;
+        --primary-color: #7B68EE;
+        --primary-light: #9370DB;
+        --primary-dark: #6A5ACD;
+        --secondary-color: #E6E6FA;
+        --accent-color: #483D8B;
+        --success-color: #4CAF50;
+        --warning-color: #FFC107;
+        --danger-color: #DC3545;
+        --info-color: #17A2B8;
+        --light-color: #FFFFFF;
+        --dark-color: #2C3639;
       }
 
-      .navbar-custom {
-        background-color: var(--primary-color) !important;
+      body {
+        min-height: 100vh;
+        background-color: #f8f9fc;
       }
 
-      .navbar-custom .nav-link,
-      .navbar-custom .navbar-brand,
-      .navbar-custom .navbar-text {
-        color: var(--dark-color) !important;
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: var(--sidebar-width);
+        background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        z-index: 1000;
+        transition: transform 0.3s ease;
       }
 
-      .btn-custom-primary {
-        background-color: var(--primary-color);
-        border-color: var(--primary-color);
-        color: var(--dark-color);
+      .sidebar-brand {
+        height: var(--header-height);
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .sidebar .nav-link {
+        color: var(--light-color);
+        padding: 1rem 1.5rem;
+        margin: 0.2rem 1rem;
+        border-radius: 0.5rem;
         transition: all 0.3s ease;
+        font-weight: 500;
       }
 
-      .btn-custom-primary:hover {
-        background-color: #7BC5A0;
-        border-color: #7BC5A0;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      .sidebar .nav-link:hover,
+      .sidebar .nav-link.active {
+        color: var(--light-color);
+        background: rgba(255, 255, 255, 0.2);
       }
 
-      .btn-outline-custom {
-        border-color: var(--primary-color);
-        color: var(--dark-color);
+      .sidebar .nav-link i {
+        margin-right: 0.5rem;
+        width: 1.5rem;
       }
 
-      .btn-outline-custom:hover {
-        background-color: var(--primary-color);
-        color: var(--dark-color);
+      .main-content {
+        margin-left: var(--sidebar-width);
+        min-height: 100vh;
+        transition: margin 0.3s ease;
+      }
+
+      .topbar {
+        height: var(--header-height);
+        background: white;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
       }
 
       .card-custom {
-        border-color: var(--highlight-color);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
       }
 
       .card-custom:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(58, 59, 69, 0.15);
       }
 
       .card-header-custom {
-        background-color: var(--primary-color);
-        color: var(--dark-color);
-        border-bottom: none;
+        background: white;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        border-radius: 1rem 1rem 0 0;
       }
 
-      .badge-success {
-        background-color: var(--success-color) !important;
-        color: var(--dark-color);
+      .stat-card {
+        position: relative;
+        overflow: hidden;
       }
 
-      .badge-danger {
-        background-color: var(--danger-color) !important;
-        color: var(--dark-color);
+      .stat-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100%;
+        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1));
+        transform: skewX(-15deg);
       }
 
-      .icon-primary {
-        color: var(--primary-color);
+      .stat-icon {
+        font-size: 2.5rem;
+        opacity: 0.8;
+        transition: transform 0.3s ease;
+      }
+
+      .card-custom:hover .stat-icon {
+        transform: scale(1.1);
+      }
+
+      .btn-custom {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .btn-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+      }
+
+      .action-card {
+        border-radius: 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+      }
+
+      .action-card:hover {
+        background: var(--light-color);
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.1);
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+
+        .sidebar.show {
+          transform: translateX(0);
+        }
+
+        .main-content {
+          margin-left: 0;
+        }
+
+        .sidebar-backdrop {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 999;
+        }
+
+        .sidebar-backdrop.show {
+          display: block;
+        }
       }
     </style>
+
+    <%= yield :styles %>
   </head>
 
-  <body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-custom">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">SOUL ERP</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <%= link_to "Dashboard", admin_root_path, class: "nav-link" %>
-            </li>
-            <li class="nav-item">
-              <%= link_to "Institutes", admin_institutes_path, class: "nav-link" %>
-            </li>
-            <li class="nav-item">
-              <%= link_to "Admins", admin_users_path, class: "nav-link" %>
-            </li>
-          </ul>
-          <div class="d-flex">
-            <span class="navbar-text me-3">
-              Welcome, <%= current_user.email %>
-            </span>
-            <%= button_to "Logout", destroy_user_session_path, method: :delete, class: "btn btn-outline-dark" %>
+  <body>
+    <div data-controller="sidebar">
+      <!-- Sidebar -->
+      <nav class="sidebar" data-sidebar-target="content">
+        <div class="sidebar-brand d-flex align-items-center justify-content-center">
+          <div class="sidebar-brand-icon">
+            <i class="bi bi-buildings-fill text-light fs-4"></i>
           </div>
+          <div class="sidebar-brand-text text-light ms-2 fw-bold">SOUL ERP</div>
+        </div>
+
+        <hr class="sidebar-divider my-2 opacity-25">
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <%= link_to admin_root_path, class: "nav-link #{active_link?('dashboard')}" do %>
+              <i class="bi bi-speedometer2"></i>
+              <span>Dashboard</span>
+            <% end %>
+          </li>
+
+          <li class="nav-item">
+            <%= link_to admin_institutes_path, class: "nav-link #{active_link?('institutes')}" do %>
+              <i class="bi bi-building"></i>
+              <span>Institutes</span>
+            <% end %>
+          </li>
+
+          <li class="nav-item">
+            <%= link_to admin_users_path, class: "nav-link #{active_link?('users')}" do %>
+              <i class="bi bi-people"></i>
+              <span>Institute Admins</span>
+            <% end %>
+          </li>
+
+          <li class="nav-item">
+            <%= link_to edit_admin_registration_setting_path, class: "nav-link #{active_link?('registration_settings')}" do %>
+              <i class="bi bi-gear"></i>
+              <span>Settings</span>
+            <% end %>
+          </li>
+        </ul>
+
+        <hr class="sidebar-divider my-2 opacity-25">
+
+        <div class="px-3 mt-4">
+          <%= button_to destroy_user_session_path, method: :delete, 
+              class: "btn btn-light w-100 d-flex align-items-center justify-content-center gap-2" do %>
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Sign Out</span>
+          <% end %>
+        </div>
+      </nav>
+
+      <!-- Backdrop for mobile -->
+      <div class="sidebar-backdrop" data-sidebar-target="backdrop" data-action="click->sidebar#hide"></div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Topbar -->
+        <nav class="topbar navbar navbar-expand navbar-light">
+          <div class="container-fluid">
+            <!-- Sidebar Toggle -->
+            <button class="btn btn-link d-md-none" data-action="click->sidebar#toggle">
+              <i class="bi bi-list"></i>
+            </button>
+
+            <!-- User Info -->
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                  <span class="d-none d-lg-inline text-gray-600 small me-1"><%= current_user.email %></span>
+                  <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" 
+                       style="width: 32px; height: 32px;">
+                    <%= current_user.first_name&.first || current_user.email.first.upcase %>
+                  </div>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <%= button_to destroy_user_session_path, method: :delete, class: "dropdown-item" do %>
+                      <i class="bi bi-box-arrow-right me-1"></i> Sign Out
+                    <% end %>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div class="container-fluid p-4">
+          <%= yield %>
         </div>
       </div>
-    </nav>
-
-    <div class="container-fluid mt-4">
-      <% if notice %>
-        <div class="alert alert-success"><%= notice %></div>
-      <% end %>
-      <% if alert %>
-        <div class="alert alert-danger"><%= alert %></div>
-      <% end %>
-
-      <%= yield %>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

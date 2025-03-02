@@ -3,14 +3,16 @@ class Question < ApplicationRecord
   has_many :question_set_items, dependent: :restrict_with_error
   has_many :question_sets, through: :question_set_items
   has_many :options, dependent: :destroy
-  accepts_nested_attributes_for :options, allow_destroy: true, reject_if: :all_blank
+  accepts_nested_attributes_for :options, allow_destroy: true, reject_if: proc { |attributes| 
+    attributes['text'].blank? && attributes['_destroy'] != '1'
+  }
   has_many :assignment_questions, dependent: :restrict_with_error
   has_many :assignments, through: :assignment_questions
+  has_many :responses, class_name: 'AssignmentResponse', dependent: :destroy
 
   validates :title, presence: true
   validates :question_type, presence: true
-  validates :marks, presence: true, numericality: { greater_than: 0 }
-  validates :options, presence: true, if: :requires_options?
+  validate :validate_options_and_answers, if: :requires_options?
 
   enum :question_type, {
     short_answer: 0,    # Text input for short answers
@@ -21,13 +23,7 @@ class Question < ApplicationRecord
     date: 5,            # Date picker
     time: 6,            # Time picker
     rating: 7           # Star rating
-  }, default: :short_answer
-
-  enum :difficulty_level, {
-    easy: 0,
-    medium: 1,
-    hard: 2
-  }, default: :medium
+  }
 
   # Add scope for active questions
   scope :active, -> { where(active: true) }
@@ -35,7 +31,7 @@ class Question < ApplicationRecord
   before_destroy :check_assignment_associations
 
   def requires_options?
-    %w[multiple_choice checkboxes dropdown].include?(question_type)
+    multiple_choice? || checkboxes? || dropdown?
   end
 
   def formatted_options
@@ -51,8 +47,17 @@ class Question < ApplicationRecord
   private
 
   def validate_options_and_answers
-    if requires_options? && options.size < 2
-      errors.add(:options, "must have at least 2 options")
+    if requires_options?
+      if options.size < 2
+        errors.add(:options, "must have at least 2 options")
+      end
+      
+      # Ensure all options have text
+      options.each do |option|
+        if option.text.blank? && !option.marked_for_destruction?
+          option.text = "Option #{Time.now.to_i}"
+        end
+      end
     end
   end
 

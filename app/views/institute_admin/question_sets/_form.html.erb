@@ -30,6 +30,19 @@
       </span>
     </div>
 
+    <!-- Select All Checkbox - With enhanced visibility -->
+    <div class="mb-3 border-bottom pb-2" style="background-color: #f8f9fa; padding: 10px; border-radius: 5px;">
+      <div class="form-check">
+        <input type="checkbox" 
+               id="select_all_questions" 
+               class="form-check-input"
+               style="transform: scale(1.2);">
+        <label class="form-check-label fw-bold" for="select_all_questions" style="font-size: 1.1rem; color: #0d6efd;">
+          Select All Questions
+        </label>
+      </div>
+    </div>
+
     <div class="questions-list">
       <% current_institute.questions.active.each do |question| %>
         <div class="question-item">
@@ -37,9 +50,12 @@
             <%= check_box_tag "question_set[question_ids][]", 
                 question.id, 
                 @question_set.question_ids.include?(question.id),
-                class: "form-check-input",
-                data: { action: "change->question-set#updateCounter" } %>
-            <label class="form-check-label">
+                class: "form-check-input question-checkbox",
+                id: "question_#{question.id}",
+                data: { 
+                  action: "change->question-set#updateCounter"
+                } %>
+            <label class="form-check-label" for="question_<%= question.id %>">
               <%= question.title %>
             </label>
           </div>

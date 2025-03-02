@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_23_145552) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_02_095605) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -111,11 +111,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_23_145552) do
 
   create_table "options", force: :cascade do |t|
     t.bigint "question_id", null: false
-    t.text "text", null: false
     t.boolean "correct", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "value"
+    t.string "text", default: "Default Option", null: false
     t.index ["question_id"], name: "index_options_on_question_id"
   end
 
@@ -165,8 +165,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_23_145552) do
     t.string "title", null: false
     t.text "description"
     t.integer "question_type", default: 0, null: false
-    t.integer "marks", default: 1
-    t.integer "difficulty_level", default: 1, null: false
     t.boolean "active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

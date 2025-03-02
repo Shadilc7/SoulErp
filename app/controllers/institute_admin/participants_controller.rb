@@ -23,6 +23,12 @@ module InstituteAdmin
       @user = User.new(user_params)
       @user.role = :participant
       @user.institute = current_institute
+      
+      # Set the section_id on the user model from the participant attributes
+      if @user.participant && @user.participant.section_id.present?
+        @user.section_id = @user.participant.section_id
+      end
+      
       @user.participant.institute = current_institute if @user.participant
 
       if @user.save
@@ -45,6 +51,11 @@ module InstituteAdmin
       if update_params[:password].blank? && update_params[:password_confirmation].blank?
         update_params = update_params.except(:password, :password_confirmation)
       end
+      
+      # Set the section_id on the user model from the participant attributes
+      if update_params[:participant_attributes] && update_params[:participant_attributes][:section_id].present?
+        @user.section_id = update_params[:participant_attributes][:section_id]
+      end
 
       if @user.update(update_params)
         redirect_to institute_admin_participants_path,
@@ -55,12 +66,20 @@ module InstituteAdmin
     end
 
     def destroy
-      if @user.destroy
+      begin
+        if @user.destroy
+          redirect_to institute_admin_participants_path,
+            notice: "Participant was successfully deleted."
+        else
+          redirect_to institute_admin_participants_path,
+            alert: "Failed to delete participant: #{@user.errors.full_messages.to_sentence}"
+        end
+      rescue ActiveRecord::InvalidForeignKey => e
         redirect_to institute_admin_participants_path,
-          notice: "Participant was successfully deleted."
-      else
+          alert: "Cannot delete participant because it is referenced by other records. Please remove those associations first."
+      rescue StandardError => e
         redirect_to institute_admin_participants_path,
-          alert: "Failed to delete participant."
+          alert: "An error occurred: #{e.message}"
       end
     end
 
@@ -83,6 +102,7 @@ module InstituteAdmin
         :email,
         :password,
         :password_confirmation,
+        :section_id,
         participant_attributes: [
           :id,
           :date_of_birth,

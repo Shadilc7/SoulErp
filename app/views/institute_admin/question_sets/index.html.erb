@@ -7,45 +7,52 @@
   </div>
 
   <div class="card-body">
-    <div class="table-responsive">
-      <table class="table table-hover">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Questions</th>
-            <th>Total Marks</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @question_sets.each do |question_set| %>
+    <% if @question_sets.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
             <tr>
-              <td><%= question_set.title %></td>
-              <td><%= question_set.questions.count %></td>
-              <td><%= question_set.total_marks %></td>
-              <td>
-                <div class="d-flex gap-2">
-                  <%= link_to institute_admin_question_set_path(question_set), 
-                      class: "btn btn-sm btn-custom-primary" do %>
-                    <i class="bi bi-eye"></i>
-                  <% end %>
-                  <%= link_to edit_institute_admin_question_set_path(question_set), 
-                      class: "btn btn-sm btn-outline-custom" do %>
-                    <i class="bi bi-pencil"></i>
-                  <% end %>
-                  <%= button_to institute_admin_question_set_path(question_set),
-                      method: :delete,
-                      class: "btn btn-sm btn-outline-danger",
-                      form: { class: 'd-inline' },
-                      data: { turbo_confirm: "Are you sure?" } do %>
-                    <i class="bi bi-trash"></i>
-                  <% end %>
-                </div>
-              </td>
+              <th>Title</th>
+              <th>Questions</th>
+              <th>Total Marks</th>
+              <th>Actions</th>
             </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            <% @question_sets.each do |question_set| %>
+              <tr>
+                <td><%= question_set.title %></td>
+                <td><%= question_set.questions.count %></td>
+                <td><%= question_set.total_marks %></td>
+                <td>
+                  <div class="d-flex gap-2">
+                    <%= link_to institute_admin_question_set_path(question_set), 
+                        class: "btn btn-sm btn-custom-primary" do %>
+                      <i class="bi bi-eye"></i>
+                    <% end %>
+                    <%= link_to edit_institute_admin_question_set_path(question_set), 
+                        class: "btn btn-sm btn-outline-custom" do %>
+                      <i class="bi bi-pencil"></i>
+                    <% end %>
+                    <%= button_to institute_admin_question_set_path(question_set),
+                        method: :delete,
+                        class: "btn btn-sm btn-outline-danger",
+                        form: { class: 'd-inline' },
+                        data: { turbo_confirm: "Are you sure?" } do %>
+                      <i class="bi bi-trash"></i>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="bi bi-collection fs-1 text-muted mb-3"></i>
+        <p class="text-muted mb-0">No question sets found</p>
+      </div>
+    <% end %>
   </div>
 </div> 

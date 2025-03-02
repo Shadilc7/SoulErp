@@ -73,35 +73,7 @@
 
         <!-- Question Details Cards -->
         <div class="row g-4">
-          <div class="col-md-4">
-            <div class="detail-card">
-              <div class="detail-icon">
-                <i class="bi bi-speedometer2"></i>
-              </div>
-              <div class="detail-content">
-                <h6>Difficulty Level</h6>
-                <span class="badge <%= @question.difficulty_level == 'easy' ? 'bg-success' : 
-                                    @question.difficulty_level == 'hard' ? 'bg-danger' : 
-                                    'bg-warning' %>">
-                  <%= @question.difficulty_level.titleize %>
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="detail-card">
-              <div class="detail-icon">
-                <i class="bi bi-award"></i>
-              </div>
-              <div class="detail-content">
-                <h6>Marks</h6>
-                <div class="marks-badge">
-                  <%= @question.marks %> <small>points</small>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
+          <div class="col-md-12">
             <div class="detail-card">
               <div class="detail-icon">
                 <i class="bi bi-asterisk"></i>
@@ -257,19 +229,6 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-bottom: 0.5rem;
-    }
-
-    .marks-badge {
-      background: var(--primary-color);
-      color: white;
-      padding: 0.25rem 0.75rem;
-      border-radius: 100px;
-      display: inline-block;
-      font-weight: 600;
-    }
-
-    .marks-badge small {
-      opacity: 0.8;
     }
 
     .answer-preview {

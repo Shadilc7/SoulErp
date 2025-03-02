@@ -15,9 +15,16 @@ export default class extends Controller {
   ]
 
   connect() {
-    this.updateAllCounters()
-    this.validateForm()
-    this.validateDates()
+    // Check if we're on the assignment creation page or the take assignment page
+    const isCreationPage = this.hasQuestionsCounterTarget && this.hasSetsCounterTarget;
+    
+    if (isCreationPage) {
+      this.updateAllCounters()
+      this.validateForm()
+      this.validateDates()
+    }
+    
+    // Setup rating stars for both pages
     this.setupRatingStars()
   }
 
@@ -86,6 +93,8 @@ export default class extends Controller {
   }
 
   updateParticipantsCount() {
+    if (!this.hasParticipantsCounterTarget) return;
+    
     const count = document.querySelectorAll('input[name="assignment[participant_ids][]"]:checked').length
     this.participantsCounterTarget.textContent = `${count} Selected`
     this.validateForm()
@@ -106,6 +115,8 @@ export default class extends Controller {
   validateDates() {
     const startDate = this.element.querySelector('#assignment_start_date')
     const endDate = this.element.querySelector('#assignment_end_date')
+    
+    if (!startDate || !endDate) return;
 
     startDate.addEventListener('change', () => {
       const minEnd = startDate.value
@@ -124,24 +135,31 @@ export default class extends Controller {
   }
 
   updateQuestionsCount() {
+    if (!this.hasQuestionsCounterTarget) return;
+    
     const count = document.querySelectorAll('input[name="assignment[question_ids][]"]:checked').length
     this.questionsCounterTarget.textContent = `${count} Selected`
     this.validateForm()
   }
 
   updateSetsCount() {
+    if (!this.hasSetsCounterTarget) return;
+    
     const count = document.querySelectorAll('input[name="assignment[question_set_ids][]"]:checked').length
     this.setsCounterTarget.textContent = `${count} Selected`
     this.validateForm()
   }
 
   updateAllCounters() {
-    this.updateQuestionsCount()
-    this.updateSetsCount()
-    this.updateParticipantsCount()
+    if (this.hasQuestionsCounterTarget) this.updateQuestionsCount()
+    if (this.hasSetsCounterTarget) this.updateSetsCount()
+    if (this.hasParticipantsCounterTarget) this.updateParticipantsCount()
   }
 
   validateForm() {
+    // Skip validation if we're not on the creation page
+    if (!this.hasTitleInputTarget || !this.hasStartDateTarget || !this.hasEndDateTarget || !this.hasSubmitButtonTarget) return;
+    
     const title = this.titleInputTarget.value.trim()
     const startDate = this.startDateTarget.value
     const endDate = this.endDateTarget.value
@@ -153,12 +171,18 @@ export default class extends Controller {
   }
 
   hasQuestionsSelected() {
+    // If we're not on the creation page, return true
+    if (!this.hasQuestionsCounterTarget && !this.hasSetsCounterTarget) return true;
+    
     const questions = document.querySelectorAll('input[name="assignment[question_ids][]"]:checked').length
     const sets = document.querySelectorAll('input[name="assignment[question_set_ids][]"]:checked').length
     return questions > 0 || sets > 0
   }
 
   hasAssigneesSelected() {
+    // If we're not on the creation page, return true
+    if (!this.hasTypeSelectTarget) return true;
+    
     const assignmentType = this.typeSelectTarget.value
     
     if (assignmentType === 'section') {
@@ -355,6 +379,9 @@ export default class extends Controller {
     ratingContainers.forEach(container => {
       const inputs = container.querySelectorAll('input[type="radio"]');
       const labels = container.querySelectorAll('label');
+      
+      if (!inputs.length || !labels.length) return;
+      
       const questionId = inputs[0]?.dataset.questionId;
       const valueDisplay = document.getElementById(`rating_value_${questionId}`);
       
@@ -398,7 +425,10 @@ export default class extends Controller {
               }
             });
             
-            this.validateField({ target: input });
+            // Only call validateField if the method exists
+            if (this.validateField) {
+              this.validateField({ target: input });
+            }
             
             // Update the rating value display
             if (valueDisplay) {

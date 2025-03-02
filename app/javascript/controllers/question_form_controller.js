@@ -16,6 +16,9 @@ export default class extends Controller {
     this.validateForm()
     this.toggleFields()
     this.updateRatingPreview()
+    
+    // Add event listener for question type change
+    select?.addEventListener('change', this.handleTypeChange.bind(this))
   }
 
   handleInitialType(type) {
@@ -35,12 +38,16 @@ export default class extends Controller {
       case 'dropdown':
         this.optionsSectionTarget.classList.remove('d-none')
         this.updateOptionIndicators(type)
+        this.showOptionsContainer(true)
         break
       case 'date':
         this.datePreviewTarget.classList.remove('d-none')
         break
       case 'time':
         this.timePreviewTarget.classList.remove('d-none')
+        break
+      case 'rating':
+        this.showRatingOptions(true)
         break
     }
   }
@@ -52,6 +59,10 @@ export default class extends Controller {
     // Show appropriate preview based on type
     const selectedType = event.target.value
     if (!selectedType) return
+
+    // Hide all option-specific elements
+    this.showOptionsContainer(false)
+    this.showRatingOptions(false)
 
     switch(selectedType) {
       case 'short_answer':
@@ -65,12 +76,29 @@ export default class extends Controller {
       case 'dropdown':
         this.optionsSectionTarget.classList.remove('d-none')
         this.updateOptionIndicators(selectedType)
+        this.showOptionsContainer(true)
+        
+        // Trigger the nested form controller to add default options if needed
+        const nestedFormController = this.application.getControllerForElementAndIdentifier(
+          document.querySelector('[data-controller="nested-form"]'),
+          'nested-form'
+        )
+        if (nestedFormController) {
+          const existingOptions = document.querySelectorAll('.option-item')
+          if (existingOptions.length === 0) {
+            nestedFormController.add()
+            nestedFormController.add()
+          }
+        }
         break
       case 'date':
         this.datePreviewTarget.classList.remove('d-none')
         break
       case 'time':
         this.timePreviewTarget.classList.remove('d-none')
+        break
+      case 'rating':
+        this.showRatingOptions(true)
         break
     }
   }
@@ -99,24 +127,28 @@ export default class extends Controller {
     this.submitButtonTarget.disabled = title.length === 0
   }
 
+  showOptionsContainer(show) {
+    const optionsContainer = document.querySelector('.options-container')
+    if (optionsContainer) {
+      optionsContainer.style.display = show ? 'block' : 'none'
+    }
+  }
+  
+  showRatingOptions(show) {
+    const ratingOptions = document.querySelector('.rating-options')
+    if (ratingOptions) {
+      ratingOptions.style.display = show ? 'flex' : 'none'
+    }
+  }
+  
   toggleFields() {
     const questionType = document.getElementById('question_question_type').value
-    const optionsContainer = document.querySelector('.options-container')
-    const ratingOptions = document.querySelector('.rating-options')
     
     // Hide/show options container based on question type
-    if (['multiple_choice', 'checkboxes', 'dropdown'].includes(questionType)) {
-      optionsContainer.style.display = 'block'
-    } else {
-      optionsContainer.style.display = 'none'
-    }
+    this.showOptionsContainer(['multiple_choice', 'checkboxes', 'dropdown'].includes(questionType))
     
     // Hide/show rating options based on question type
-    if (questionType === 'rating') {
-      ratingOptions.style.display = 'flex'
-    } else {
-      ratingOptions.style.display = 'none'
-    }
+    this.showRatingOptions(questionType === 'rating')
   }
   
   updateRatingPreview() {
@@ -137,5 +169,14 @@ export default class extends Controller {
         }
       })
     }
+  }
+  
+  toggleRequired(event) {
+    // This method handles the required checkbox toggle
+    const isRequired = event.target.checked
+    console.log(`Question is now ${isRequired ? 'required' : 'optional'}`)
+    
+    // You can add additional logic here if needed
+    // For example, updating UI elements based on the required status
   }
 } 

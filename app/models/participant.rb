@@ -2,15 +2,18 @@ class Participant < ApplicationRecord
   belongs_to :user
   belongs_to :institute
   has_one :guardian, dependent: :destroy
-  belongs_to :section
   has_many :assignment_responses, dependent: :destroy
 
   # Get section through user
   has_one :section, through: :user
 
   # Update training program associations with dependent: :nullify
-  has_many :training_programs, dependent: :nullify
+  has_many :individual_training_programs, class_name: 'TrainingProgram', foreign_key: 'participant_id', dependent: :nullify
   has_many :section_training_programs, through: :section, source: :training_programs
+
+  # Add the training_program_participants association with dependent: :destroy
+  has_many :training_program_participants, dependent: :destroy
+  has_many :training_programs, through: :training_program_participants
 
   # Add these associations with dependent: :destroy
   has_many :assignment_participants, dependent: :destroy
@@ -43,11 +46,7 @@ class Participant < ApplicationRecord
 
   # Helper method to get all training programs (both individual and section)
   def all_training_programs
-    TrainingProgram.where(
-      "participant_id = ? OR section_id = ?",
-      id,
-      section_id
-    )
+    TrainingProgram.where(id: individual_training_programs.pluck(:id) + training_programs.pluck(:id) + section_training_programs.pluck(:id)).distinct
   end
 
   # Methods to get training programs by status
@@ -79,9 +78,18 @@ class Participant < ApplicationRecord
 
   def sync_user_associations
     return unless user.present?
-    user.update_columns(
-      institute_id: institute_id,
-      section_id: section_id
-    )
+    
+    # Only update the user's institute_id if it's different
+    if user.institute_id != institute_id
+      user.update_column(:institute_id, institute_id)
+    end
+    
+    # Get the section_id from the user if it's not set on the participant
+    if section_id.nil? && user.section_id.present?
+      update_column(:section_id, user.section_id)
+    # Update the user's section_id if it's different and section_id is present on the participant
+    elsif section_id.present? && user.section_id != section_id
+      user.update_column(:section_id, section_id)
+    end
   end
 end

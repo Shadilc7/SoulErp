@@ -59,6 +59,8 @@ Rails.application.routes.draw do
         end
         member do
           get :participants
+          get :reassign_users
+          post :reassign_users
         end
       end
       resources :trainers

@@ -6,6 +6,7 @@ class QuestionSetItem < ApplicationRecord
   validates :marks_override, numericality: { greater_than: 0, allow_nil: true }
 
   before_validation :set_order_number, on: :create
+  before_save :set_default_marks
 
   private
 
@@ -13,5 +14,9 @@ class QuestionSetItem < ApplicationRecord
     return if order_number.present?
     max_order = question_set.question_set_items.maximum(:order_number) || -1
     self.order_number = max_order + 1
+  end
+  
+  def set_default_marks
+    self.marks_override = 1 if marks_override.nil?
   end
 end

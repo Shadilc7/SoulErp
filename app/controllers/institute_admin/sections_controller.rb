@@ -51,10 +51,49 @@ module InstituteAdmin
     def destroy
       @section = current_institute.sections.find(params[:id])
 
-      if @section.destroy
-        redirect_to institute_admin_sections_path, notice: "Section was successfully deleted."
-      else
-        redirect_to institute_admin_sections_path, alert: "Failed to delete section."
+      begin
+        if @section.destroy
+          redirect_to institute_admin_sections_path, notice: "Section was successfully deleted."
+        else
+          redirect_to institute_admin_sections_path, alert: "Cannot delete section because it has associated users. Please reassign or remove the users first."
+        end
+      rescue ActiveRecord::InvalidForeignKey
+        redirect_to institute_admin_sections_path, alert: "Cannot delete section because it has associated users. Please reassign or remove the users first."
+      end
+    end
+
+    def reassign_users
+      @section = current_institute.sections.find(params[:id])
+      @users = @section.users
+      @sections = current_institute.sections.where.not(id: @section.id).active
+      
+      if request.post?
+        action_type = params[:action_type]
+        
+        if action_type == "reassign" && params[:target_section_id].present?
+          # Update all users to the new section
+          @users.update_all(section_id: params[:target_section_id])
+          
+          # Now try to delete the section
+          if @section.destroy
+            redirect_to institute_admin_sections_path, notice: "Users reassigned and section was successfully deleted."
+          else
+            redirect_to institute_admin_sections_path, alert: "Users reassigned but section could not be deleted."
+          end
+        elsif action_type == "remove"
+          # Remove section association from all users
+          @users.update_all(section_id: nil)
+          
+          # Now try to delete the section
+          if @section.destroy
+            redirect_to institute_admin_sections_path, notice: "Users removed from section and section was successfully deleted."
+          else
+            redirect_to institute_admin_sections_path, alert: "Users removed but section could not be deleted."
+          end
+        else
+          flash.now[:alert] = "Please select a valid action and target section if reassigning."
+          render :reassign_users
+        end
       end
     end
 

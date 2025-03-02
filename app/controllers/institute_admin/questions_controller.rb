@@ -14,11 +14,30 @@ module InstituteAdmin
     end
 
     def create
-      @question = current_institute.questions.build(question_params)
+      begin
+        # Get the parameters first
+        question_parameters = sanitize_question_params(question_params)
+        
+        @question = current_institute.questions.build(question_parameters)
 
-      if @question.save
-        redirect_to institute_admin_question_path(@question), notice: "Question was successfully created."
-      else
+        # Final safety check before saving
+        ensure_options_have_text(@question) if @question.requires_options?
+
+        if @question.save
+          redirect_to institute_admin_question_path(@question), notice: "Question was successfully created."
+        else
+          render :new, status: :unprocessable_entity
+        end
+      rescue => e
+        # Log the error
+        Rails.logger.error("Error creating question: #{e.message}")
+        Rails.logger.error(e.backtrace.join("\n"))
+        
+        # Create a new question object for the form
+        @question = current_institute.questions.build(question_params)
+        
+        # Add error message
+        flash.now[:error] = "An error occurred while creating the question. Please try again."
         render :new, status: :unprocessable_entity
       end
     end
@@ -27,9 +46,26 @@ module InstituteAdmin
     end
 
     def update
-      if @question.update(question_params)
-        redirect_to institute_admin_question_path(@question), notice: "Question was successfully updated."
-      else
+      begin
+        # Get the parameters first
+        question_parameters = sanitize_question_params(question_params)
+        
+        # Final safety check before updating
+        @question.assign_attributes(question_parameters)
+        ensure_options_have_text(@question) if @question.requires_options?
+        
+        if @question.save
+          redirect_to institute_admin_question_path(@question), notice: "Question was successfully updated."
+        else
+          render :edit, status: :unprocessable_entity
+        end
+      rescue => e
+        # Log the error
+        Rails.logger.error("Error updating question: #{e.message}")
+        Rails.logger.error(e.backtrace.join("\n"))
+        
+        # Add error message
+        flash.now[:error] = "An error occurred while updating the question. Please try again."
         render :edit, status: :unprocessable_entity
       end
     end
@@ -55,14 +91,32 @@ module InstituteAdmin
     def question_params
       params.require(:question).permit(
         :title,
+        :description,
         :question_type,
-        :marks,
-        :difficulty_level,
-        :active,
         :required,
         :max_rating,
-        options_attributes: [ :id, :text, :value, :correct, :_destroy ]
+        options_attributes: [ :id, :text, :correct, :_destroy ]
       )
+    end
+    
+    # Sanitize parameters to ensure no null values for options text
+    def sanitize_question_params(params)
+      if params[:options_attributes].present?
+        params[:options_attributes].each do |key, option_attrs|
+          unless option_attrs[:_destroy] == "1"
+            option_attrs[:text] = "Option #{Time.now.to_i}" if option_attrs[:text].blank?
+          end
+        end
+      end
+      params
+    end
+    
+    # Additional safety check to ensure all options have text
+    def ensure_options_have_text(question)
+      question.options.each do |option|
+        next if option.marked_for_destruction?
+        option.text = "Option #{Time.now.to_i}" if option.text.blank?
+      end
     end
   end
 end

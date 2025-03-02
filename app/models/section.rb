@@ -1,8 +1,10 @@
 class Section < ApplicationRecord
   belongs_to :institute
-  has_many :users
+  has_many :users, dependent: :restrict_with_error
   has_many :participants, through: :users
-  has_many :training_programs, dependent: :destroy
+  has_many :section_training_programs, class_name: 'TrainingProgram', foreign_key: 'section_id', dependent: :destroy
+  has_many :training_program_sections, dependent: :destroy
+  has_many :training_programs, through: :training_program_sections
 
   enum :status, { active: 0, inactive: 1 }, default: :active
 

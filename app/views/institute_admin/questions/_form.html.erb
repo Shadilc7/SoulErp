@@ -1,4 +1,4 @@
-<%= form_with(model: [:institute_admin, @question], local: true, data: { controller: "question-form" }) do |f| %>
+<%= form_with(model: [:institute_admin, @question], local: true, data: { controller: "question-form nested-form" }) do |f| %>
   <% if @question.errors.any? %>
     <div class="alert alert-danger">
       <h6>Please fix the following errors:</h6>
@@ -26,19 +26,12 @@
 
     <!-- Question Type Selection -->
     <div class="row mb-3">
-      <div class="col-md-6">
+      <div class="col-md-12">
         <%= f.label :question_type, class: "form-label" %>
-        <%= f.select :question_type, 
-                       options_for_select(Question.question_types.keys.map { |k| [k.humanize, k] }, @question.question_type),
-                       {}, 
-                       { class: "form-select", required: true, data: { action: "change->question-form#toggleFields" } } %>
-      </div>
-      <div class="col-md-6">
-        <%= f.label :difficulty_level, class: "form-label" %>
-        <%= f.select :difficulty_level, 
-                       options_for_select(Question.difficulty_levels.keys.map { |k| [k.humanize, k] }, @question.difficulty_level),
-                       {}, 
-                       { class: "form-select", required: true } %>
+        <%= f.select :question_type,
+            options_for_select(Question.question_types.keys.map { |k| [k.titleize, k] }, @question.question_type),
+            { include_blank: "Select Question Type" },
+            { class: "form-select", required: true, data: { action: "change->question-form#handleTypeChange" } } %>
       </div>
     </div>
 
@@ -80,11 +73,11 @@
       </div>
 
       <!-- Multiple Choice/Checkbox Options -->
-      <div class="options-container" style="<%= @question.requires_options? ? '' : 'display: none;' %>">
+      <div class="options-container" style="<%= @question.requires_options? ? '' : 'display: none;' %>" data-question-form-target="optionsSection">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <label class="form-label text-muted small text-uppercase mb-0">Answer Options</label>
           <button type="button" 
-              class="btn btn-outline-custom btn-sm"
+              class="btn btn-primary btn-sm"
               data-action="nested-form#add">
             <i class="bi bi-plus-lg"></i> Add Option
           </button>
@@ -99,7 +92,9 @@
                 </div>
                 <%= option.text_field :text, 
                     class: "form-control",
-                    placeholder: "Option text" %>
+                    placeholder: "Option text",
+                    required: true,
+                    value: option.object.text.presence || "Option #{Time.now.to_i}" %>
                 <div class="form-check">
                   <%= option.check_box :correct, class: "form-check-input" %>
                   <label class="form-check-label small">Correct</label>
@@ -123,7 +118,9 @@
                 </div>
                 <%= option.text_field :text, 
                     class: "form-control",
-                    placeholder: "Option text" %>
+                    placeholder: "Option text",
+                    required: true,
+                    value: option.object.text.presence || "Option #{Time.now.to_i}" %>
                 <div class="form-check">
                   <%= option.check_box :correct, class: "form-check-input" %>
                   <label class="form-check-label small">Correct</label>
@@ -155,35 +152,7 @@
 
   <!-- Question Settings -->
   <div class="row g-4">
-    <div class="col-md-4">
-      <div class="detail-card">
-        <div class="detail-icon">
-          <i class="bi bi-speedometer2"></i>
-        </div>
-        <div class="detail-content">
-          <h6>Difficulty Level</h6>
-          <%= f.select :difficulty_level,
-              Question.difficulty_levels.keys.map { |level| [level.titleize, level] },
-              {},
-              class: "form-select" %>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="detail-card">
-        <div class="detail-icon">
-          <i class="bi bi-award"></i>
-        </div>
-        <div class="detail-content">
-          <h6>Marks</h6>
-          <%= f.number_field :marks, 
-              class: "form-control",
-              min: 1,
-              placeholder: "Points" %>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
       <div class="detail-card">
         <div class="detail-icon">
           <i class="bi bi-asterisk"></i>
@@ -191,8 +160,10 @@
         <div class="detail-content">
           <h6>Required</h6>
           <div class="form-check form-switch">
-            <%= f.check_box :required, class: "form-check-input" %>
-            <label class="form-check-label">Make this question required</label>
+            <%= f.check_box :required, class: "form-check-input", data: { action: "change->question-form#toggleRequired" } %>
+            <label class="form-check-label">
+              Make this question required
+            </label>
           </div>
         </div>
       </div>

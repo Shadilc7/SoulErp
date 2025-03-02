@@ -38,7 +38,7 @@ class QuestionSet < ApplicationRecord
 
   def calculate_total_marks
     if question_set_items.present?
-      self.total_marks = question_set_items.sum { |item| item.marks_override || item.question&.marks.to_i }
+      self.total_marks = question_set_items.sum { |item| item.marks_override || 1 }
     else
       self.total_marks = 0
     end

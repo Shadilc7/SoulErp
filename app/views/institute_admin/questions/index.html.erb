@@ -17,7 +17,7 @@
               <th>Title</th>
               <th>Type</th>
               <th>Status</th>
-              <th class="text-end">Actions</th>
+              <th class="text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -36,8 +36,8 @@
                     <span class="badge bg-danger">Inactive</span>
                   <% end %>
                 </td>
-                <td class="text-end">
-                  <div class="d-flex justify-content-end gap-2">
+                <td class="text-center">
+                  <div class="d-flex justify-content-center gap-2">
                     <%= link_to institute_admin_question_path(question), 
                         class: "btn btn-sm bg-primary-subtle text-primary-emphasis" do %>
                       <i class="bi bi-eye"></i>
@@ -45,6 +45,13 @@
                     <%= link_to edit_institute_admin_question_path(question), 
                         class: "btn btn-sm bg-secondary-subtle text-secondary-emphasis" do %>
                       <i class="bi bi-pencil"></i>
+                    <% end %>
+                    <%= button_to duplicate_institute_admin_question_path(question),
+                        method: :post,
+                        class: "btn btn-sm bg-info-subtle text-info-emphasis",
+                        form: { class: 'd-inline-block' },
+                        data: { turbo: false } do %>
+                      <i class="bi bi-copy"></i>
                     <% end %>
                     <%= button_to institute_admin_question_path(question), 
                         method: :delete,

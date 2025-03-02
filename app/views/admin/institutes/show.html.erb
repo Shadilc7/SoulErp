@@ -40,6 +40,16 @@
         </div>
 
         <div class="mb-4">
+          <h6 class="text-muted mb-2">Registered POC</h6>
+          <p class="fs-5"><%= @institute.registered_poc.present? ? @institute.registered_poc : "Not specified" %></p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Owner Name</h6>
+          <p class="fs-5"><%= @institute.owner_name.present? ? @institute.owner_name : "Not specified" %></p>
+        </div>
+
+        <div class="mb-4">
           <h6 class="text-muted mb-2">Sections</h6>
           <ul class="list-group">
             <% @institute.sections.each do |section| %>
@@ -60,6 +70,26 @@
         </div>
 
         <div class="mb-4">
+          <h6 class="text-muted mb-2">Service Started On</h6>
+          <p class="fs-5"><%= @institute.service_started_on.present? ? @institute.service_started_on.strftime("%b %d, %Y") : "Not specified" %></p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Age of Service</h6>
+          <p class="fs-5"><%= @institute.age_of_service.present? ? "#{@institute.age_of_service} years" : "Not specified" %></p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Billing Type</h6>
+          <p class="fs-5"><%= @institute.billing_type.present? ? @institute.billing_type : "Not specified" %></p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Expiry Date</h6>
+          <p class="fs-5"><%= @institute.expiry_date.present? ? @institute.expiry_date.strftime("%b %d, %Y") : "Not specified" %></p>
+        </div>
+
+        <div class="mb-4">
           <h6 class="text-muted mb-2">Address</h6>
           <p class="fs-5"><%= @institute.address %></p>
         </div>
@@ -67,6 +97,11 @@
         <div class="mb-4">
           <h6 class="text-muted mb-2">Description</h6>
           <p class="fs-5"><%= @institute.description %></p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Other Details</h6>
+          <p class="fs-5"><%= @institute.other_details.present? ? @institute.other_details : "Not specified" %></p>
         </div>
       </div>
     </div>

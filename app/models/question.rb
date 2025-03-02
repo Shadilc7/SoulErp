@@ -12,7 +12,10 @@ class Question < ApplicationRecord
 
   validates :title, presence: true
   validates :question_type, presence: true
-  validate :validate_options_and_answers, if: :requires_options?
+  validate :validate_options_and_answers, if: :should_validate_options?
+
+  # Add an attribute to control options validation
+  attr_accessor :validate_options_on_save
 
   enum :question_type, {
     short_answer: 0,    # Text input for short answers
@@ -45,6 +48,11 @@ class Question < ApplicationRecord
   end
 
   private
+
+  # Helper method to determine if options should be validated
+  def should_validate_options?
+    requires_options? && validate_options_on_save != false
+  end
 
   def validate_options_and_answers
     if requires_options?

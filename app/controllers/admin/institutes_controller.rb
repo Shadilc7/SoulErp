@@ -76,7 +76,9 @@ module Admin
     end
 
     def institute_params
-      params.require(:institute).permit(:name, :code, :description, :address, :contact_number, :email, :active, :institution_type)
+      params.require(:institute).permit(:name, :code, :description, :address, :contact_number, :email, :active, :institution_type, 
+                                       :registered_poc, :service_started_on, :owner_name, :age_of_service, 
+                                       :billing_type, :expiry_date, :other_details)
     end
   end
 end

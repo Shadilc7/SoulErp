@@ -74,11 +74,93 @@ module InstituteAdmin
       @question = current_institute.questions.find(params[:id])
 
       if @question.destroy
-        flash[:success] = "Question was successfully deleted."
-        redirect_to institute_admin_questions_path
+        redirect_to institute_admin_questions_path, notice: "Question was successfully deleted."
       else
-        flash[:error] = @question.errors.full_messages.to_sentence
-        redirect_to institute_admin_questions_path
+        redirect_to institute_admin_questions_path, alert: @question.errors.full_messages.to_sentence
+      end
+    end
+
+    def duplicate
+      begin
+        original_question = current_institute.questions.includes(:options).find(params[:id])
+        
+        # Skip validation temporarily for the new question
+        new_question = nil
+        
+        ActiveRecord::Base.transaction do
+          # For question types that require options, we need to handle differently
+          if original_question.requires_options?
+            # First, create the question with validation skipped
+            new_question = current_institute.questions.new(
+              title: "Copy of #{original_question.title}",
+              description: original_question.description,
+              question_type: original_question.question_type,
+              required: original_question.required,
+              active: original_question.active,
+              max_rating: original_question.max_rating
+            )
+            
+            # Temporarily disable validation
+            new_question.validate_options_on_save = false if new_question.respond_to?(:validate_options_on_save=)
+            
+            # Save without validation first
+            unless new_question.save(validate: false)
+              error_message = "Failed to create question: #{new_question.errors.full_messages.join(', ')}"
+              Rails.logger.error(error_message)
+              raise ActiveRecord::Rollback, error_message
+            end
+            
+            # Now duplicate all options
+            if original_question.options.any?
+              original_question.options.each do |original_option|
+                new_option = new_question.options.new(
+                  text: original_option.text,
+                  value: original_option.value,
+                  correct: original_option.correct
+                )
+                
+                unless new_option.save
+                  error_message = "Failed to save option: #{new_option.errors.full_messages.join(', ')}"
+                  Rails.logger.error(error_message)
+                  raise ActiveRecord::Rollback, error_message
+                end
+              end
+            end
+            
+            # Now validate the question with its options
+            unless new_question.valid?
+              error_message = "Question validation failed after adding options: #{new_question.errors.full_messages.join(', ')}"
+              Rails.logger.error(error_message)
+              raise ActiveRecord::Rollback, error_message
+            end
+          else
+            # For questions that don't require options, we can create normally
+            new_question = current_institute.questions.new(
+              title: "Copy of #{original_question.title}",
+              description: original_question.description,
+              question_type: original_question.question_type,
+              required: original_question.required,
+              active: original_question.active,
+              max_rating: original_question.max_rating
+            )
+            
+            unless new_question.save
+              error_message = "Failed to save question: #{new_question.errors.full_messages.join(', ')}"
+              Rails.logger.error(error_message)
+              raise ActiveRecord::Rollback, error_message
+            end
+          end
+        end
+        
+        if new_question&.persisted?
+          redirect_to institute_admin_questions_path, notice: "Question was successfully duplicated."
+        else
+          redirect_to institute_admin_questions_path, alert: "Failed to duplicate question. Please try again."
+        end
+      rescue => e
+        Rails.logger.error("Error duplicating question: #{e.message}")
+        Rails.logger.error(e.backtrace.join("\n"))
+        redirect_to institute_admin_questions_path, alert: "Failed to duplicate question: #{e.message}"
       end
     end
 
@@ -111,11 +193,12 @@ module InstituteAdmin
       params
     end
     
-    # Additional safety check to ensure all options have text
+    # Ensure all options have text
     def ensure_options_have_text(question)
       question.options.each do |option|
-        next if option.marked_for_destruction?
-        option.text = "Option #{Time.now.to_i}" if option.text.blank?
+        if option.text.blank? && !option.marked_for_destruction?
+          option.text = "Option #{Time.now.to_i}"
+        end
       end
     end
   end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_02_095605) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_02_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -107,6 +107,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_02_095605) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "institution_type"
+    t.string "registered_poc"
+    t.date "service_started_on"
+    t.string "owner_name"
+    t.integer "age_of_service"
+    t.string "billing_type"
+    t.date "expiry_date"
+    t.text "other_details"
   end
 
   create_table "options", force: :cascade do |t|

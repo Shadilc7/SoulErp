@@ -65,7 +65,11 @@ Rails.application.routes.draw do
       end
       resources :trainers
       resources :participants
-      resources :questions
+      resources :questions do
+        member do
+          post :duplicate
+        end
+      end
       resources :question_sets
       resources :training_programs
       resources :assignments do

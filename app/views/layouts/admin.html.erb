@@ -15,22 +15,23 @@
       :root {
         --sidebar-width: 280px;
         --header-height: 60px;
-        --primary-color: #7B68EE;
-        --primary-light: #9370DB;
-        --primary-dark: #6A5ACD;
-        --secondary-color: #E6E6FA;
-        --accent-color: #483D8B;
-        --success-color: #4CAF50;
-        --warning-color: #FFC107;
-        --danger-color: #DC3545;
-        --info-color: #17A2B8;
-        --light-color: #FFFFFF;
-        --dark-color: #2C3639;
+        --primary-color: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary-color: #64748b;
+        --success-color: #22c55e;
+        --danger-color: #ef4444;
+        --warning-color: #f59e0b;
+        --info-color: #3b82f6;
+        --sidebar-bg: #1e293b;
+        --topbar-bg: #ffffff;
+        --body-bg: #f1f5f9;
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
       }
 
       body {
         min-height: 100vh;
-        background-color: #f8f9fc;
+        background-color: var(--body-bg);
       }
 
       .sidebar {
@@ -39,7 +40,7 @@
         left: 0;
         bottom: 0;
         width: var(--sidebar-width);
-        background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        background: var(--sidebar-bg);
         z-index: 1000;
         transition: transform 0.3s ease;
       }
@@ -50,18 +51,22 @@
       }
 
       .sidebar .nav-link {
-        color: var(--light-color);
-        padding: 1rem 1.5rem;
-        margin: 0.2rem 1rem;
+        color: var(--text-secondary);
+        padding: 0.8rem 1.5rem;
+        margin: 0.25rem 0.75rem;
         border-radius: 0.5rem;
-        transition: all 0.3s ease;
+        transition: all 0.2s;
         font-weight: 500;
       }
 
-      .sidebar .nav-link:hover,
+      .sidebar .nav-link:hover {
+        color: var(--text-primary);
+        background: rgba(255,255,255,0.1);
+      }
+
       .sidebar .nav-link.active {
-        color: var(--light-color);
-        background: rgba(255, 255, 255, 0.2);
+        color: var(--text-primary);
+        background: var(--primary-color);
       }
 
       .sidebar .nav-link i {
@@ -77,27 +82,26 @@
 
       .topbar {
         height: var(--header-height);
-        background: white;
-        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        background: var(--topbar-bg);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       }
 
       .card-custom {
         border: none;
-        border-radius: 1rem;
-        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: all 0.2s;
       }
 
       .card-custom:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 1rem 3rem rgba(58, 59, 69, 0.15);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       }
 
       .card-header-custom {
         background: white;
         border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         padding: 1.5rem;
-        border-radius: 1rem 1rem 0 0;
+        border-radius: 0.5rem 0.5rem 0 0;
       }
 
       .stat-card {
@@ -133,21 +137,114 @@
         transition: all 0.3s ease;
       }
 
+      .btn-primary {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
+      }
+
+      .btn-custom-primary {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+      }
+
+      .btn-custom-primary:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
+        color: white;
+      }
+
+      .btn-outline-custom {
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+        background-color: transparent;
+      }
+
+      .btn-outline-custom:hover {
+        color: white;
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+
       .btn-custom:hover {
         transform: translateY(-2px);
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
       }
 
       .action-card {
-        border-radius: 1rem;
+        border-radius: 0.5rem;
         border: 1px solid rgba(0, 0, 0, 0.05);
         transition: all 0.3s ease;
       }
 
       .action-card:hover {
-        background: var(--light-color);
+        background: white;
         transform: translateY(-5px);
         box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.1);
+      }
+
+      /* Table Styles */
+      .table-container {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        overflow: hidden;
+      }
+
+      .table {
+        margin-bottom: 0;
+      }
+
+      .table thead th {
+        background: var(--sidebar-bg);
+        color: var(--text-primary);
+        font-weight: 500;
+        border: none;
+        padding: 1rem 1.5rem;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .table tbody td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        vertical-align: middle;
+      }
+
+      /* Dropdown Styles */
+      .dropdown-menu {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+
+      .dropdown-item {
+        padding: 0.5rem 1rem;
+      }
+
+      .dropdown-item:hover {
+        background: var(--body-bg);
+      }
+
+      /* Badge Styles */
+      .badge-success {
+        background-color: var(--success-color);
+        color: white;
+      }
+
+      .badge-warning {
+        background-color: var(--warning-color);
+        color: white;
+      }
+
+      .badge-danger {
+        background-color: var(--danger-color);
+        color: white;
       }
 
       @media (max-width: 768px) {
@@ -189,9 +286,9 @@
       <nav class="sidebar" data-sidebar-target="content">
         <div class="sidebar-brand d-flex align-items-center justify-content-center">
           <div class="sidebar-brand-icon">
-            <i class="bi bi-buildings-fill text-light fs-4"></i>
+            <i class="bi bi-buildings-fill text-white fs-4"></i>
           </div>
-          <div class="sidebar-brand-text text-light ms-2 fw-bold">SOUL ERP</div>
+          <div class="sidebar-brand-text text-white ms-2 fw-bold">SOUL ERP</div>
         </div>
 
         <hr class="sidebar-divider my-2 opacity-25">
@@ -230,7 +327,7 @@
 
         <div class="px-3 mt-4">
           <%= button_to destroy_user_session_path, method: :delete, 
-              class: "btn btn-light w-100 d-flex align-items-center justify-content-center gap-2" do %>
+              class: "btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2" do %>
             <i class="bi bi-box-arrow-right"></i>
             <span>Sign Out</span>
           <% end %>

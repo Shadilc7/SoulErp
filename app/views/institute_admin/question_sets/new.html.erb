@@ -9,53 +9,7 @@
   <div class="card-body py-4">
     <div class="row justify-content-center">
       <div class="col-lg-8">
-        <%= form_with(model: [:institute_admin, @question_set], local: true, data: { controller: "question-set" }) do |f| %>
-          <!-- Title Input -->
-          <div class="form-section mb-4">
-            <%= f.text_field :title, 
-                class: "form-control form-control-lg",
-                placeholder: "Enter question set title",
-                data: { 
-                  question_set_target: "titleInput",
-                  action: "input->question-set#validateForm"
-                } %>
-          </div>
-
-          <!-- Questions Selection -->
-          <div class="form-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h6 class="mb-0">Select Questions</h6>
-              <span class="badge bg-primary" data-question-set-target="counter">0 Selected</span>
-            </div>
-
-            <div class="questions-list">
-              <% current_institute.questions.active.each do |question| %>
-                <div class="question-item">
-                  <div class="form-check">
-                    <%= check_box_tag "question_set[question_ids][]", 
-                        question.id, 
-                        false, 
-                        class: "form-check-input",
-                        data: { action: "change->question-set#updateCounter" } %>
-                    <label class="form-check-label">
-                      <%= question.title %>
-                    </label>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="mt-4 d-flex justify-content-end gap-2">
-            <%= link_to "Cancel", 
-                institute_admin_question_sets_path, 
-                class: "btn btn-outline-secondary" %>
-            <%= f.submit "Create Question Set", 
-                class: "btn btn-custom-primary",
-                data: { question_set_target: "submitButton" } %>
-          </div>
-        <% end %>
+        <%= render 'form' %>
       </div>
     </div>
   </div>

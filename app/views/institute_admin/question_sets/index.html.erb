@@ -14,7 +14,6 @@
             <tr>
               <th>Title</th>
               <th>Questions</th>
-              <th>Total Marks</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -23,7 +22,6 @@
               <tr>
                 <td><%= question_set.title %></td>
                 <td><%= question_set.questions.count %></td>
-                <td><%= question_set.total_marks %></td>
                 <td>
                   <div class="d-flex gap-2">
                     <%= link_to institute_admin_question_set_path(question_set), 

@@ -52,6 +52,48 @@
           </div>
         </div>
 
+        <div class="col-md-6 mb-3">
+          <div class="form-group">
+            <%= f.label :registered_poc, "Registered POC", class: "form-label" %>
+            <%= f.text_field :registered_poc, class: "form-control", placeholder: "Enter point of contact name" %>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <div class="form-group">
+            <%= f.label :owner_name, "Owner Name", class: "form-label" %>
+            <%= f.text_field :owner_name, class: "form-control", placeholder: "Enter owner name" %>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <div class="form-group">
+            <%= f.label :service_started_on, "Service Started On", class: "form-label" %>
+            <%= f.date_field :service_started_on, class: "form-control" %>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <div class="form-group">
+            <%= f.label :age_of_service, "Age of Service (years)", class: "form-label" %>
+            <%= f.number_field :age_of_service, class: "form-control", min: 0, placeholder: "Enter service age in years" %>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <div class="form-group">
+            <%= f.label :billing_type, "Billing Type", class: "form-label" %>
+            <%= f.select :billing_type, options_for_select([['Monthly', 'Monthly'], ['Quarterly', 'Quarterly'], ['Yearly', 'Yearly'], ['One-time', 'One-time']], @institute.billing_type), { include_blank: 'Select billing type' }, { class: 'form-select' } %>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <div class="form-group">
+            <%= f.label :expiry_date, "Expiry Date", class: "form-label" %>
+            <%= f.date_field :expiry_date, class: "form-control" %>
+          </div>
+        </div>
+
         <div class="col-12 mb-3">
           <div class="form-group">
             <%= f.label :address, class: "form-label" %>
@@ -63,6 +105,13 @@
           <div class="form-group">
             <%= f.label :description, class: "form-label" %>
             <%= f.text_area :description, class: "form-control", rows: 4, placeholder: "Enter institute description" %>
+          </div>
+        </div>
+
+        <div class="col-12 mb-3">
+          <div class="form-group">
+            <%= f.label :other_details, "Other Details", class: "form-label" %>
+            <%= f.text_area :other_details, class: "form-control", rows: 3, placeholder: "Enter any additional details" %>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 module TrainerPortal
   class TrainingProgramsController < TrainerPortal::BaseController
-    before_action :set_training_program, only: [:show, :edit, :update, :destroy]
+    before_action :set_training_program, only: [:show, :edit, :update, :destroy, :update_progress, :mark_completed]
 
     def index
       @training_programs = current_trainer.training_programs
@@ -9,13 +9,13 @@ module TrainerPortal
     end
 
     def show
+      @training_program = current_trainer.training_programs
+        .includes(:institute, :sections, :training_program_participants, participants: [:user, :section])
+        .find(params[:id])
+        
       @participants = @training_program.participants
-        .includes(:user)
-        .order('users.name ASC')
-      
-      @assignments = @training_program.assignments
-        .includes(:questions, :question_sets)
-        .order(created_at: :desc)
+        .includes(:user, :section)
+        .order('users.first_name ASC, users.last_name ASC')
     end
 
     def new
@@ -55,6 +55,26 @@ module TrainerPortal
         notice: 'Training program was successfully deleted.'
     end
 
+    def update_progress
+      if @training_program.update(progress_params)
+        redirect_to trainer_portal_training_program_path(@training_program),
+          notice: 'Progress was successfully updated.'
+      else
+        redirect_to trainer_portal_training_program_path(@training_program),
+          alert: 'Failed to update progress.'
+      end
+    end
+
+    def mark_completed
+      if @training_program.update(status: :completed)
+        redirect_to trainer_portal_training_program_path(@training_program),
+          notice: 'Training program has been marked as completed.'
+      else
+        redirect_to trainer_portal_training_program_path(@training_program),
+          alert: 'Failed to mark training program as completed.'
+      end
+    end
+
     private
 
     def set_training_program
@@ -67,11 +87,16 @@ module TrainerPortal
         :description,
         :start_date,
         :end_date,
-        :section_id,
         :program_type,
-        :status,
-        participant_ids: []
+        :section_id,
+        :participant_id,
+        participant_ids: [],
+        section_ids: []
       )
+    end
+
+    def progress_params
+      params.require(:training_program).permit(:progress)
     end
   end
 end

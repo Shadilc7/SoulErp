@@ -1,0 +1,89 @@
+<div class="row">
+  <div class="col-lg-4">
+    <div class="card card-custom">
+      <div class="card-body text-center py-4">
+        <div class="mb-3">
+          <i class="bi bi-person-circle display-1 text-primary"></i>
+        </div>
+        <h5 class="mb-1"><%= @trainer.user.full_name %></h5>
+        <p class="text-muted mb-3"><%= @trainer.user.email %></p>
+        <div class="d-flex justify-content-center gap-2">
+          <span class="badge badge-success">
+            <i class="bi bi-check-circle me-1"></i> Active
+          </span>
+          <span class="badge bg-primary">
+            <i class="bi bi-mortarboard me-1"></i> Trainer
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card card-custom">
+      <div class="card-header card-header-custom">
+        <h5 class="mb-0">Profile Information</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="mb-4">
+              <label class="form-label text-muted">Full Name</label>
+              <p class="mb-0"><%= @trainer.user.full_name %></p>
+            </div>
+            <div class="mb-4">
+              <label class="form-label text-muted">Email</label>
+              <p class="mb-0"><%= @trainer.user.email %></p>
+            </div>
+            <div class="mb-4">
+              <label class="form-label text-muted">Phone Number</label>
+              <p class="mb-0"><%= @trainer.phone_number %></p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-4">
+              <label class="form-label text-muted">Specialization</label>
+              <p class="mb-0"><%= @trainer.specialization %></p>
+            </div>
+            <div class="mb-4">
+              <label class="form-label text-muted">Experience</label>
+              <p class="mb-0"><%= pluralize(@trainer.experience_years, 'year') %></p>
+            </div>
+            <div class="mb-4">
+              <label class="form-label text-muted">Joined On</label>
+              <p class="mb-0"><%= @trainer.created_at.strftime("%B %d, %Y") %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-custom mt-4">
+      <div class="card-header card-header-custom">
+        <h5 class="mb-0">Training Programs Overview</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-4">
+          <div class="col-sm-4">
+            <div class="text-center">
+              <h3 class="mb-1"><%= @trainer.training_programs.completed.count %></h3>
+              <p class="text-muted mb-0">Completed Programs</p>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="text-center">
+              <h3 class="mb-1"><%= @trainer.training_programs.ongoing.count %></h3>
+              <p class="text-muted mb-0">Ongoing Programs</p>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="text-center">
+              <h3 class="mb-1"><%= @trainer.training_programs.count %></h3>
+              <p class="text-muted mb-0">Total Programs</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

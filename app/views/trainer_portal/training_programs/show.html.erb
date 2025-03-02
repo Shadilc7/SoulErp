@@ -81,7 +81,7 @@
                 <%= button_to mark_completed_trainer_portal_training_program_path(@training_program), 
                     method: :patch,
                     class: "btn btn-success",
-                    data: { confirm: "Are you sure you want to mark this program as completed?" } do %>
+                    data: { turbo_confirm: "Are you sure you want to mark this program as completed?" } do %>
                   <i class="bi bi-check-circle me-1"></i> Mark as Completed
                 <% end %>
               </div>
@@ -92,43 +92,111 @@
     </div>
 
     <div class="col-md-4">
-      <!-- Participant Info -->
+      <!-- Participants Info -->
       <div class="card card-custom shadow-sm mb-4">
         <div class="card-header card-header-custom">
-          <h5 class="mb-0">Participant Details</h5>
+          <h5 class="mb-0">
+            <%= @training_program.individual? ? "Participant Details" : "Section Details" %>
+          </h5>
         </div>
         <div class="card-body">
-          <div class="text-center mb-3">
-            <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-              <span class="h3 mb-0">
-                <%= @training_program.participant.user.first_name&.first&.upcase || 
-                    @training_program.participant.user.email.first.upcase %>
-              </span>
-            </div>
-            <h5 class="mb-1">
-              <%= @training_program.participant.user.full_name %>
-            </h5>
-            <p class="text-muted mb-0">
-              <%= @training_program.participant.user.email %>
-            </p>
-          </div>
+          <% if @training_program.individual? %>
+            <% if @participants.any? %>
+              <% @participants.each do |participant| %>
+                <div class="participant-info mb-4">
+                  <div class="text-center mb-3">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                      <span class="h3 mb-0">
+                        <%= participant.user.first_name&.first&.upcase || participant.user.email.first.upcase %>
+                      </span>
+                    </div>
+                    <h5 class="mb-1"><%= participant.user.full_name %></h5>
+                    <p class="text-muted mb-0"><%= participant.user.email %></p>
+                  </div>
 
-          <ul class="list-unstyled">
-            <li class="mb-2">
-              <i class="bi bi-building me-2 text-muted"></i>
-              <%= @training_program.institute.name %>
-            </li>
-            <% if @training_program.participant.section %>
-              <li class="mb-2">
-                <i class="bi bi-diagram-2 me-2 text-muted"></i>
-                <%= @training_program.participant.section.name %>
-              </li>
+                  <ul class="list-unstyled">
+                    <li class="mb-2">
+                      <i class="bi bi-building me-2 text-muted"></i>
+                      <%= @training_program.institute.name %>
+                    </li>
+                    <% if participant.section %>
+                      <li class="mb-2">
+                        <i class="bi bi-diagram-2 me-2 text-muted"></i>
+                        <%= participant.section.name %>
+                      </li>
+                    <% end %>
+                    <li class="mb-2">
+                      <i class="bi bi-calendar me-2 text-muted"></i>
+                      <% enrollment = @training_program.training_program_participants.find_by(participant: participant) %>
+                      Enrolled: <%= enrollment ? enrollment.created_at.strftime("%B %d, %Y") : "Not available" %>
+                    </li>
+                  </ul>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="text-center py-4">
+                <i class="bi bi-person-x fs-1 text-muted mb-3"></i>
+                <p class="text-muted mb-0">No participants assigned</p>
+              </div>
             <% end %>
-            <li class="mb-2">
-              <i class="bi bi-calendar me-2 text-muted"></i>
-              Enrolled: <%= @training_program.participant.enrollment_date&.strftime("%B %d, %Y") %>
-            </li>
-          </ul>
+          <% else %>
+            <% if @training_program.sections.any? %>
+              <% @training_program.sections.each do |section| %>
+                <div class="section-info mb-4">
+                  <h6 class="mb-2"><%= section.name %></h6>
+                  <p class="text-muted mb-2">
+                    <i class="bi bi-people me-2"></i>
+                    <%= pluralize(section.participants.count, 'participant') %>
+                  </p>
+                  <div class="d-flex align-items-center">
+                    <span class="badge bg-info me-2">Code: <%= section.code %></span>
+                    <span class="badge bg-success">Active</span>
+                  </div>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="text-center py-4">
+                <i class="bi bi-diagram-3 fs-1 text-muted mb-3"></i>
+                <p class="text-muted mb-0">No sections assigned</p>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-custom mt-4">
+    <div class="card-header card-header-custom">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Attendance Management</h5>
+        <%= link_to new_trainer_portal_training_program_attendance_path(@training_program), 
+            class: "btn btn-primary" do %>
+          <i class="bi bi-calendar-check"></i> Mark Attendance
+        <% end %>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="text-center">
+            <h3 class="mb-1">
+              <% begin %>
+                <%= @training_program.overall_attendance_percentage %>%
+              <% rescue StandardError => e %>
+                0%
+              <% end %>
+            </h3>
+            <p class="text-muted mb-0">Overall Attendance</p>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <div class="d-flex justify-content-end">
+            <%= link_to trainer_portal_training_program_attendances_path(@training_program), 
+                class: "btn btn-outline-primary" do %>
+              <i class="bi bi-list-check"></i> View Attendance Records
+            <% end %>
+          </div>
         </div>
       </div>
     </div>

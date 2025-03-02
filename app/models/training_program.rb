@@ -12,6 +12,9 @@ class TrainingProgram < ApplicationRecord
   has_many :sections, through: :training_program_sections
   
   has_one :feedback, class_name: "TrainingProgramFeedback", dependent: :destroy
+  
+  # Add attendance association
+  has_many :attendances, dependent: :destroy
 
   validates :title, presence: true
   validates :description, presence: true
@@ -61,6 +64,53 @@ class TrainingProgram < ApplicationRecord
         section&.name
       end
     end
+  end
+
+  # Get all participants (both direct and through sections)
+  def all_participants
+    if individual?
+      participants
+    else
+      sections.map(&:participants).flatten.uniq
+    end
+  end
+
+  # Get attendance for a specific date
+  def attendance_for_date(date)
+    attendances.by_date(date)
+  end
+
+  # Check if attendance is marked for a date
+  def attendance_marked?(date)
+    return false if date.nil?
+    
+    # Convert string to date if necessary
+    check_date = date.is_a?(String) ? Date.parse(date) : date.to_date
+    attendances.by_date(check_date).exists?
+  end
+
+  # Get attendance percentage for a participant
+  def attendance_percentage_for(participant)
+    Attendance.attendance_percentage(id, participant.id)
+  end
+
+  # Get overall attendance percentage
+  def overall_attendance_percentage
+    total_participants = all_participants.count
+    return 0 if total_participants.zero?
+
+    # If program hasn't started yet, return 0
+    return 0 if start_date > Time.current.to_date
+
+    # Calculate days from start to either today or end_date, whichever is earlier
+    current_date = [Time.current.to_date, end_date.to_date].min
+    total_days = (current_date - start_date.to_date).to_i + 1
+    return 0 if total_days <= 0
+
+    total_possible = total_participants * total_days
+    total_present = attendances.present_statuses.count
+    
+    (total_present.to_f / total_possible * 100).round(2)
   end
 
   private

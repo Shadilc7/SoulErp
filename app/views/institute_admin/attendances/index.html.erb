@@ -1,0 +1,69 @@
+<div class="card card-custom">
+  <div class="card-header card-header-custom py-3">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Attendance Management</h5>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <% if @training_programs.any? %>
+      <div data-controller="attendance-selector">
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="training-program-select" class="form-label">Select Training Program</label>
+              <select id="training-program-select" class="form-select" 
+                      data-attendance-selector-target="select"
+                      data-action="change->attendance-selector#change">
+                <option value="">-- Select a Training Program --</option>
+                <% @training_programs.each do |program| %>
+                  <option value="<%= program.id %>" 
+                          data-mark-url="<%= mark_institute_admin_attendance_path(program, date: Date.current) %>"
+                          data-history-url="<%= history_institute_admin_attendance_path(program) %>"
+                          data-edit-url="<%= program.attendance_marked?(Date.current) ? edit_institute_admin_attendance_path(program, date: Date.current) : nil %>">
+                    <%= program.title %> 
+                    (<%= program.program_type.titleize %>, 
+                    <%= program.individual? ? pluralize(program.participants.count, "participant") : pluralize(program.sections.count, "section") %>)
+                  </option>
+                <% end %>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="attendance-actions" class="d-none" data-attendance-selector-target="actions">
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="card bg-light">
+                <div class="card-body">
+                  <h6 class="card-title" id="selected-program-title" data-attendance-selector-target="programTitle"></h6>
+                  <div class="d-flex gap-2 mt-3">
+                    <a href="#" id="mark-attendance-btn" class="btn btn-primary" data-attendance-selector-target="markBtn">
+                      <i class="bi bi-plus-circle me-1"></i> Mark Today's Attendance
+                    </a>
+                    <a href="#" id="edit-attendance-btn" class="btn btn-secondary d-none" data-attendance-selector-target="editBtn">
+                      <i class="bi bi-pencil me-1"></i> Edit Today's Attendance
+                    </a>
+                    <a href="#" id="view-history-btn" class="btn btn-info text-white" data-attendance-selector-target="historyBtn">
+                      <i class="bi bi-clock-history me-1"></i> View Attendance History
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="no-selection-message" class="text-center py-4" data-attendance-selector-target="noSelection">
+          <i class="bi bi-arrow-up-circle fs-1 text-muted mb-3"></i>
+          <p class="text-muted mb-0">Please select a training program from the dropdown above</p>
+        </div>
+      </div>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
+        <p class="text-muted mb-0">No active training programs found</p>
+      </div>
+    <% end %>
+  </div>
+</div> 

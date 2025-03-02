@@ -1,0 +1,133 @@
+<div class="card card-custom">
+  <div class="card-header card-header-custom">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h5 class="mb-0">Mark Attendance</h5>
+        <p class="text-muted mb-0">
+          <%= @training_program.title %> - <%= @date.strftime("%B %d, %Y") %>
+        </p>
+      </div>
+      <%= link_to trainer_portal_training_program_attendances_path(@training_program), 
+          class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left"></i> Back
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <%= form_with(model: [:trainer_portal, @training_program, Attendance.new], local: true) do |f| %>
+      <%= hidden_field_tag :date, @date %>
+
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-success" data-action="mark-all" data-status="present">
+              Mark All Present
+            </button>
+            <button type="button" class="btn btn-sm btn-danger" data-action="mark-all" data-status="absent">
+              Mark All Absent
+            </button>
+          </div>
+          
+          <div class="text-muted">
+            Total Participants: <%= @participants.count %>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Participant</th>
+              <th>Status</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @participants.each do |participant| %>
+              <tr>
+                <td>
+                  <%= participant.user.full_name %>
+                  <div class="text-muted small"><%= participant.user.email %></div>
+                </td>
+                <td style="width: 200px;">
+                  <div class="btn-group w-100" role="group">
+                    <% Attendance.statuses.each do |status, value| %>
+                      <input type="radio" 
+                             class="btn-check" 
+                             name="attendance[attendances][<%= participant.id %>]" 
+                             id="<%= status %>_<%= participant.id %>" 
+                             value="<%= status %>"
+                             <%= "checked" if status == "present" %>>
+                      <label class="btn btn-outline-<%= status == 'present' ? 'success' : 
+                                                      status == 'late' ? 'warning' :
+                                                      status == 'excused' ? 'info' : 'danger' %>" 
+                             for="<%= status %>_<%= participant.id %>">
+                        <%= status.titleize %>
+                      </label>
+                    <% end %>
+                  </div>
+                </td>
+                <td style="width: 300px;">
+                  <%= text_field_tag "attendance[remarks][#{participant.id}]", nil, 
+                      class: "form-control form-control-sm",
+                      placeholder: "Optional remarks" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="text-end mt-4">
+        <%= f.submit "Save Attendance", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<% content_for :scripts do %>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle "Mark All" buttons
+      document.querySelectorAll('[data-action="mark-all"]').forEach(button => {
+        button.addEventListener('click', function() {
+          const status = this.dataset.status;
+          document.querySelectorAll(`input[value="${status}"]`).forEach(radio => {
+            radio.checked = true;
+          });
+        });
+      });
+    });
+  </script>
+<% end %>
+
+<% content_for :styles do %>
+  <style>
+    .btn-check:checked + .btn-outline-success {
+      background-color: var(--success-color) !important;
+      border-color: var(--success-color) !important;
+    }
+
+    .btn-check:checked + .btn-outline-danger {
+      background-color: var(--danger-color) !important;
+      border-color: var(--danger-color) !important;
+    }
+
+    .btn-check:checked + .btn-outline-warning {
+      background-color: var(--warning-color) !important;
+      border-color: var(--warning-color) !important;
+    }
+
+    .btn-check:checked + .btn-outline-info {
+      background-color: var(--info-color) !important;
+      border-color: var(--info-color) !important;
+    }
+
+    .btn-group .btn {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+    }
+  </style>
+<% end %> 

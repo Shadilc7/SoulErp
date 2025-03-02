@@ -427,6 +427,12 @@
               <i class="bi bi-mortarboard"></i>
               <span>Training Programs</span>
             <% end %>
+            
+            <%= link_to institute_admin_attendances_path,
+                class: "nav-link #{'active' if active_link?('attendances')}" do %>
+              <i class="bi bi-calendar-check"></i>
+              <span>Attendance</span>
+            <% end %>
 
             <%= link_to institute_admin_participants_path,
                 class: "nav-link #{'active' if active_link?('participants')}" do %>

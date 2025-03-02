@@ -71,7 +71,18 @@ Rails.application.routes.draw do
         end
       end
       resources :question_sets
-      resources :training_programs
+      resources :training_programs do
+        resources :attendances, only: [:index]
+      end
+      resources :attendances, only: [:index] do
+        member do
+          get :mark
+          post :record
+          get :edit
+          patch :update
+          get :history
+        end
+      end
       resources :assignments do
         resources :responses, only: [ :index, :show ]
       end
@@ -93,13 +104,18 @@ Rails.application.routes.draw do
   authenticate :user, lambda { |u| u.trainer? } do
     namespace :trainer_portal do
       root "dashboard#index"
+      
+      # Add profile routes
+      get 'profile', to: 'profile#show'
+      
       resources :training_programs do
+        resources :attendances, only: [:index, :new, :create]
         member do
+          patch :update_status
           patch :update_progress
           patch :mark_completed
         end
       end
-      resource :profile, only: [ :show ]
     end
   end
 

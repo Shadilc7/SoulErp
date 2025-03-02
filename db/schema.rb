@@ -83,6 +83,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_02_110000) do
     t.index ["section_id"], name: "index_assignments_on_section_id"
   end
 
+  create_table "attendances", force: :cascade do |t|
+    t.bigint "training_program_id", null: false
+    t.bigint "participant_id", null: false
+    t.bigint "marked_by_id", null: false
+    t.date "date", null: false
+    t.integer "status", default: 0, null: false
+    t.text "remarks"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["marked_by_id"], name: "index_attendances_on_marked_by_id"
+    t.index ["participant_id"], name: "index_attendances_on_participant_id"
+    t.index ["training_program_id", "participant_id", "date"], name: "index_attendances_uniqueness", unique: true
+    t.index ["training_program_id"], name: "index_attendances_on_training_program_id"
+  end
+
   create_table "guardians", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "participant_id", null: false
@@ -310,6 +325,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_02_110000) do
   add_foreign_key "assignment_sections", "assignments"
   add_foreign_key "assignment_sections", "sections"
   add_foreign_key "assignments", "institutes"
+  add_foreign_key "attendances", "participants"
+  add_foreign_key "attendances", "training_programs"
+  add_foreign_key "attendances", "users", column: "marked_by_id"
   add_foreign_key "guardians", "participants"
   add_foreign_key "guardians", "users"
   add_foreign_key "options", "questions"

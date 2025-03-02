@@ -1,0 +1,104 @@
+<div class="card card-custom">
+  <div class="card-header card-header-custom py-3">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        Attendance History: <%= @training_program.title %>
+      </h5>
+      <%= link_to institute_admin_attendances_path, class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left me-1"></i> Back
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <% if @attendance_dates.any? %>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Participant</th>
+              <% @attendance_dates.each do |date| %>
+                <th class="text-center">
+                  <%= date.strftime("%b %d") %>
+                  <div>
+                    <%= link_to edit_institute_admin_attendance_path(@training_program, date: date), 
+                        class: "btn btn-sm btn-link p-0" do %>
+                      <i class="bi bi-pencil-square"></i>
+                    <% end %>
+                  </div>
+                </th>
+              <% end %>
+              <th class="text-center">Attendance %</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @participants.each do |participant| %>
+              <tr>
+                <td><%= participant.user.full_name %></td>
+                <% @attendance_dates.each do |date| %>
+                  <% attendance = @attendance_records[date]&.[](participant.id) %>
+                  <td class="text-center">
+                    <% if attendance %>
+                      <% case attendance.status %>
+                      <% when "present" %>
+                        <span class="badge bg-success">
+                          <i class="bi bi-check-lg"></i> Present
+                        </span>
+                      <% when "absent" %>
+                        <span class="badge bg-danger">
+                          <i class="bi bi-x-lg"></i> Absent
+                        </span>
+                      <% when "late" %>
+                        <span class="badge bg-warning text-dark">
+                          <i class="bi bi-clock"></i> Late
+                        </span>
+                      <% end %>
+                    <% else %>
+                      <span class="badge bg-secondary">N/A</span>
+                    <% end %>
+                  </td>
+                <% end %>
+                <td class="text-center">
+                  <% percentage = @training_program.attendance_percentage_for(participant) %>
+                  <div class="d-flex align-items-center justify-content-center">
+                    <div class="progress" style="width: 80px; height: 10px;">
+                      <div class="progress-bar bg-<%= percentage >= 75 ? 'success' : (percentage >= 50 ? 'warning' : 'danger') %>" 
+                           role="progressbar" 
+                           style="width: <%= percentage %>%"></div>
+                    </div>
+                    <span class="ms-2"><%= percentage %>%</span>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
+        <p class="text-muted mb-0">No attendance records found for this training program</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<% content_for :styles do %>
+  <style>
+    .bg-present { 
+      background-color: #198754 !important;
+    }
+    
+    .bg-absent {
+      background-color: #dc3545 !important;
+    }
+    
+    .bg-late {
+      background-color: #fd7e14 !important;
+    }
+    
+    .bg-excused {
+      background-color: #0dcaf0 !important;
+    }
+  </style>
+<% end %> 

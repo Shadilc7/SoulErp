@@ -2,9 +2,14 @@ module TrainerPortal
   class DashboardController < TrainerPortal::BaseController
     def index
       @training_programs = current_trainer.training_programs
-        .includes(:section, :participant)
+        .includes(:section, participant: :user)
         .order(created_at: :desc)
         .limit(5)
+
+      @active_programs = current_trainer.training_programs
+        .where(status: :ongoing)
+        .includes(:section, participant: :user)
+        .order(created_at: :desc)
 
       @active_programs_count = current_trainer.training_programs
         .where(status: :ongoing)

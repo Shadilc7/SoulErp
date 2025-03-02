@@ -1,0 +1,130 @@
+<div class="card card-custom">
+  <div class="card-header card-header-custom py-3">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        Mark Attendance: <%= @training_program.title %> 
+        <span class="badge bg-primary ms-2"><%= @date.strftime("%B %d, %Y") %></span>
+      </h5>
+      <%= link_to institute_admin_attendances_path, class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left me-1"></i> Back
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card-body" data-controller="attendance-marker">
+    <% if @participants.any? %>
+      <div class="mb-4">
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-success" data-action="attendance-marker#markAllPresent">
+            <i class="bi bi-check-all me-1"></i> Mark All Present
+          </button>
+          <button type="button" class="btn btn-danger" data-action="attendance-marker#markAllAbsent">
+            <i class="bi bi-x-lg me-1"></i> Mark All Absent
+          </button>
+        </div>
+      </div>
+
+      <%= form_with(url: record_institute_admin_attendance_path(@training_program, date: @date), 
+                    method: :post, local: true, scope: :attendance) do |f| %>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th width="40%">Participant</th>
+                <th width="40%">Status</th>
+                <th width="20%">Section</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @participants.each do |participant| %>
+                <tr class="attendance-row" data-participant-id="<%= participant.id %>">
+                  <td><%= participant.user.full_name %></td>
+                  <td>
+                    <div class="attendance-toggle">
+                      <input type="radio" 
+                             class="btn-check attendance-radio present-radio" 
+                             name="attendance[attendances][<%= participant.id %>]" 
+                             id="present_<%= participant.id %>" 
+                             value="present" 
+                             checked
+                             data-action="attendance-marker#updateRowHighlight">
+                      <label class="btn btn-outline-success" for="present_<%= participant.id %>">
+                        <i class="bi bi-check-lg"></i> Present
+                      </label>
+                      
+                      <input type="radio" 
+                             class="btn-check attendance-radio absent-radio" 
+                             name="attendance[attendances][<%= participant.id %>]" 
+                             id="absent_<%= participant.id %>" 
+                             value="absent"
+                             data-action="attendance-marker#updateRowHighlight">
+                      <label class="btn btn-outline-danger" for="absent_<%= participant.id %>">
+                        <i class="bi bi-x-lg"></i> Absent
+                      </label>
+                      
+                      <input type="radio" 
+                             class="btn-check attendance-radio late-radio" 
+                             name="attendance[attendances][<%= participant.id %>]" 
+                             id="late_<%= participant.id %>" 
+                             value="late"
+                             data-action="attendance-marker#updateRowHighlight">
+                      <label class="btn btn-outline-warning" for="late_<%= participant.id %>">
+                        <i class="bi bi-clock"></i> Late
+                      </label>
+                    </div>
+                  </td>
+                  <td><%= participant.section&.name || 'Not Assigned' %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 text-end">
+          <%= f.submit "Save Attendance", class: "btn btn-primary btn-lg" %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="bi bi-people fs-1 text-muted mb-3"></i>
+        <p class="text-muted mb-0">No participants found for this training program</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<% content_for :styles do %>
+  <style>
+    .attendance-toggle {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .attendance-row {
+      transition: background-color 0.2s;
+    }
+    
+    .attendance-row.present-row {
+      background-color: rgba(25, 135, 84, 0.1);
+    }
+    
+    .attendance-row.absent-row {
+      background-color: rgba(220, 53, 69, 0.1);
+    }
+    
+    .attendance-row.late-row {
+      background-color: rgba(255, 193, 7, 0.1);
+    }
+    
+    .btn-outline-warning {
+      --bs-btn-color: #fd7e14;
+      --bs-btn-border-color: #fd7e14;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #fd7e14;
+      --bs-btn-hover-border-color: #fd7e14;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #fd7e14;
+      --bs-btn-active-border-color: #fd7e14;
+    }
+  </style>
+<% end %> 

@@ -60,7 +60,8 @@ module InstituteAdmin
         :difficulty_level,
         :active,
         :required,
-        options_attributes: [ :id, :text, :correct, :_destroy ]
+        :max_rating,
+        options_attributes: [ :id, :text, :value, :correct, :_destroy ]
       )
     end
   end

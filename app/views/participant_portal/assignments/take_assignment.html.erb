@@ -141,6 +141,11 @@
                   Please select a time
                 </div>
               <% end %>
+
+            <% when "rating" %>
+              <div class="rating-container">
+                <%= render 'rating_question', question: question %>
+              </div>
             <% end %>
 
             <% if question.description.present? %>
@@ -184,6 +189,50 @@
 
     .form-check:last-child {
       margin-bottom: 0;
+    }
+
+    .rating-container {
+      margin-top: 10px;
+    }
+    
+    .rating-stars-container {
+      padding: 10px 0;
+    }
+    
+    .rating-value {
+      font-size: 0.85rem;
+      color: #6c757d;
+    }
+    
+    /* Ensure stars are properly aligned */
+    .star-rating {
+      padding: 5px 0;
+    }
+    
+    .star-rating label {
+      display: inline-block;
+    }
+    
+    /* Hide radio buttons completely */
+    .star-rating input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      visibility: hidden;
+      pointer-events: none;
+      display: none;
+    }
+    
+    /* Ensure stars are properly displayed */
+    .star-rating label i.bi-star,
+    .star-rating label i.bi-star-fill {
+      font-size: 2rem;
+      color: #ddd;
+    }
+    
+    .star-rating label i.bi-star-fill {
+      color: #FFD700;
     }
 
     .invalid-feedback {

@@ -25,27 +25,39 @@
     </div>
 
     <!-- Question Type Selection -->
-    <div class="mb-4">
-      <label class="form-label text-muted small text-uppercase">Question Type</label>
-      <div class="question-type-select">
-        <%= f.select :question_type,
-            Question.question_types.keys.map { |type| 
-              [
-                content_tag(:i, '', class: "bi #{
-                  type == 'short_answer' ? 'bi-input-cursor' :
-                  type == 'paragraph' ? 'bi-text-paragraph' :
-                  type == 'multiple_choice' ? 'bi-record-circle' :
-                  type == 'checkboxes' ? 'bi-check-square' :
-                  type == 'dropdown' ? 'bi-chevron-down' :
-                  type == 'date' ? 'bi-calendar' : 'bi-clock'
-                }") + 
-                content_tag(:span, type.titleize),
-                type
-              ]
-            },
-            {},
-            class: "form-select question-type-dropdown",
-            data: { action: "change->question-form#handleTypeChange" } %>
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <%= f.label :question_type, class: "form-label" %>
+        <%= f.select :question_type, 
+                       options_for_select(Question.question_types.keys.map { |k| [k.humanize, k] }, @question.question_type),
+                       {}, 
+                       { class: "form-select", required: true, data: { action: "change->question-form#toggleFields" } } %>
+      </div>
+      <div class="col-md-6">
+        <%= f.label :difficulty_level, class: "form-label" %>
+        <%= f.select :difficulty_level, 
+                       options_for_select(Question.difficulty_levels.keys.map { |k| [k.humanize, k] }, @question.difficulty_level),
+                       {}, 
+                       { class: "form-select", required: true } %>
+      </div>
+    </div>
+
+    <!-- Rating options (for rating type) -->
+    <div class="row mb-3 rating-options" style="<%= @question.rating? ? '' : 'display: none;' %>">
+      <div class="col-md-6">
+        <%= f.label :max_rating, "Maximum Rating (1-10 stars)", class: "form-label" %>
+        <%= f.select :max_rating, 
+                       options_for_select((1..10).map { |n| [pluralize(n, "star"), n] }, @question.max_rating || 5),
+                       {}, 
+                       { class: "form-select" } %>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Preview</label>
+        <div class="rating-preview">
+          <% (1..5).each do |i| %>
+            <i class="bi bi-star-fill text-warning fs-3 me-1"></i>
+          <% end %>
+        </div>
       </div>
     </div>
 
@@ -68,10 +80,7 @@
       </div>
 
       <!-- Multiple Choice/Checkbox Options -->
-      <div class="options-section d-none" 
-          data-question-form-target="optionsSection"
-          data-controller="nested-form">
-        
+      <div class="options-container" style="<%= @question.requires_options? ? '' : 'display: none;' %>">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <label class="form-label text-muted small text-uppercase mb-0">Answer Options</label>
           <button type="button" 

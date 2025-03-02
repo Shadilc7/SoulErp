@@ -92,9 +92,8 @@ Rails.application.routes.draw do
           patch :update_progress
           patch :mark_completed
         end
-        resources :sessions
       end
-      resource :profile, only: [ :edit, :update ]
+      resource :profile, only: [ :show ]
     end
   end
 

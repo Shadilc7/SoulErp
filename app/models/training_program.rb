@@ -3,6 +3,14 @@ class TrainingProgram < ApplicationRecord
   belongs_to :trainer
   belongs_to :section, optional: true
   belongs_to :participant, optional: true
+  
+  # Associations for multiple participants and sections
+  has_many :training_program_participants, dependent: :destroy
+  has_many :participants, through: :training_program_participants
+  
+  has_many :training_program_sections, dependent: :destroy
+  has_many :sections, through: :training_program_sections
+  
   has_one :feedback, class_name: "TrainingProgramFeedback", dependent: :destroy
 
   validates :title, presence: true
@@ -39,15 +47,41 @@ class TrainingProgram < ApplicationRecord
     [ progress, 100 ].min
   end
 
+  def assignee_name
+    if individual?
+      if participants.any?
+        participants.count > 1 ? "#{participants.count} participants" : participants.first.user.full_name
+      else
+        participant&.user&.full_name
+      end
+    else
+      if sections.any?
+        sections.count > 1 ? "#{sections.count} sections" : sections.first.name
+      else
+        section&.name
+      end
+    end
+  end
+
   private
 
   def valid_program_assignment
     if individual?
       errors.add(:section_id, "must be blank for individual programs") if section_id.present?
-      errors.add(:participant_id, "must be present for individual programs") if participant_id.blank?
+      errors.add(:sections, "must be empty for individual programs") if sections.any?
+      
+      # Check either participant_id or participants
+      if participant_id.blank? && participants.empty?
+        errors.add(:base, "At least one participant must be selected for individual programs")
+      end
     else
       errors.add(:participant_id, "must be blank for section programs") if participant_id.present?
-      errors.add(:section_id, "must be present for section programs") if section_id.blank?
+      errors.add(:participants, "must be empty for section programs") if participants.any?
+      
+      # Check either section_id or sections
+      if section_id.blank? && sections.empty?
+        errors.add(:base, "At least one section must be selected for section programs")
+      end
     end
   end
 

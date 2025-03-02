@@ -1,8 +1,8 @@
-<%= form_with(model: [:institute_admin, @training_program], local: true) do |f| %>
+<%= form_with(model: [:institute_admin, @training_program], class: "needs-validation", data: { controller: "program-type" }) do |form| %>
   <% if @training_program.errors.any? %>
     <div class="alert alert-danger">
-      <h6>Please fix the following errors:</h6>
-      <ul class="mb-0">
+      <h4><%= pluralize(@training_program.errors.count, "error") %> prohibited this training program from being saved:</h4>
+      <ul>
         <% @training_program.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
@@ -10,99 +10,177 @@
     </div>
   <% end %>
 
-  <div class="row">
-    <div class="col-md-8">
-      <div class="card card-custom mb-4">
-        <div class="card-body">
-          <div class="mb-3">
-            <%= f.label :title, class: "form-label" %>
-            <%= f.text_field :title, class: "form-control" %>
-          </div>
-
-          <div class="mb-3">
-            <%= f.label :description, class: "form-label" %>
-            <%= f.text_area :description, class: "form-control", rows: 4 %>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <%= f.label :start_date, class: "form-label" %>
-              <%= f.date_field :start_date, class: "form-control" %>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <%= f.label :end_date, class: "form-label" %>
-              <%= f.date_field :end_date, class: "form-control" %>
-            </div>
-          </div>
-        </div>
-      </div>
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <%= form.label :title, class: "form-label" %>
+      <%= form.text_field :title, class: "form-control", required: true %>
     </div>
+    <div class="col-md-6">
+      <%= form.label :trainer_id, class: "form-label" %>
+      <%= form.collection_select :trainer_id, @trainers, :id, ->(t) { t.user.full_name }, { include_blank: "Select Trainer" }, { class: "form-select", required: true } %>
+    </div>
+  </div>
 
-    <div class="col-md-4">
-      <div class="card card-custom mb-4">
-        <div class="card-body">
-          <div class="mb-3">
-            <%= f.label :trainer_id, "Select Trainer", class: "form-label" %>
-            <%= f.collection_select :trainer_id, 
-                current_institute.trainers.includes(:user).active,
-                :id,
-                ->(t) { t.user.full_name || t.user.username },
-                { prompt: "Choose a trainer" },
-                { class: "form-select" } %>
-          </div>
+  <div class="row mb-3">
+    <div class="col-md-12">
+      <%= form.label :description, class: "form-label" %>
+      <%= form.text_area :description, class: "form-control", rows: 4, required: true %>
+    </div>
+  </div>
 
-          <div class="mb-3">
-            <%= f.label :program_type, class: "form-label" %>
-            <%= f.select :program_type,
-                TrainingProgram.program_types.keys.map { |t| [t.titleize, t] },
-                {},
-                { class: "form-select", disabled: !@training_program.new_record? } %>
-          </div>
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <%= form.label :start_date, class: "form-label" %>
+      <%= form.datetime_local_field :start_date, class: "form-control", required: true %>
+    </div>
+    <div class="col-md-6">
+      <%= form.label :end_date, class: "form-label" %>
+      <%= form.datetime_local_field :end_date, class: "form-control", required: true %>
+    </div>
+  </div>
 
-          <div id="assignment-fields" data-controller="program-type">
-            <div class="mb-3" data-program-type-target="sectionField">
-              <%= f.label :section_id, "Select Section", class: "form-label" %>
-              <%= f.collection_select :section_id,
-                  current_institute.sections.active,
-                  :id,
-                  :name,
-                  { prompt: "Choose a section" },
-                  { class: "form-select" } %>
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <%= form.label :program_type, class: "form-label" %>
+      <%= form.select :program_type, TrainingProgram.program_types.keys.map { |k| [k.humanize, k] }, 
+                      { include_blank: "Select Program Type" }, 
+                      { class: "form-select", required: true, 
+                        data: { 
+                          action: "change->program-type#toggle",
+                          program_type_target: "select" 
+                        } 
+                      } %>
+    </div>
+    <div class="col-md-6">
+      <%= form.label :status, class: "form-label" %>
+      <%= form.select :status, TrainingProgram.statuses.keys.map { |k| [k.humanize, k] }, {}, { class: "form-select", required: true } %>
+    </div>
+  </div>
+
+  <!-- Section selection (for section type) -->
+  <div data-program-type-target="sectionField" style="<%= @training_program.section? ? '' : 'display: none;' %>">
+    <div class="row mb-3">
+      <div class="col-md-12">
+        <label class="form-label">Select Sections</label>
+        <div class="card">
+          <div class="card-header bg-light">
+            <div class="form-check">
+              <%= check_box_tag "select_all_sections", 
+                               "1", 
+                               false, 
+                               id: "select_all_sections",
+                               class: "form-check-input",
+                               data: { action: "change->program-type#toggleAllSections" } %>
+              <%= label_tag "select_all_sections", "Select All Sections", class: "form-check-label fw-bold" %>
             </div>
-
-            <div class="mb-3" data-program-type-target="participantField">
-              <%= f.label :participant_id, "Select Participant", class: "form-label" %>
-              <%= f.collection_select :participant_id,
-                  current_institute.participants.includes(:user).active,
-                  :id,
-                  ->(p) { p.user.full_name || p.user.username },
-                  { prompt: "Choose a participant" },
-                  { class: "form-select" } %>
-            </div>
           </div>
-
-          <% unless @training_program.new_record? %>
-            <div class="mb-3">
-              <%= f.label :status, class: "form-label" %>
-              <%= f.select :status,
-                  TrainingProgram.statuses.keys.map { |s| [s.titleize, s] },
-                  {},
-                  { class: "form-select" } %>
+          <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+            <div class="row">
+              <% @sections.each do |section| %>
+                <div class="col-md-4 mb-2">
+                  <div class="form-check">
+                    <%= check_box_tag "training_program[section_ids][]", 
+                                     section.id, 
+                                     @training_program.sections.include?(section), 
+                                     id: "section_#{section.id}",
+                                     class: "form-check-input section-checkbox" %>
+                    <%= label_tag "section_#{section.id}", section.name, class: "form-check-label" %>
+                  </div>
+                </div>
+              <% end %>
             </div>
-          <% end %>
-
-          <div class="form-check mb-3">
-            <%= f.check_box :active, class: "form-check-input" %>
-            <%= f.label :active, class: "form-check-label" %>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="text-end">
-    <%= f.submit class: "btn btn-custom-primary" %>
-    <%= link_to "Cancel", institute_admin_training_programs_path, class: "btn btn-outline-secondary ms-2" %>
+  <!-- Individual participant selection (for individual type) -->
+  <div data-program-type-target="participantField" style="<%= @training_program.individual? ? '' : 'display: none;' %>">
+    <div class="row mb-3">
+      <div class="col-md-12">
+        <label class="form-label">Select Participants</label>
+        <div class="card">
+          <div class="card-header bg-light">
+            <div class="form-check">
+              <%= check_box_tag "select_all_participants", 
+                               "1", 
+                               false, 
+                               id: "select_all_participants",
+                               class: "form-check-input",
+                               data: { action: "change->program-type#toggleAllParticipants" } %>
+              <%= label_tag "select_all_participants", "Select All Participants", class: "form-check-label fw-bold" %>
+            </div>
+          </div>
+          <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+            <div class="row">
+              <% @participants.each do |participant| %>
+                <div class="col-md-4 mb-2">
+                  <div class="form-check">
+                    <%= check_box_tag "training_program[participant_ids][]", 
+                                     participant.id, 
+                                     @training_program.participants.include?(participant), 
+                                     id: "participant_#{participant.id}",
+                                     class: "form-check-input participant-checkbox" %>
+                    <%= label_tag "participant_#{participant.id}", participant.user.full_name, class: "form-check-label" %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-<% end %> 
+
+  <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+    <%= link_to "Cancel", institute_admin_training_programs_path, class: "btn btn-outline-secondary me-md-2" %>
+    <%= form.submit class: "btn btn-primary" %>
+  </div>
+<% end %>
+
+<!-- Add Stimulus controller for toggling fields based on program type -->
+<script>
+  import { Controller } from "@hotwired/stimulus"
+
+  export default class extends Controller {
+    static targets = ["select", "participantField", "sectionField"]
+
+    connect() {
+      this.toggle()
+    }
+
+    toggle() {
+      const programType = this.selectTarget.value
+      
+      if (programType === "individual") {
+        this.participantFieldTarget.style.display = "block"
+        this.sectionFieldTarget.style.display = "none"
+      } else if (programType === "section") {
+        this.participantFieldTarget.style.display = "none"
+        this.sectionFieldTarget.style.display = "block"
+      } else {
+        this.participantFieldTarget.style.display = "none"
+        this.sectionFieldTarget.style.display = "none"
+      }
+    }
+
+    toggleAllParticipants(event) {
+      const isChecked = event.target.checked
+      const checkboxes = document.querySelectorAll('.participant-checkbox')
+      
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = isChecked
+      })
+    }
+
+    toggleAllSections(event) {
+      const isChecked = event.target.checked
+      const checkboxes = document.querySelectorAll('.section-checkbox')
+      
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = isChecked
+      })
+    }
+  }
+</script> 

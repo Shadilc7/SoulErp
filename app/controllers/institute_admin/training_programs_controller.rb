@@ -24,29 +24,58 @@ module InstituteAdmin
     end
 
     def new
-      @training_program = current_institute.training_programs.build
-      @training_program.program_type = params[:program_type] if params[:program_type]
+      @training_program = current_institute.training_programs.new
+      @trainers = current_institute.trainers.includes(:user).active
+      @sections = current_institute.sections.active
+      @participants = current_institute.participants.includes(:user).active
     end
 
     def create
-      @training_program = current_institute.training_programs.build(training_program_params)
-
+      @training_program = current_institute.training_programs.new(training_program_params)
+      
+      # Handle participant IDs from the form
+      if params[:training_program][:participant_ids].present?
+        @training_program.participant_ids = params[:training_program][:participant_ids]
+      end
+      
+      # Handle section IDs from the form
+      if params[:training_program][:section_ids].present?
+        @training_program.section_ids = params[:training_program][:section_ids]
+      end
+      
       if @training_program.save
-        redirect_to institute_admin_training_program_path(@training_program),
-          notice: "Training program was successfully created."
+        redirect_to institute_admin_training_programs_path, notice: "Training program was successfully created."
       else
+        @trainers = current_institute.trainers.includes(:user).active
+        @sections = current_institute.sections.active
+        @participants = current_institute.participants.includes(:user).active
         render :new, status: :unprocessable_entity
       end
     end
 
     def edit
+      @trainers = current_institute.trainers.includes(:user).active
+      @sections = current_institute.sections.active
+      @participants = current_institute.participants.includes(:user).active
     end
 
     def update
+      # Handle participant IDs from the form
+      if params[:training_program][:participant_ids].present?
+        @training_program.participant_ids = params[:training_program][:participant_ids]
+      end
+      
+      # Handle section IDs from the form
+      if params[:training_program][:section_ids].present?
+        @training_program.section_ids = params[:training_program][:section_ids]
+      end
+      
       if @training_program.update(training_program_params)
-        redirect_to institute_admin_training_program_path(@training_program),
-          notice: "Training program was successfully updated."
+        redirect_to institute_admin_training_programs_path, notice: "Training program was successfully updated."
       else
+        @trainers = current_institute.trainers.includes(:user).active
+        @sections = current_institute.sections.active
+        @participants = current_institute.participants.includes(:user).active
         render :edit, status: :unprocessable_entity
       end
     end
@@ -65,8 +94,9 @@ module InstituteAdmin
 
     def training_program_params
       params.require(:training_program).permit(
-        :title, :description, :program_type, :start_date, :end_date,
-        :status, :trainer_id, :section_id, :participant_id
+        :title, :description, :start_date, :end_date, 
+        :program_type, :trainer_id, :section_id, :participant_id,
+        :status, participant_ids: [], section_ids: []
       )
     end
   end

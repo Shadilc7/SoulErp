@@ -18,6 +18,7 @@ export default class extends Controller {
     this.updateAllCounters()
     this.validateForm()
     this.validateDates()
+    this.setupRatingStars()
   }
 
   handleTypeChange(event) {
@@ -311,35 +312,147 @@ export default class extends Controller {
   validateField(event) {
     const field = event.target
     const questionId = field.dataset.questionId
-    const errorDiv = this.errorTargets.find(el => el.dataset.questionId === questionId)
-
-    if (field.required && !field.value) {
-      field.classList.add('is-invalid')
-      errorDiv?.classList.add('d-block')
+    const errorElement = this.errorTargets.find(el => el.dataset.questionId === questionId)
+    
+    if (!errorElement) return
+    
+    if (field.type === 'checkbox') {
+      // For checkboxes, check if at least one is checked
+      const checkboxes = document.querySelectorAll(`input[name="${field.name}"]`)
+      const isValid = Array.from(checkboxes).some(cb => cb.checked)
+      this.toggleValidation(field, errorElement, isValid)
+    } else if (field.type === 'radio') {
+      // For radio buttons, check if any in the group is checked
+      const radios = document.querySelectorAll(`input[name="${field.name}"]`)
+      const isValid = Array.from(radios).some(r => r.checked)
+      this.toggleValidation(field, errorElement, isValid)
     } else {
+      // For other inputs, check if they have a value
+      const isValid = field.value.trim() !== ''
+      this.toggleValidation(field, errorElement, isValid)
+    }
+  }
+  
+  toggleValidation(field, errorElement, isValid) {
+    if (isValid) {
       field.classList.remove('is-invalid')
-      errorDiv?.classList.remove('d-block')
+      errorElement.style.display = 'none'
+    } else {
+      field.classList.add('is-invalid')
+      errorElement.style.display = 'block'
     }
   }
 
-  validateForm(event) {
-    const form = event.target
-    const isValid = form.checkValidity()
-
-    if (!isValid) {
-      event.preventDefault()
-      this.showErrors()
-    }
-  }
-
-  showErrors() {
-    const requiredFields = this.element.querySelectorAll('[required]')
-    requiredFields.forEach(field => {
-      if (!field.value) {
-        field.classList.add('is-invalid')
-        const errorDiv = this.errorTargets.find(el => el.dataset.questionId === field.dataset.questionId)
-        errorDiv?.classList.add('d-block')
-      }
-    })
+  setupRatingStars() {
+    console.log("Setting up rating stars");
+    
+    // Find all star rating containers
+    const ratingContainers = document.querySelectorAll('.star-rating');
+    console.log(`Found ${ratingContainers.length} rating containers`);
+    
+    if (!ratingContainers.length) return;
+    
+    ratingContainers.forEach(container => {
+      const inputs = container.querySelectorAll('input[type="radio"]');
+      const labels = container.querySelectorAll('label');
+      const questionId = inputs[0]?.dataset.questionId;
+      const valueDisplay = document.getElementById(`rating_value_${questionId}`);
+      
+      console.log(`Setting up rating for question ${questionId} with ${inputs.length} inputs and ${labels.length} labels`);
+      
+      // Add click event to each label
+      labels.forEach(label => {
+        const starIcon = label.querySelector('i');
+        
+        // Replace with empty star initially
+        if (starIcon) {
+          starIcon.classList.remove('bi-star-fill');
+          starIcon.classList.add('bi-star');
+        }
+        
+        label.addEventListener('click', (event) => {
+          event.preventDefault();
+          console.log(`Star clicked: ${label.getAttribute('for')}`);
+          
+          const input = document.getElementById(label.getAttribute('for'));
+          if (input) {
+            input.checked = true;
+            
+            // Get the star value from the input ID
+            const starValue = parseInt(input.value);
+            console.log(`Selected star value: ${starValue}`);
+            
+            // Update all stars
+            labels.forEach(l => {
+              const icon = l.querySelector('i');
+              const starNum = parseInt(l.getAttribute('for').split('_')[0].replace('star', ''));
+              
+              if (starNum <= starValue) {
+                icon.classList.remove('bi-star');
+                icon.classList.add('bi-star-fill');
+                icon.style.color = '#FFD700';
+              } else {
+                icon.classList.remove('bi-star-fill');
+                icon.classList.add('bi-star');
+                icon.style.color = '#ddd';
+              }
+            });
+            
+            this.validateField({ target: input });
+            
+            // Update the rating value display
+            if (valueDisplay) {
+              valueDisplay.textContent = `${starValue} ${starValue === 1 ? 'star' : 'stars'} selected`;
+            }
+          }
+        });
+      });
+      
+      // Add hover effects to the container
+      container.addEventListener('mouseover', (event) => {
+        if (event.target.tagName === 'I' || event.target.tagName === 'LABEL') {
+          const label = event.target.tagName === 'I' ? event.target.parentNode : event.target;
+          const value = parseInt(label.getAttribute('for').split('_')[0].replace('star', ''));
+          
+          // Update all stars on hover
+          labels.forEach(l => {
+            const icon = l.querySelector('i');
+            const starNum = parseInt(l.getAttribute('for').split('_')[0].replace('star', ''));
+            
+            if (starNum <= value) {
+              icon.classList.remove('bi-star');
+              icon.classList.add('bi-star-fill');
+              icon.style.color = '#FFD700';
+            } else {
+              icon.classList.remove('bi-star-fill');
+              icon.classList.add('bi-star');
+              icon.style.color = '#ddd';
+            }
+          });
+        }
+      });
+      
+      // Remove hover effect when leaving the container
+      container.addEventListener('mouseleave', () => {
+        // Reset to selected state
+        const selectedInput = Array.from(inputs).find(input => input.checked);
+        const selectedValue = selectedInput ? parseInt(selectedInput.value) : 0;
+        
+        labels.forEach(l => {
+          const icon = l.querySelector('i');
+          const starNum = parseInt(l.getAttribute('for').split('_')[0].replace('star', ''));
+          
+          if (starNum <= selectedValue) {
+            icon.classList.remove('bi-star');
+            icon.classList.add('bi-star-fill');
+            icon.style.color = '#FFD700';
+          } else {
+            icon.classList.remove('bi-star-fill');
+            icon.classList.add('bi-star');
+            icon.style.color = '#ddd';
+          }
+        });
+      });
+    });
   }
 } 

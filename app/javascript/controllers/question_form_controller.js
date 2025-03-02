@@ -14,6 +14,8 @@ export default class extends Controller {
       this.handleInitialType(select.value)
     }
     this.validateForm()
+    this.toggleFields()
+    this.updateRatingPreview()
   }
 
   handleInitialType(type) {
@@ -95,5 +97,45 @@ export default class extends Controller {
   validateForm() {
     const title = this.titleInputTarget.value.trim()
     this.submitButtonTarget.disabled = title.length === 0
+  }
+
+  toggleFields() {
+    const questionType = document.getElementById('question_question_type').value
+    const optionsContainer = document.querySelector('.options-container')
+    const ratingOptions = document.querySelector('.rating-options')
+    
+    // Hide/show options container based on question type
+    if (['multiple_choice', 'checkboxes', 'dropdown'].includes(questionType)) {
+      optionsContainer.style.display = 'block'
+    } else {
+      optionsContainer.style.display = 'none'
+    }
+    
+    // Hide/show rating options based on question type
+    if (questionType === 'rating') {
+      ratingOptions.style.display = 'flex'
+    } else {
+      ratingOptions.style.display = 'none'
+    }
+  }
+  
+  updateRatingPreview() {
+    const maxRatingSelect = document.getElementById('question_max_rating')
+    if (maxRatingSelect) {
+      maxRatingSelect.addEventListener('change', () => {
+        const maxRating = parseInt(maxRatingSelect.value)
+        const previewContainer = document.querySelector('.rating-preview')
+        
+        // Clear existing stars
+        previewContainer.innerHTML = ''
+        
+        // Add new stars based on selected max rating
+        for (let i = 1; i <= maxRating; i++) {
+          const star = document.createElement('i')
+          star.className = 'bi bi-star-fill text-warning fs-3 me-1'
+          previewContainer.appendChild(star)
+        }
+      })
+    }
   }
 } 

@@ -171,6 +171,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_23_145552) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "required", default: false
+    t.integer "max_rating", default: 5
     t.index ["institute_id"], name: "index_questions_on_institute_id"
   end
 
@@ -222,6 +223,26 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_23_145552) do
     t.index ["participant_id"], name: "index_training_program_feedbacks_on_participant_id"
     t.index ["training_program_id", "participant_id"], name: "index_training_program_feedbacks_uniqueness", unique: true
     t.index ["training_program_id"], name: "index_training_program_feedbacks_on_training_program_id"
+  end
+
+  create_table "training_program_participants", force: :cascade do |t|
+    t.bigint "training_program_id", null: false
+    t.bigint "participant_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["participant_id"], name: "index_training_program_participants_on_participant_id"
+    t.index ["training_program_id", "participant_id"], name: "index_training_program_participants_uniqueness", unique: true
+    t.index ["training_program_id"], name: "index_training_program_participants_on_training_program_id"
+  end
+
+  create_table "training_program_sections", force: :cascade do |t|
+    t.bigint "training_program_id", null: false
+    t.bigint "section_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["section_id"], name: "index_training_program_sections_on_section_id"
+    t.index ["training_program_id", "section_id"], name: "index_training_program_sections_uniqueness", unique: true
+    t.index ["training_program_id"], name: "index_training_program_sections_on_training_program_id"
   end
 
   create_table "training_programs", force: :cascade do |t|
@@ -299,6 +320,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_23_145552) do
   add_foreign_key "trainers", "users"
   add_foreign_key "training_program_feedbacks", "participants"
   add_foreign_key "training_program_feedbacks", "training_programs"
+  add_foreign_key "training_program_participants", "participants"
+  add_foreign_key "training_program_participants", "training_programs"
+  add_foreign_key "training_program_sections", "sections"
+  add_foreign_key "training_program_sections", "training_programs"
   add_foreign_key "training_programs", "institutes"
   add_foreign_key "training_programs", "participants"
   add_foreign_key "training_programs", "sections"

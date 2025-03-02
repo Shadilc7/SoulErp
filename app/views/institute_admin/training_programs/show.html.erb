@@ -74,6 +74,38 @@
                 </div>
               <% end %>
             </div>
+
+            <% if @training_program.individual? %>
+              <div class="mb-3">
+                <h5>Participants:</h5>
+                <% if @training_program.participants.any? %>
+                  <ul class="list-group">
+                    <% @training_program.participants.includes(:user).each do |participant| %>
+                      <li class="list-group-item">
+                        <%= participant.user.full_name %> (<%= participant.user.email %>)
+                      </li>
+                    <% end %>
+                  </ul>
+                <% else %>
+                  <p><%= @training_program.participant&.user&.full_name %></p>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="mb-3">
+                <h5>Sections:</h5>
+                <% if @training_program.sections.any? %>
+                  <ul class="list-group">
+                    <% @training_program.sections.each do |section| %>
+                      <li class="list-group-item">
+                        <%= section.name %> (<%= pluralize(section.participants.count, "participant") %>)
+                      </li>
+                    <% end %>
+                  </ul>
+                <% else %>
+                  <p><%= @training_program.section&.name %></p>
+                <% end %>
+              </div>
+            <% end %>
           </div>
         </div>
 

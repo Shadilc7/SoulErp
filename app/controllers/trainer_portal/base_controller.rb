@@ -1,26 +1,25 @@
 module TrainerPortal
   class BaseController < ApplicationController
-    layout 'trainer'
     before_action :authenticate_user!
-    before_action :ensure_trainer!
+    before_action :require_trainer
+    layout "trainer"
 
     private
 
-    def ensure_trainer!
-      unless current_user.trainer?
-        flash[:alert] = "You are not authorized to access this area."
-        redirect_to root_path
+    def require_trainer
+      unless current_user&.trainer?
+        redirect_to root_path, alert: "You must be a trainer to access this area."
       end
     end
 
     def current_trainer
-      @current_trainer ||= current_user.trainer
+      @current_trainer ||= current_user&.trainer
     end
+    helper_method :current_trainer
 
     def current_institute
-      @current_institute ||= current_trainer.institute
+      @current_institute ||= current_trainer&.institute
     end
-
-    helper_method :current_trainer, :current_institute
+    helper_method :current_institute
   end
 end

@@ -8,9 +8,7 @@ class Question < ApplicationRecord
   has_many :assignments, through: :assignment_questions
 
   validates :title, presence: true
-  validates :question_type, presence: true, inclusion: {
-    in: %w[short_answer paragraph multiple_choice checkbox dropdown]
-  }
+  validates :question_type, presence: true
   validates :marks, presence: true, numericality: { greater_than: 0 }
   validates :options, presence: true, if: :requires_options?
 
@@ -20,8 +18,9 @@ class Question < ApplicationRecord
     multiple_choice: 2, # Radio buttons, single answer
     checkboxes: 3,      # Checkboxes, multiple answers
     dropdown: 4,        # Dropdown select, single answer
-    date: 5,           # Date picker
-    time: 6            # Time picker
+    date: 5,            # Date picker
+    time: 6,            # Time picker
+    rating: 7           # Star rating
   }, default: :short_answer
 
   enum :difficulty_level, {
@@ -42,6 +41,11 @@ class Question < ApplicationRecord
   def formatted_options
     return [] unless options.any?
     options.ordered.pluck(:value)
+  end
+
+  # Add a method to determine if the question is a rating
+  def rating?
+    question_type == "rating"
   end
 
   private

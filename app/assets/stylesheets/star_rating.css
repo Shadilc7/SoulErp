@@ -1,0 +1,40 @@
+.star-rating {
+  display: flex !important;
+  flex-direction: row-reverse !important;
+  justify-content: flex-start !important;
+  margin-bottom: 10px !important;
+}
+
+.star-rating input[type="radio"] {
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  display: none !important;
+}
+
+.star-rating label {
+  cursor: pointer !important;
+  font-size: 2rem !important;
+  padding: 0 0.1em !important;
+  margin: 0 !important;
+  display: inline-block !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.star-rating label i {
+  color: #ddd !important;
+  transition: all 0.2s ease !important;
+}
+
+.star-rating input:checked ~ label i {
+  color: #FFD700 !important;
+}
+
+.star-rating label:hover i,
+.star-rating label:hover ~ label i {
+  color: #FFD700 !important;
+} 

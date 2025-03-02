@@ -31,13 +31,21 @@
                 <td><%= program.trainer.user.full_name %></td>
                 <td>
                   <% if program.individual? %>
-                    <% if program.participant&.user.present? %>
-                      <%= program.participant.user.full_name %>
+                    <% if program.participants.any? %>
+                      <span class="badge bg-info">
+                        <%= pluralize(program.participants.count, "participant") %>
+                      </span>
                     <% else %>
-                      <span class="text-muted">No participant assigned</span>
+                      <%= program.participant&.user&.full_name %>
                     <% end %>
                   <% else %>
-                    <%= program.section&.name || 'No section assigned' %>
+                    <% if program.sections.any? %>
+                      <span class="badge bg-success">
+                        <%= pluralize(program.sections.count, "section") %>
+                      </span>
+                    <% else %>
+                      <%= program.section&.name %>
+                    <% end %>
                   <% end %>
                 </td>
                 <td>

@@ -1,23 +1,76 @@
 <div class="container-fluid py-4">
   <!-- Welcome Section -->
-  <div class="welcome-section mb-4">
-    <div class="card card-custom">
-      <div class="card-body py-4">
-        <div class="d-flex align-items-center">
-          <div class="avatar-circle me-3">
-            <span class="avatar-text">
-              <%= current_user.first_name&.first&.upcase || current_user.email.first.upcase %>
-            </span>
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card card-custom">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-center">
+            <div class="avatar-circle me-3">
+              <span class="avatar-text">
+                <%= current_user.first_name&.first&.upcase || current_user.email.first.upcase %>
+              </span>
+            </div>
+            <div>
+              <h4 class="mb-1">Welcome, <%= current_user.first_name || "Participant" %>!</h4>
+              <p class="text-muted mb-0">
+                <i class="bi bi-building me-2"></i><%= current_institute.name %>
+                <% if current_participant.section %>
+                  <span class="mx-2">|</span>
+                  <i class="bi bi-diagram-2 me-2"></i><%= current_participant.section.name %>
+                <% end %>
+              </p>
+            </div>
           </div>
-          <div>
-            <h4 class="mb-1">Welcome, <%= current_user.first_name || "Participant" %>!</h4>
-            <p class="text-muted mb-0">
-              <i class="bi bi-building me-2"></i><%= current_institute.name %>
-              <% if current_participant.section %>
-                <span class="mx-2">|</span>
-                <i class="bi bi-diagram-2 me-2"></i><%= current_participant.section.name %>
-              <% end %>
-            </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Overview -->
+  <div class="row mb-4">
+    <div class="col-md-4 mb-3 mb-md-0">
+      <div class="card card-custom h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="icon-box bg-primary-subtle rounded-3 p-3 me-3">
+              <i class="bi bi-mortarboard fs-4 text-primary"></i>
+            </div>
+            <div>
+              <h6 class="text-muted mb-1">Training Programs</h6>
+              <h3 class="mb-0"><%= @training_programs.count %></h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4 mb-3 mb-md-0">
+      <div class="card card-custom h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="icon-box bg-success-subtle rounded-3 p-3 me-3">
+              <i class="bi bi-check-circle fs-4 text-success"></i>
+            </div>
+            <div>
+              <h6 class="text-muted mb-1">Completed Assignments</h6>
+              <h3 class="mb-0"><%= current_participant.responses.count %></h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card card-custom h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="icon-box bg-info-subtle rounded-3 p-3 me-3">
+              <i class="bi bi-clipboard-check fs-4 text-info"></i>
+            </div>
+            <div>
+              <h6 class="text-muted mb-1">Today's Assignments</h6>
+              <h3 class="mb-0"><%= @assignments.count %></h3>
+            </div>
           </div>
         </div>
       </div>
@@ -25,151 +78,164 @@
   </div>
 
   <!-- Daily Assignments Section -->
-  <div class="card card-custom mb-4" data-controller="assignment-date">
-    <div class="card-header card-header-custom py-3">
-      <div class="d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Daily Assignments</h5>
-        <div class="date-navigation d-flex align-items-center">
-          <button type="button" 
-                  class="btn btn-outline-secondary btn-sm me-2" 
-                  data-action="click->assignment-date#previousDay">
-            <i class="bi bi-chevron-left"></i>
-          </button>
-          
-          <div class="date-picker">
-            <%= date_field_tag :selected_date, 
-                @selected_date,
-                class: "form-control",
-                max: Date.current,
-                data: {
-                  assignment_date_target: "dateInput",
-                  action: "change->assignment-date#fetchAssignment"
-                } %>
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card card-custom" data-controller="assignment-date">
+        <div class="card-header card-header-custom">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Daily Assignments</h5>
+            <div class="date-navigation d-flex align-items-center">
+              <button type="button" 
+                      class="btn btn-outline-secondary btn-sm me-2" 
+                      data-action="click->assignment-date#previousDay">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              
+              <div class="date-picker">
+                <%= date_field_tag :selected_date, 
+                    @selected_date,
+                    class: "form-control",
+                    max: Date.current,
+                    data: {
+                      assignment_date_target: "dateInput",
+                      action: "change->assignment-date#fetchAssignment"
+                    } %>
+              </div>
+              
+              <button type="button" 
+                      class="btn btn-outline-secondary btn-sm ms-2" 
+                      data-action="click->assignment-date#nextDay"
+                      <%= @selected_date > Date.current ? 'disabled' : '' %>>
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
           </div>
-          
-          <button type="button" 
-                  class="btn btn-outline-secondary btn-sm ms-2" 
-                  data-action="click->assignment-date#nextDay"
-                  <%= @selected_date > Date.current ? 'disabled' : '' %>>
-            <i class="bi bi-chevron-right"></i>
-          </button>
         </div>
-      </div>
-    </div>
 
-    <%= turbo_frame_tag "assignment_content" do %>
-      <div class="card-body">
-        <% if @assignments.any? %>
-          <div class="assignments-list">
-            <% @assignments.each do |assignment| %>
-              <div class="card assignment-card mb-3">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                      <h6 class="card-title mb-1"><%= assignment.title %></h6>
-                      <p class="text-muted small mb-0"><%= assignment.description %></p>
-                    </div>
-                    <% if assignment.answered_by_on_date?(current_participant, @selected_date) %>
-                      <span class="badge bg-success">Completed</span>
-                    <% else %>
-                      <% if @selected_date <= Date.current %>
-                        <%= link_to take_assignment_participant_portal_assignment_path(assignment, date: @selected_date),
-                            class: "btn btn-primary btn-sm",
-                            data: { turbo_frame: "_top" } do %>
-                          <i class="bi bi-play-fill me-1"></i>Start Assignment
+        <%= turbo_frame_tag "assignment_content" do %>
+          <div class="card-body">
+            <% if @assignments.any? %>
+              <div class="assignments-list">
+                <% @assignments.each do |assignment| %>
+                  <div class="card assignment-card mb-3">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                          <h6 class="card-title mb-1"><%= assignment.title %></h6>
+                          <p class="text-muted small mb-0"><%= assignment.description %></p>
+                        </div>
+                        <% if assignment.answered_by_on_date?(current_participant, @selected_date) %>
+                          <span class="badge bg-success">Completed</span>
+                        <% else %>
+                          <% if @selected_date <= Date.current %>
+                            <%= link_to take_assignment_participant_portal_assignment_path(assignment, date: @selected_date),
+                                class: "btn btn-custom-primary btn-sm",
+                                data: { turbo_frame: "_top" } do %>
+                              <i class="bi bi-play-fill me-1"></i>Start Assignment
+                            <% end %>
+                          <% else %>
+                            <span class="badge bg-warning">Upcoming</span>
+                          <% end %>
                         <% end %>
-                      <% else %>
-                        <span class="badge bg-warning">Upcoming</span>
-                      <% end %>
-                    <% end %>
-                  </div>
+                      </div>
 
-                  <div class="assignment-meta">
-                    <div class="meta-item">
-                      <i class="bi bi-calendar-range text-primary me-2"></i>
-                      <small>
-                        <%= assignment.start_date.strftime("%b %d") %> - 
-                        <%= assignment.end_date.strftime("%b %d, %Y") %>
-                      </small>
-                    </div>
-                    <div class="meta-item">
-                      <i class="bi bi-question-circle text-primary me-2"></i>
-                      <small>
-                        <%= pluralize(
-                          assignment.questions.count + 
-                          assignment.question_sets.sum { |qs| qs.questions.count },
-                          'question'
-                        ) %>
-                      </small>
+                      <div class="assignment-meta">
+                        <div class="meta-item">
+                          <i class="bi bi-calendar-range text-primary me-2"></i>
+                          <small>
+                            <%= assignment.start_date.strftime("%b %d") %> - 
+                            <%= assignment.end_date.strftime("%b %d, %Y") %>
+                          </small>
+                        </div>
+                        <div class="meta-item">
+                          <i class="bi bi-question-circle text-primary me-2"></i>
+                          <small>
+                            <%= pluralize(
+                              assignment.questions.count + 
+                              assignment.question_sets.sum { |qs| qs.questions.count },
+                              'question'
+                            ) %>
+                          </small>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="text-center py-5">
+                <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
+                <p class="text-muted mb-0">No assignments available for <%= @selected_date.strftime("%B %d, %Y") %></p>
               </div>
             <% end %>
           </div>
-        <% else %>
-          <div class="text-center py-5">
-            <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
-            <p class="text-muted mb-0">No assignments available for <%= @selected_date.strftime("%B %d, %Y") %></p>
-          </div>
         <% end %>
       </div>
-    <% end %>
+    </div>
   </div>
 
   <!-- Training Programs Section -->
-  <div class="card card-custom">
-    <div class="card-header card-header-custom">
-      <h5 class="mb-0">My Training Programs</h5>
-    </div>
-    <div class="card-body">
-      <% if @training_programs.any? %>
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead>
-              <tr>
-                <th>Program</th>
-                <th>Trainer</th>
-                <th>Status</th>
-                <th>Feedback</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% @training_programs.each do |program| %>
-                <tr>
-                  <td>
-                    <strong><%= program.title %></strong>
-                    <br>
-                    <small class="text-muted"><%= program.description&.truncate(50) %></small>
-                  </td>
-                  <td><%= program.trainer.user.full_name %></td>
-                  <td>
-                    <span class="badge <%= program.status == 'completed' ? 'bg-success' : 'bg-primary' %>">
-                      <%= program.status.titleize %>
-                    </span>
-                  </td>
-                  <td>
-                    <% if program.feedback.present? %>
-                      <span class="badge bg-success">
-                        <i class="bi bi-check-circle me-1"></i>Feedback Submitted
-                      </span>
-                    <% else %>
-                      <%= link_to new_participant_portal_training_program_feedback_path(program), 
-                          class: "btn btn-sm btn-outline-primary" do %>
-                        <i class="bi bi-chat-square-text me-1"></i>Submit Feedback
-                      <% end %>
-                    <% end %>
-                  </td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
+  <div class="row">
+    <div class="col-12">
+      <div class="card card-custom">
+        <div class="card-header card-header-custom">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">My Training Programs</h5>
+            <%= link_to participant_portal_training_programs_path, class: "btn btn-sm btn-outline-custom" do %>
+              <i class="bi bi-eye me-1"></i>View All
+            <% end %>
+          </div>
         </div>
-      <% else %>
-        <div class="alert alert-info mb-0" role="alert">
-          <i class="bi bi-info-circle me-2"></i>No training programs found.
+        <div class="card-body">
+          <% if @training_programs.any? %>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>Program</th>
+                    <th>Trainer</th>
+                    <th>Status</th>
+                    <th>Feedback</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @training_programs.each do |program| %>
+                    <tr>
+                      <td>
+                        <strong><%= program.title %></strong>
+                        <br>
+                        <small class="text-muted"><%= program.description&.truncate(50) %></small>
+                      </td>
+                      <td><%= program.trainer.user.full_name %></td>
+                      <td>
+                        <span class="badge <%= program.status == 'completed' ? 'bg-success' : 'bg-primary' %>">
+                          <%= program.status.titleize %>
+                        </span>
+                      </td>
+                      <td>
+                        <% if program.feedback.present? %>
+                          <span class="badge bg-success">
+                            <i class="bi bi-check-circle me-1"></i>Feedback Submitted
+                          </span>
+                        <% else %>
+                          <%= link_to new_participant_portal_training_program_feedback_path(program), 
+                              class: "btn btn-sm btn-outline-custom" do %>
+                            <i class="bi bi-chat-square-text me-1"></i>Submit Feedback
+                          <% end %>
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <div class="alert alert-info mb-0" role="alert">
+              <i class="bi bi-info-circle me-2"></i>No training programs found.
+            </div>
+          <% end %>
         </div>
-      <% end %>
+      </div>
     </div>
   </div>
 </div>
@@ -179,7 +245,7 @@
     .welcome-section .avatar-circle {
       width: 60px;
       height: 60px;
-      background-color: var(--bs-primary);
+      background-color: var(--primary-color);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -233,6 +299,26 @@
 
     .table > :not(caption) > * > * {
       padding: 1rem 1.5rem;
+    }
+    
+    .icon-box {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .bg-primary-subtle {
+      background-color: rgba(99, 102, 241, 0.1);
+    }
+    
+    .bg-success-subtle {
+      background-color: rgba(46, 125, 50, 0.1);
+    }
+    
+    .bg-info-subtle {
+      background-color: rgba(3, 169, 244, 0.1);
     }
   </style>
 <% end %>

@@ -64,6 +64,14 @@
 
       .sidebar-header a {
         color: var(--text-primary);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+      }
+      
+      .sidebar-header h5 {
+        font-weight: 600;
+        margin-bottom: 0;
       }
 
       .nav-link {
@@ -397,8 +405,9 @@
       <!-- Sidebar -->
       <div id="sidebar" class="d-flex flex-column">
         <div class="sidebar-header">
-          <%= link_to institute_admin_root_path, class: "text-decoration-none" do %>
-            <h5 class="mb-0 text-primary">SOUL ERP</h5>
+          <%= link_to institute_admin_root_path, class: "text-decoration-none d-flex align-items-center" do %>
+            <i class="bi bi-building-fill text-white fs-4 me-2"></i>
+            <h5 class="mb-0 text-white">SOUL ERP</h5>
           <% end %>
         </div>
 

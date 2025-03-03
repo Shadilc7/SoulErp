@@ -58,6 +58,11 @@ class Participant < ApplicationRecord
     all_training_programs.ongoing
   end
 
+  # Helper method to get all responses (alias for assignment_responses)
+  def responses
+    assignment_responses
+  end
+
   def assignments_for_date(date)
     individual_assignments = Assignment
       .joins(:assignment_participants)

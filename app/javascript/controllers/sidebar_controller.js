@@ -12,19 +12,25 @@ export default class extends Controller {
   }
 
   toggle() {
-    this.contentTarget.classList.toggle('show')
-    this.backdropTarget.classList.toggle('show')
-    document.body.style.overflow = this.contentTarget.classList.contains('show') ? 'hidden' : ''
+    const sidebar = document.getElementById('sidebar')
+    if (sidebar) {
+      sidebar.classList.toggle('show')
+      this.backdropTarget.classList.toggle('show')
+      document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : ''
+    }
   }
 
   hide() {
-    this.contentTarget.classList.remove('show')
-    this.backdropTarget.classList.remove('show')
-    document.body.style.overflow = ''
+    const sidebar = document.getElementById('sidebar')
+    if (sidebar) {
+      sidebar.classList.remove('show')
+      this.backdropTarget.classList.remove('show')
+      document.body.style.overflow = ''
+    }
   }
 
   checkMobileState() {
-    if (window.innerWidth >= 768) {
+    if (window.innerWidth >= 992) {
       this.hide()
     }
   }

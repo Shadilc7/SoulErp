@@ -18,15 +18,27 @@
                 <option value="">-- Select a Training Program --</option>
                 <% @training_programs.each do |program| %>
                   <option value="<%= program.id %>" 
-                          data-mark-url="<%= mark_institute_admin_attendance_path(program, date: Date.current) %>"
+                          data-mark-url="<%= mark_institute_admin_attendance_path(program) %>"
                           data-history-url="<%= history_institute_admin_attendance_path(program) %>"
-                          data-edit-url="<%= program.attendance_marked?(Date.current) ? edit_institute_admin_attendance_path(program, date: Date.current) : nil %>">
+                          data-start-date="<%= program.start_date.to_date.iso8601 %>"
+                          data-end-date="<%= program.end_date.to_date.iso8601 %>">
                     <%= program.title %> 
                     (<%= program.program_type.titleize %>, 
                     <%= program.individual? ? pluralize(program.participants.count, "participant") : pluralize(program.sections.count, "section") %>)
                   </option>
                 <% end %>
               </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4 d-none" data-attendance-selector-target="dateContainer">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="attendance-date" class="form-label">Select Date</label>
+              <input type="date" id="attendance-date" class="form-control" 
+                     data-attendance-selector-target="dateSelector"
+                     data-action="change->attendance-selector#dateChanged">
             </div>
           </div>
         </div>
@@ -39,10 +51,10 @@
                   <h6 class="card-title" id="selected-program-title" data-attendance-selector-target="programTitle"></h6>
                   <div class="d-flex gap-2 mt-3">
                     <a href="#" id="mark-attendance-btn" class="btn btn-primary" data-attendance-selector-target="markBtn">
-                      <i class="bi bi-plus-circle me-1"></i> Mark Today's Attendance
+                      <i class="bi bi-plus-circle me-1"></i> Mark Attendance
                     </a>
                     <a href="#" id="edit-attendance-btn" class="btn btn-secondary d-none" data-attendance-selector-target="editBtn">
-                      <i class="bi bi-pencil me-1"></i> Edit Today's Attendance
+                      <i class="bi bi-pencil me-1"></i> Edit Attendance
                     </a>
                     <a href="#" id="view-history-btn" class="btn btn-info text-white" data-attendance-selector-target="historyBtn">
                       <i class="bi bi-clock-history me-1"></i> View Attendance History

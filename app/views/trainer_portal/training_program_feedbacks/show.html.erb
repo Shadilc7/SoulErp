@@ -1,0 +1,57 @@
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="h3 mb-0">Feedbacks for <%= @training_program.title %></h1>
+      <p class="text-muted">View all participant feedbacks for this training program</p>
+    </div>
+    <div class="col-auto">
+      <%= link_to trainer_portal_training_program_feedbacks_path, class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left"></i> Back to Feedbacks
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <% if @feedbacks.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Participant</th>
+                <th>Rating</th>
+                <th>Feedback</th>
+                <th>Submitted On</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @feedbacks.each do |feedback| %>
+                <tr>
+                  <td><%= feedback.participant.user.full_name %></td>
+                  <td>
+                    <div class="d-flex">
+                      <% feedback.rating.times do %>
+                        <i class="bi bi-star-fill text-warning"></i>
+                      <% end %>
+                      <% (5 - feedback.rating).times do %>
+                        <i class="bi bi-star text-muted"></i>
+                      <% end %>
+                    </div>
+                  </td>
+                  <td><%= feedback.content %></td>
+                  <td><%= feedback.created_at.strftime("%b %d, %Y %I:%M %p") %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-5">
+          <i class="bi bi-chat-square-text fs-1 text-muted mb-3"></i>
+          <h5>No Feedbacks Yet</h5>
+          <p class="text-muted">There are no feedbacks submitted for this training program yet.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div> 

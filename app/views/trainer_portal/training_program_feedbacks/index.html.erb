@@ -1,0 +1,71 @@
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="h3 mb-0">Training Program Feedbacks</h1>
+      <p class="text-muted">View participant feedbacks for your training programs</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <% if @training_programs.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Training Program</th>
+                <th>Duration</th>
+                <th>Type</th>
+                <th>Feedbacks</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @training_programs.each do |program| %>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div>
+                        <h6 class="mb-0"><%= program.title %></h6>
+                        <small class="text-muted">
+                          <%= program.section ? "Section: #{program.section.name}" : "Individual" %>
+                        </small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="small text-muted">
+                      <%= program.start_date.strftime("%b %d") %> - <%= program.end_date.strftime("%b %d, %Y") %>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge bg-<%= program.program_type == 'section' ? 'info' : 'primary' %>">
+                      <%= program.program_type.titleize %>
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-secondary">
+                      <%= program.training_program_feedbacks.size %> Feedbacks
+                    </span>
+                  </td>
+                  <td>
+                    <%= link_to trainer_portal_training_program_feedback_path(program), 
+                        class: "btn btn-sm btn-custom-primary" do %>
+                      <i class="bi bi-eye"></i> View Feedbacks
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-5">
+          <i class="bi bi-collection fs-1 text-muted mb-3"></i>
+          <h5>No Training Programs</h5>
+          <p class="text-muted">You haven't been assigned to any training programs yet.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div> 

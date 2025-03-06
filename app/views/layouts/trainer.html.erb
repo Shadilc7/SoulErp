@@ -234,6 +234,11 @@
               <span>Attendance</span>
             <% end %>
 
+            <%= link_to trainer_portal_training_program_feedbacks_path, class: "nav-link #{'active' if controller_name == 'training_program_feedbacks'}" do %>
+              <i class="bi bi-chat-square-text"></i>
+              <span>Feedbacks</span>
+            <% end %>
+
             <%= link_to trainer_portal_profile_path, class: "nav-link #{'active' if controller_name == 'profile'}" do %>
               <i class="bi bi-person"></i>
               <span>My Profile</span>

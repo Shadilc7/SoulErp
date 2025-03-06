@@ -9,6 +9,9 @@ export default class extends Controller {
     
     // Listen for window resize
     window.addEventListener('resize', this.checkMobileState.bind(this))
+    
+    // Add event listeners to sidebar links to preserve scroll position
+    this.setupSidebarLinkListeners()
   }
 
   toggle() {
@@ -32,6 +35,25 @@ export default class extends Controller {
   checkMobileState() {
     if (window.innerWidth >= 992) {
       this.hide()
+    }
+  }
+  
+  setupSidebarLinkListeners() {
+    const sidebar = document.getElementById('sidebar')
+    if (!sidebar) return
+    
+    // Store the current scroll position in localStorage when clicking a link
+    const links = sidebar.querySelectorAll('a.nav-link')
+    links.forEach(link => {
+      link.addEventListener('click', () => {
+        localStorage.setItem('sidebarScrollPosition', sidebar.scrollTop)
+      })
+    })
+    
+    // Restore scroll position after page load
+    if (localStorage.getItem('sidebarScrollPosition')) {
+      const scrollPosition = parseInt(localStorage.getItem('sidebarScrollPosition'))
+      sidebar.scrollTop = scrollPosition
     }
   }
 

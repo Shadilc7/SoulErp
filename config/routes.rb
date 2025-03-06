@@ -85,6 +85,7 @@ Rails.application.routes.draw do
           get :edit
           patch :update
           get :history
+          get :check_status
         end
       end
       resources :assignments do
@@ -113,6 +114,8 @@ Rails.application.routes.draw do
           patch :mark_completed
         end
       end
+      
+      resources :training_program_feedbacks, only: [:index, :show], path: 'feedbacks'
     end
   end
 

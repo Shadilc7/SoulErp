@@ -17,8 +17,8 @@
         <%= link_to trainer_portal_training_programs_path, class: "nav-link #{'active' if controller_name == 'training_programs'}" do %>
           <i class="bi bi-collection me-1"></i> Training Programs
         <% end %>
-        <%= link_to trainer_portal_training_programs_path(anchor: 'attendance'), class: "nav-link #{'active' if controller_name == 'attendances'}" do %>
-          <i class="bi bi-calendar-check me-1"></i> Attendance
+        <%= link_to trainer_portal_training_program_feedbacks_path, class: "nav-link #{'active' if controller_name == 'training_program_feedbacks'}" do %>
+          <i class="bi bi-chat-square-text me-1"></i> Feedbacks
         <% end %>
       </ul>
 

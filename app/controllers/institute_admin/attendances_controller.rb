@@ -1,6 +1,6 @@
 module InstituteAdmin
   class AttendancesController < InstituteAdmin::BaseController
-    before_action :set_training_program, only: [:mark, :record, :edit, :update, :history]
+    before_action :set_training_program, only: [:mark, :record, :edit, :update, :history, :check_status]
     before_action :set_date, only: [:mark, :record, :edit, :update]
 
     def index
@@ -75,10 +75,11 @@ module InstituteAdmin
     end
     
     def history
+      @training_program = TrainingProgram.find(params[:id])
       @attendance_dates = @training_program.attendances
         .select(:date)
         .distinct
-        .order(date: :desc)
+        .order(date: :asc)
         .pluck(:date)
         
       @participants = @training_program.all_participants.includes(:user)
@@ -92,6 +93,18 @@ module InstituteAdmin
           .includes(:participant)
           .index_by(&:participant_id)
       end
+    end
+
+    def check_status
+      @training_program = TrainingProgram.find(params[:id])
+      date = params[:date].present? ? Date.parse(params[:date]) : Date.current
+      
+      marked = @training_program.attendance_marked?(date)
+      
+      render json: {
+        marked: marked,
+        edit_url: marked ? edit_institute_admin_attendance_path(@training_program, date: date) : nil
+      }
     end
 
     private

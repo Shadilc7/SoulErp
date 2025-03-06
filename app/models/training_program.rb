@@ -12,6 +12,7 @@ class TrainingProgram < ApplicationRecord
   has_many :sections, through: :training_program_sections
   
   has_one :feedback, class_name: "TrainingProgramFeedback", dependent: :destroy
+  has_many :training_program_feedbacks, dependent: :destroy
   
   # Add attendance association
   has_many :attendances, dependent: :destroy
@@ -111,6 +112,11 @@ class TrainingProgram < ApplicationRecord
     total_present = attendances.present_statuses.count
     
     (total_present.to_f / total_possible * 100).round(2)
+  end
+
+  # Check if a participant has any registered attendance for this program
+  def has_registered_attendance?(participant)
+    attendances.where(participant: participant).present_statuses.exists?
   end
 
   private

@@ -154,9 +154,16 @@
               </div>
             <% else %>
               <div class="text-center">
-                <p class="text-muted mb-3">You haven't provided feedback for this program yet.</p>
-                <%= link_to new_participant_portal_training_program_feedback_path(@training_program), class: "btn btn-primary" do %>
-                  <i class="bi bi-star me-1"></i> Give Feedback
+                <% if @training_program.has_registered_attendance?(current_participant) %>
+                  <p class="text-muted mb-3">You haven't provided feedback for this program yet.</p>
+                  <%= link_to new_participant_portal_training_program_feedback_path(@training_program), class: "btn btn-primary" do %>
+                    <i class="bi bi-star me-1"></i> Give Feedback
+                  <% end %>
+                <% else %>
+                  <div class="alert alert-warning mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    You need to have registered attendance in this program to provide feedback.
+                  </div>
                 <% end %>
               </div>
             <% end %>

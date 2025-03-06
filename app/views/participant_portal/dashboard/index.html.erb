@@ -218,9 +218,17 @@
                             <i class="bi bi-check-circle me-1"></i>Feedback Submitted
                           </span>
                         <% else %>
-                          <%= link_to new_participant_portal_training_program_feedback_path(program), 
-                              class: "btn btn-sm btn-outline-custom" do %>
-                            <i class="bi bi-chat-square-text me-1"></i>Submit Feedback
+                          <% if program.completed? && program.has_registered_attendance?(current_participant) %>
+                            <%= link_to new_participant_portal_training_program_feedback_path(program), 
+                                class: "btn btn-sm btn-outline-custom" do %>
+                              <i class="bi bi-chat-square-text me-1"></i>Submit Feedback
+                            <% end %>
+                          <% elsif program.completed? %>
+                            <span class="badge bg-warning">
+                              <i class="bi bi-info-circle me-1"></i>Attendance Required
+                            </span>
+                          <% else %>
+                            <span class="text-muted">Not available</span>
                           <% end %>
                         <% end %>
                       </td>

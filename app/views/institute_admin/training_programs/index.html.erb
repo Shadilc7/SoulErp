@@ -68,6 +68,19 @@
                         class: "btn btn-sm btn-outline-custom me-2" do %>
                       <i class="bi bi-pencil"></i>
                     <% end %>
+                    <% if program.completed? %>
+                      <span class="btn btn-sm btn-success me-2" title="Program Completed">
+                        <i class="bi bi-check-circle-fill"></i>
+                      </span>
+                    <% else %>
+                      <%= button_to mark_completed_institute_admin_training_program_path(program),
+                          method: :patch,
+                          class: "btn btn-sm btn-success me-2",
+                          form: { style: 'display: inline-block' },
+                          data: { turbo_confirm: "Are you sure you want to mark this program as completed?" } do %>
+                        <i class="bi bi-check-circle"></i>
+                      <% end %>
+                    <% end %>
                     <%= button_to institute_admin_training_program_path(program),
                         method: :delete,
                         class: "btn btn-sm btn-outline-danger",

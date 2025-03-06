@@ -20,7 +20,7 @@ module InstituteAdmin
     end
 
     def show
-      @participants = @section.participants.includes(:participant_profile)
+      @participants = @section.participants
     end
 
     def new

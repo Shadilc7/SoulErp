@@ -73,6 +73,10 @@ Rails.application.routes.draw do
       resources :question_sets
       resources :training_programs do
         resources :attendances, only: [:index]
+        resources :feedbacks, only: [:index], controller: "training_program_feedbacks"
+        member do
+          patch :mark_completed
+        end
       end
       resources :attendances, only: [:index] do
         member do
@@ -89,13 +93,6 @@ Rails.application.routes.draw do
       resources :responses do
         get "section/:section_id", action: :index, on: :collection
         get "section/:section_id/participant/:participant_id", action: :index, on: :collection
-      end
-      resources :analytics, only: [ :index ] do
-        collection do
-          get :participant_performance
-          get :section_performance
-          get :assignment_analytics
-        end
       end
     end
   end

@@ -1,6 +1,6 @@
 module InstituteAdmin
   class TrainingProgramsController < InstituteAdmin::BaseController
-    before_action :set_training_program, only: [ :show, :edit, :update, :destroy ]
+    before_action :set_training_program, only: [ :show, :edit, :update, :destroy, :mark_completed ]
 
     def index
       @training_programs = current_institute.training_programs
@@ -17,6 +17,12 @@ module InstituteAdmin
 
       if params[:search].present?
         @training_programs = @training_programs.where("title ILIKE ?", "%#{params[:search]}%")
+      end
+      
+      if params[:view] == 'feedbacks'
+        # Include training program feedbacks for the feedbacks view
+        @training_programs = @training_programs.includes(:training_program_feedbacks)
+        render :feedbacks
       end
     end
 
@@ -84,6 +90,16 @@ module InstituteAdmin
       @training_program.destroy
       redirect_to institute_admin_training_programs_path,
         notice: "Training program was successfully deleted."
+    end
+
+    def mark_completed
+      if @training_program.update(status: :completed)
+        redirect_to institute_admin_training_program_path(@training_program),
+          notice: "Training program has been marked as completed."
+      else
+        redirect_to institute_admin_training_program_path(@training_program),
+          alert: "Failed to mark training program as completed."
+      end
     end
 
     private

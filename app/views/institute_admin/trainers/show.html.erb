@@ -93,9 +93,19 @@
                       </small>
                     </div>
                     <p class="mb-1 text-muted">
-                      <%= program.individual? ? 
-                        "Individual: #{program.participant.user.full_name}" : 
-                        "Section: #{program.section.name}" %>
+                      <% if program.individual? %>
+                        <% if program.participant&.user %>
+                          Individual: <%= program.participant.user.full_name %>
+                        <% else %>
+                          Individual: No participant assigned
+                        <% end %>
+                      <% else %>
+                        <% if program.section %>
+                          Section: <%= program.section.name %>
+                        <% else %>
+                          Section: No section assigned
+                        <% end %>
+                      <% end %>
                     </p>
                   <% end %>
                 <% end %>

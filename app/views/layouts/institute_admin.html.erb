@@ -432,11 +432,17 @@
             <% end %>
 
             <%= link_to institute_admin_training_programs_path,
-                class: "nav-link #{'active' if active_link?('training_programs')}" do %>
+                class: "nav-link #{'active' if controller.controller_name == 'training_programs' && params[:view] != 'feedbacks'}" do %>
               <i class="bi bi-mortarboard"></i>
               <span>Training Programs</span>
             <% end %>
             
+            <%= link_to institute_admin_training_programs_path(view: 'feedbacks'),
+                class: "nav-link ps-4 #{'active' if (controller.controller_name == 'training_programs' && params[:view] == 'feedbacks') || controller.controller_name == 'training_program_feedbacks'}" do %>
+              <i class="bi bi-chat-square-text"></i>
+              <span>Feedbacks</span>
+            <% end %>
+
             <%= link_to institute_admin_attendances_path,
                 class: "nav-link #{'active' if active_link?('attendances')}" do %>
               <i class="bi bi-calendar-check"></i>
@@ -472,12 +478,6 @@
               <i class="bi bi-clipboard2-check"></i>
               <span>Responses</span>
             <% end %>
-
-            <%= link_to institute_admin_analytics_path,
-                class: "nav-link #{'active' if active_link?('analytics')}" do %>
-              <i class="bi bi-bar-chart-fill"></i>
-              <span>Analytics</span>
-            <% end %>
           </nav>
         </div>
       </div>
@@ -488,21 +488,27 @@
       <!-- Main Content -->
       <div id="main-content" data-sidebar-target="content">
         <div class="topbar d-flex justify-content-between align-items-center">
-          <button class="btn btn-link text-secondary d-lg-none" data-bs-toggle="collapse" data-bs-target="#sidebar">
+          <button class="btn btn-link text-secondary d-lg-none" data-action="click->sidebar#toggle">
             <i class="bi bi-list fs-4"></i>
           </button>
 
           <%= render "layouts/institute_admin/navigation" %>
 
           <div class="dropdown">
-            <a href="#" class="user-menu d-flex align-items-center gap-2 text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+            <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center gap-2 text-primary" 
+                    type="button" 
+                    id="userDropdown" 
+                    data-bs-toggle="dropdown" 
+                    data-bs-auto-close="true"
+                    aria-expanded="false"
+                    style="background-color: rgba(99, 102, 241, 0.1); padding: 0.5rem 1rem; border-radius: 0.5rem;">
               <i class="bi bi-person-circle fs-5"></i>
               <span><%= current_user.full_name %></span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
               <li>
-                <%= button_to destroy_user_session_path, 
-                    method: :delete, 
+                <%= link_to destroy_user_session_path, 
+                    data: { turbo_method: :delete },
                     class: "dropdown-item text-danger" do %>
                   <i class="bi bi-box-arrow-right me-2"></i> Logout
                 <% end %>

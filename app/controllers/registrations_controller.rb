@@ -50,7 +50,8 @@ class RegistrationsController < Devise::RegistrationsController
         :phone_number,
         :date_of_birth,
         :institute_id,
-        :section_id
+        :section_id,
+        :participant_type
       ]
     ])
   end

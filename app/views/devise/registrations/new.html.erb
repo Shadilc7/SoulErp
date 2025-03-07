@@ -73,6 +73,17 @@
                   </div>
 
                   <div class="form-floating mb-3">
+                    <%= p.select :participant_type,
+                        [['Student', 'student'], ['Guardian', 'guardian'], ['Employee', 'employee']],
+                        { prompt: "Select Type" },
+                        { class: "form-select #{p.object.errors[:participant_type].any? ? 'is-invalid' : ''}" } %>
+                    <%= p.label :participant_type, "Participant Type" %>
+                    <% if p.object.errors[:participant_type].any? %>
+                      <div class="invalid-feedback"><%= p.object.errors[:participant_type].first %></div>
+                    <% end %>
+                  </div>
+
+                  <div class="form-floating mb-3">
                     <%= p.select :institute_id, 
                         @institutes.map { |i| [i.name, i.id] }, 
                         { prompt: "Select Institution" },
@@ -131,6 +142,35 @@
                     class: "btn btn-light btn-lg" %>
               </div>
             <% end %>
+
+            <script>
+              document.addEventListener('DOMContentLoaded', function() {
+                const participantTypeSelect = document.querySelector('select[name="user[participant_attributes][participant_type]"]');
+                const sectionSelect = document.querySelector('select[name="user[participant_attributes][section_id]"]');
+                
+                function toggleFields() {
+                  const selectedType = participantTypeSelect.value;
+                  const sectionField = sectionSelect.closest('.form-floating');
+                  
+                  // Show section field for students and employees
+                  if (selectedType === 'student' || selectedType === 'employee') {
+                    sectionField.style.display = 'block';
+                  } else if (selectedType === 'guardian') {
+                    // For guardians, we'll handle section selection differently
+                    sectionField.style.display = 'none';
+                  } else {
+                    // Default to showing section field
+                    sectionField.style.display = 'block';
+                  }
+                }
+                
+                if (participantTypeSelect) {
+                  participantTypeSelect.addEventListener('change', toggleFields);
+                  // Initialize fields on page load
+                  toggleFields();
+                }
+              });
+            </script>
           </div>
         </div>
       </div>

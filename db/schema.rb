@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_02_110000) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_07_150421) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -227,6 +227,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_02_110000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "phone_number"
+    t.text "experience_details"
+    t.text "payment_details"
+    t.text "other_details"
     t.index ["institute_id"], name: "index_trainers_on_institute_id"
     t.index ["phone_number"], name: "index_trainers_on_phone_number"
     t.index ["user_id"], name: "index_trainers_on_user_id"

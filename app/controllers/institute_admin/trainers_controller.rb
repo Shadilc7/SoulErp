@@ -36,6 +36,12 @@ module InstituteAdmin
     end
 
     def update
+      # Remove password params if they're blank
+      if params[:trainer][:user_attributes][:password].blank? && params[:trainer][:user_attributes][:password_confirmation].blank?
+        params[:trainer][:user_attributes].delete(:password)
+        params[:trainer][:user_attributes].delete(:password_confirmation)
+      end
+
       if @trainer.update(trainer_params)
         redirect_to institute_admin_trainer_path(@trainer),
           notice: "Trainer was successfully updated."
@@ -68,6 +74,10 @@ module InstituteAdmin
         :experience_years,
         :phone_number,
         :status,
+        :certificates,
+        :experience_details,
+        :payment_details,
+        :other_details,
         user_attributes: [
           :id,
           :first_name,

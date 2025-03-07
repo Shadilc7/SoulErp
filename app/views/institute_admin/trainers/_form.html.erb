@@ -76,18 +76,48 @@
       </div>
     </div>
 
+    <div class="col-md-12 mb-3">
+      <div class="form-group">
+        <%= f.label :certificates, "Certifications", class: "form-label" %>
+        <%= f.text_area :certificates, class: "form-control", rows: 3, placeholder: "Enter certifications (comma separated)" %>
+      </div>
+    </div>
+
+    <div class="col-md-12 mb-3">
+      <div class="form-group">
+        <%= f.label :experience_details, "Experience Details", class: "form-label" %>
+        <%= f.text_area :experience_details, class: "form-control", rows: 3, placeholder: "Enter detailed experience information" %>
+      </div>
+    </div>
+
+    <div class="col-md-12 mb-3">
+      <div class="form-group">
+        <%= f.label :payment_details, "Payment Details", class: "form-label" %>
+        <%= f.text_area :payment_details, class: "form-control", rows: 3, placeholder: "Enter payment details" %>
+      </div>
+    </div>
+
+    <div class="col-md-12 mb-3">
+      <div class="form-group">
+        <%= f.label :other_details, "Other Details", class: "form-label" %>
+        <%= f.text_area :other_details, class: "form-control", rows: 3, placeholder: "Enter any additional information" %>
+      </div>
+    </div>
+
     <%= f.fields_for :user do |user_f| %>
       <div class="col-md-6 mb-3">
         <div class="form-group">
-          <%= user_f.label :password, class: "form-label" %>
-          <%= user_f.password_field :password, class: "form-control", placeholder: "Enter password" %>
+          <%= user_f.label :password, class: "form-label" do %>
+            Password <%= @trainer.new_record? ? "" : "(leave blank if you don't want to change it)" %>
+          <% end %>
+          <%= user_f.password_field :password, class: "form-control", placeholder: @trainer.new_record? ? "Enter password" : "Enter new password (optional)" %>
         </div>
       </div>
 
       <div class="col-md-6 mb-3">
         <div class="form-group">
           <%= user_f.label :password_confirmation, class: "form-label" %>
-          <%= user_f.password_field :password_confirmation, class: "form-control", placeholder: "Confirm password" %>
+          <%= user_f.password_field :password_confirmation, class: "form-control", placeholder: @trainer.new_record? ? "Confirm password" : "Confirm new password (optional)" %>
         </div>
       </div>
     <% end %>

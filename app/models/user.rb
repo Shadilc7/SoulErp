@@ -5,6 +5,12 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable, :trackable,
          authentication_keys: [ :login ]
 
+  # Skip password validation when password is not being updated
+  def password_required?
+    return false if persisted? && password.blank? && password_confirmation.blank?
+    super
+  end
+
   belongs_to :institute, optional: true
   has_one :trainer, dependent: :destroy
   has_one :participant, dependent: :destroy

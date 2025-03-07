@@ -115,5 +115,35 @@
         <% end %>
       </div>
     </div>
+
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card bg-light mb-4">
+          <div class="card-body">
+            <h6 class="card-title mb-4">Additional Information</h6>
+            
+            <div class="mb-3">
+              <h6 class="text-muted mb-1">Certifications</h6>
+              <p class="mb-0"><%= @trainer.certificates.present? ? @trainer.certificates : "No certifications provided" %></p>
+            </div>
+
+            <div class="mb-3">
+              <h6 class="text-muted mb-1">Experience Details</h6>
+              <p class="mb-0"><%= @trainer.experience_details.present? ? @trainer.experience_details : "No experience details provided" %></p>
+            </div>
+
+            <div class="mb-3">
+              <h6 class="text-muted mb-1">Payment Details</h6>
+              <p class="mb-0"><%= @trainer.payment_details.present? ? @trainer.payment_details : "No payment details provided" %></p>
+            </div>
+
+            <div class="mb-0">
+              <h6 class="text-muted mb-1">Other Details</h6>
+              <p class="mb-0"><%= @trainer.other_details.present? ? @trainer.other_details : "No additional details provided" %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div> 

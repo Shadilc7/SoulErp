@@ -16,6 +16,20 @@
       </li>
 
       <li class="nav-item">
+        <%= link_to trainer_portal_attendances_path, class: "nav-link #{'active' if controller_name == 'attendances'}" do %>
+          <i class="bi bi-calendar-check me-2"></i>
+          Attendance
+        <% end %>
+      </li>
+
+      <li class="nav-item">
+        <%= link_to trainer_portal_training_program_feedbacks_path, class: "nav-link #{'active' if controller_name == 'training_program_feedbacks'}" do %>
+          <i class="bi bi-star me-2"></i>
+          Feedbacks
+        <% end %>
+      </li>
+
+      <li class="nav-item">
         <%= link_to edit_trainer_portal_profile_path, class: "nav-link #{'active' if controller_name == 'profiles'}" do %>
           <i class="bi bi-person me-2"></i>
           My Profile

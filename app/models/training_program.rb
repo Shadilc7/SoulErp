@@ -70,9 +70,15 @@ class TrainingProgram < ApplicationRecord
   # Get all participants (both direct and through sections)
   def all_participants
     if individual?
-      participants
+      if participant.present?
+        [participant].compact
+      else
+        participants.includes(:user)
+      end
+    elsif section.present?
+      section.participants.includes(:user)
     else
-      sections.map(&:participants).flatten.uniq
+      participants.includes(:user)
     end
   end
 

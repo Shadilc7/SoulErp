@@ -1,0 +1,119 @@
+<div class="card card-custom" data-controller="program-filter">
+  <div class="card-header card-header-custom py-3">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Training Programs Attendance</h5>
+      <div>
+        <div class="form-check form-check-inline me-3">
+          <input class="form-check-input" type="checkbox" id="show-completed" checked data-action="change->program-filter#toggleCompleted">
+          <label class="form-check-label" for="show-completed">Show Completed Programs</label>
+        </div>
+        <%= link_to trainer_portal_attendances_path, class: "btn btn-outline-primary" do %>
+          <i class="bi bi-calendar-check me-1"></i> Attendance Management
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <% if @training_programs.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Program</th>
+              <th>Type</th>
+              <th>Duration</th>
+              <th>Participants</th>
+              <th>Attendance Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @training_programs.each do |program| %>
+              <% status = @attendance_status[program.id] %>
+              <tr class="<%= !status[:active] ? 'table-secondary' : (status[:marked_today] ? 'table-success' : '') %>">
+                <td>
+                  <div>
+                    <strong><%= program.title %></strong>
+                    <% if program.completed? %>
+                      <span class="badge bg-secondary ms-2">Completed</span>
+                    <% elsif program.ongoing? %>
+                      <span class="badge bg-success ms-2">Ongoing</span>
+                    <% end %>
+                  </div>
+                </td>
+                <td>
+                  <% if program.individual? %>
+                    <span class="badge bg-info">Individual</span>
+                  <% else %>
+                    <span class="badge bg-primary">Section</span>
+                    <div class="small text-muted mt-1"><%= program.section&.name %></div>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="small">
+                    <div><strong>Start:</strong> <%= program.start_date.strftime("%b %d, %Y") %></div>
+                    <div><strong>End:</strong> <%= program.end_date.strftime("%b %d, %Y") %></div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge bg-dark"><%= status[:total_participants] %></span>
+                </td>
+                <td>
+                  <div>
+                    <% if status[:marked_today] %>
+                      <span class="badge bg-success">Marked Today</span>
+                    <% else %>
+                      <span class="badge bg-warning">Not Marked Today</span>
+                    <% end %>
+                  </div>
+                  <div class="small text-muted mt-1">
+                    Total days marked: <%= status[:total_days_marked] %>
+                  </div>
+                </td>
+                <td>
+                  <div class="btn-group">
+                    <% if program.ongoing? %>
+                      <%= link_to mark_trainer_portal_attendance_path(program, date: @today), 
+                          class: "btn btn-sm btn-primary #{'disabled' if status[:marked_today]}", 
+                          title: status[:marked_today] ? "Already marked today" : "Mark attendance for today" do %>
+                        <i class="bi bi-plus-circle"></i> Mark
+                      <% end %>
+                      
+                      <% if status[:marked_today] %>
+                        <%= link_to edit_trainer_portal_attendance_path(program, date: @today), 
+                            class: "btn btn-sm btn-secondary", 
+                            title: "Edit today's attendance" do %>
+                          <i class="bi bi-pencil"></i> Edit
+                        <% end %>
+                      <% end %>
+                    <% end %>
+                    
+                    <%= link_to history_trainer_portal_attendance_path(program), 
+                        class: "btn btn-sm btn-info text-white", 
+                        title: "View attendance history" do %>
+                      <i class="bi bi-clock-history"></i> History
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
+        <p class="text-muted mb-0">No training programs found</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<% content_for :styles do %>
+  <style>
+    .table th {
+      background-color: #f8f9fa;
+    }
+  </style>
+<% end %> 

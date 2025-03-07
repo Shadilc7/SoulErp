@@ -1,0 +1,122 @@
+<div class="card card-custom">
+  <div class="card-header card-header-custom py-3">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        Attendance Status: <%= @training_program.title %>
+      </h5>
+      <div>
+        <%= link_to export_status_csv_trainer_portal_attendances_path(format: :csv, training_program_id: @training_program.id), 
+            class: "btn btn-success me-2" do %>
+          <i class="bi bi-file-earmark-excel me-1"></i> Export CSV
+        <% end %>
+        <%= link_to trainer_portal_attendances_path, class: "btn btn-outline-secondary" do %>
+          <i class="bi bi-arrow-left me-1"></i> Back
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="flex-shrink-0">
+                <div class="rounded-circle bg-light p-3">
+                  <i class="bi bi-calendar-check fs-3 text-primary"></i>
+                </div>
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h6 class="mb-1">Total Sessions</h6>
+                <h3 class="mb-0"><%= @attendance_dates.count %></h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="flex-shrink-0">
+                <div class="rounded-circle bg-light p-3">
+                  <i class="bi bi-people fs-3 text-success"></i>
+                </div>
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h6 class="mb-1">Total Participants</h6>
+                <h3 class="mb-0"><%= @participants.count %></h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <% if @participants.any? %>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Participant</th>
+              <th class="text-center">Present</th>
+              <th class="text-center">Late</th>
+              <th class="text-center">Absent</th>
+              <th class="text-center">Attendance %</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @participants.each do |participant| %>
+              <% stats = @attendance_stats[participant.id] || { present: 0, late: 0, absent: 0 } %>
+              <tr>
+                <td><%= participant.user&.full_name || "Unknown Participant" %></td>
+                <td class="text-center">
+                  <span class="badge bg-success"><%= stats[:present] %></span>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-warning"><%= stats[:late] %></span>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-danger"><%= stats[:absent] %></span>
+                </td>
+                <td class="text-center">
+                  <% percentage = @training_program.attendance_percentage_for(participant) %>
+                  <div class="d-flex align-items-center justify-content-center">
+                    <div class="progress me-2" style="width: 60px; height: 8px;">
+                      <div class="progress-bar <%= percentage >= 75 ? 'bg-success' : percentage >= 50 ? 'bg-warning' : 'bg-danger' %>" 
+                           role="progressbar" 
+                           style="width: <%= percentage %>%" 
+                           aria-valuenow="<%= percentage %>" 
+                           aria-valuemin="0" 
+                           aria-valuemax="100">
+                      </div>
+                    </div>
+                    <span><%= percentage %>%</span>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="bi bi-people-fill fs-1 text-muted mb-3"></i>
+        <p class="text-muted mb-0">No participants found for this training program</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<% content_for :styles do %>
+  <style>
+    .table th {
+      background-color: #f8f9fa;
+    }
+    
+    .badge {
+      font-weight: 500;
+    }
+  </style>
+<% end %> 

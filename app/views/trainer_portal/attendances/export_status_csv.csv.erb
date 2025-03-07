@@ -1,0 +1,5 @@
+Participant,Present,Late,Absent,Excused,Attendance %
+<% @participants.each do |participant| %>
+<% stats = @attendance_stats[participant.id] || { present: 0, late: 0, absent: 0, excused: 0 } %>
+<%= participant.user&.full_name || "Unknown Participant" %>,<%= stats[:present] %>,<%= stats[:late] %>,<%= stats[:absent] %>,<%= stats[:excused] || 0 %>,<%= @training_program.attendance_percentage_for(participant) %>
+<% end %> 

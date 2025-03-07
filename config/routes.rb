@@ -79,6 +79,11 @@ Rails.application.routes.draw do
         end
       end
       resources :attendances, only: [:index] do
+        collection do
+          get :list
+          get :export_history_csv
+          get :export_status_csv
+        end
         member do
           get :mark
           post :record
@@ -112,6 +117,22 @@ Rails.application.routes.draw do
           patch :update_status
           patch :update_progress
           patch :mark_completed
+        end
+      end
+      
+      resources :attendances, only: [:index] do
+        collection do
+          get :list
+          get :export_history_csv
+          get :export_status_csv
+        end
+        member do
+          get :mark
+          post :record
+          get :edit
+          patch :update
+          get :history
+          get :check_status
         end
       end
       

@@ -2,7 +2,7 @@
   <div class="card-header card-header-custom py-3">
     <div class="d-flex justify-content-between align-items-center">
       <h5 class="mb-0">Attendance Management</h5>
-      <%= link_to list_institute_admin_attendances_path, class: "btn btn-outline-primary" do %>
+      <%= link_to list_trainer_portal_attendances_path, class: "btn btn-outline-primary" do %>
         <i class="bi bi-list-check me-1"></i> View All Programs
       <% end %>
     </div>
@@ -27,8 +27,8 @@
                 <option value="">-- Select a Training Program --</option>
                 <% @training_programs.each do |program| %>
                   <option value="<%= program.id %>" 
-                          data-mark-url="<%= mark_institute_admin_attendance_path(program) %>"
-                          data-history-url="<%= history_institute_admin_attendance_path(program) %>"
+                          data-mark-url="<%= mark_trainer_portal_attendance_path(program) %>"
+                          data-history-url="<%= history_trainer_portal_attendance_path(program) %>"
                           data-start-date="<%= program.start_date.to_date.iso8601 %>"
                           data-end-date="<%= program.end_date.to_date.iso8601 %>"
                           data-status="<%= program.status %>"
@@ -79,15 +79,21 @@
           </div>
         </div>
 
-        <div id="no-selection-message" class="text-center py-4" data-attendance-selector-target="noSelection">
-          <i class="bi bi-arrow-up-circle fs-1 text-muted mb-3"></i>
-          <p class="text-muted mb-0">Please select a training program from the dropdown above</p>
+        <div id="no-selection" class="text-center py-5" data-attendance-selector-target="noSelection">
+          <div class="mb-3">
+            <i class="bi bi-calendar-check fs-1 text-muted"></i>
+          </div>
+          <h5 class="text-muted">Select a Training Program to Manage Attendance</h5>
+          <p class="text-muted">You can mark attendance, edit existing records, or view attendance history.</p>
         </div>
       </div>
     <% else %>
-      <div class="text-center py-4">
-        <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
-        <p class="text-muted mb-0">No active training programs found</p>
+      <div class="text-center py-5">
+        <div class="mb-3">
+          <i class="bi bi-calendar-x fs-1 text-muted"></i>
+        </div>
+        <h5 class="text-muted">No Training Programs Available</h5>
+        <p class="text-muted">You don't have any training programs assigned to you yet.</p>
       </div>
     <% end %>
   </div>

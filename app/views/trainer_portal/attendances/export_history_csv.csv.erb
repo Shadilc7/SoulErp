@@ -1,0 +1,21 @@
+Participant,<%= @attendance_dates.map { |date| date.strftime("%d %b %Y") }.join(",") %>,Attendance %
+<% @participants.each do |participant| %>
+<%= participant.user&.full_name || "Unknown Participant" %>,<%= @attendance_dates.map do |date| 
+  attendance = @attendance_records[date]&.[](participant.id)
+  if attendance
+    if attendance.present?
+      "P"
+    elsif attendance.late?
+      "L"
+    elsif attendance.absent?
+      "A"
+    elsif attendance.excused?
+      "E"
+    else
+      "-"
+    end
+  else
+    "-"
+  end
+end.join(",") %>,<%= @training_program.attendance_percentage_for(participant) %>
+<% end %> 

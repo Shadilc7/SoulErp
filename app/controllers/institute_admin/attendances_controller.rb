@@ -6,11 +6,40 @@ module InstituteAdmin
     def index
       @training_programs = current_institute.training_programs
         .includes(:trainer, :section, participant: :user)
-        .where(status: :ongoing)
-        .order(created_at: :desc)
+        .order(status: :asc, created_at: :desc)
+    end
+    
+    def list
+      @training_programs = current_institute.training_programs
+        .includes(:trainer, :section, participant: :user)
+        .order(status: :asc, created_at: :desc)
+      
+      # Get today's date
+      @today = Date.today
+      
+      # For each program, check if attendance is marked for today
+      @attendance_status = {}
+      @training_programs.each do |program|
+        @attendance_status[program.id] = {
+          marked_today: program.attendance_marked?(@today),
+          total_days_marked: program.attendances.select(:date).distinct.count,
+          total_participants: program.all_participants.count,
+          start_date: program.start_date,
+          end_date: program.end_date,
+          active: program.ongoing?
+        }
+      end
     end
 
     def mark
+      # Check if the program is completed
+      if @training_program.completed?
+        redirect_to institute_admin_attendances_path,
+          alert: "Cannot mark attendance for completed programs"
+        return
+      end
+      
+      # Check if attendance has already been marked for this date
       if @training_program.attendance_marked?(@date)
         redirect_to institute_admin_attendances_path,
           alert: "Attendance already marked for #{@date.strftime('%B %d, %Y')}"

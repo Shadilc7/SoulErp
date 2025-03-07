@@ -40,8 +40,12 @@
         </div>
 
         <div class="mb-4">
-          <h6 class="text-muted mb-2">Section</h6>
-          <p class="fs-5"><%= @participant.section&.name || "Not Assigned" %></p>
+          <h6 class="text-muted mb-2">Participant Type</h6>
+          <p class="fs-5">
+            <span class="badge bg-primary">
+              <%= @participant.participant_type&.titleize || "Student" %>
+            </span>
+          </p>
         </div>
 
         <div class="mb-4">
@@ -53,6 +57,65 @@
           </p>
         </div>
       </div>
+
+      <div class="col-md-6">
+        <% if @participant.student? || @participant.participant_type.nil? %>
+          <div class="mb-4">
+            <h6 class="text-muted mb-2">Section</h6>
+            <p class="fs-5"><%= @participant.section&.name || "Not Assigned" %></p>
+          </div>
+        <% end %>
+
+        <% if @participant.employee? %>
+          <div class="mb-4">
+            <h6 class="text-muted mb-2">Section</h6>
+            <p class="fs-5"><%= @participant.section&.name || "Not Assigned" %></p>
+          </div>
+
+          <div class="mb-4">
+            <h6 class="text-muted mb-2">Job Role</h6>
+            <p class="fs-5"><%= @participant.job_role || "Not specified" %></p>
+          </div>
+
+          <div class="mb-4">
+            <h6 class="text-muted mb-2">Qualification</h6>
+            <p class="fs-5"><%= @participant.qualification || "Not specified" %></p>
+          </div>
+
+          <div class="mb-4">
+            <h6 class="text-muted mb-2">Years of Experience</h6>
+            <p class="fs-5"><%= @participant.years_of_experience || "Not specified" %></p>
+          </div>
+        <% end %>
+
+        <% if @participant.guardian? %>
+          <div class="mb-4">
+            <h6 class="text-muted mb-2">Section</h6>
+            <p class="fs-5">
+              <% if @participant.guardian_for_participant&.section %>
+                <%= @participant.guardian_for_participant.section.name %>
+              <% else %>
+                <span class="text-muted">Not Assigned</span>
+              <% end %>
+            </p>
+          </div>
+
+          <div class="mb-4">
+            <h6 class="text-muted mb-2">Guardian For</h6>
+            <% if @participant.guardian_for_participant %>
+              <p class="fs-5">
+                <%= link_to @participant.guardian_for_participant.user.full_name, 
+                    institute_admin_participant_path(@participant.guardian_for_participant.user) %>
+                <small class="text-muted d-block">
+                  Section: <%= @participant.guardian_for_participant.section&.name || "Not Assigned" %>
+                </small>
+              </p>
+            <% else %>
+              <p class="fs-5">Not assigned</p>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
     </div>
 
     <% if @guardian %>
@@ -62,12 +125,17 @@
           <div class="col-md-6">
             <div class="mb-4">
               <h6 class="text-muted mb-2">Name</h6>
-              <p class="fs-5"><%= @guardian.username %></p>
+              <p class="fs-5"><%= @guardian.user.full_name %></p>
             </div>
 
             <div class="mb-4">
               <h6 class="text-muted mb-2">Email</h6>
-              <p class="fs-5"><%= @guardian.email %></p>
+              <p class="fs-5"><%= @guardian.user.email %></p>
+            </div>
+
+            <div class="mb-4">
+              <h6 class="text-muted mb-2">Phone Number</h6>
+              <p class="fs-5"><%= @guardian.phone_number %></p>
             </div>
           </div>
         </div>

@@ -112,12 +112,12 @@ module InstituteAdmin
 
     def participants
       @section = current_institute.sections.find(params[:id])
-      @participants = @section.participants.includes(:user)
+      @participants = @section.participants.includes(:user).where(participant_type: 'student')
 
       render json: @participants.map { |p|
         {
           id: p.id,
-          full_name: p.user.full_name
+          name: p.user.full_name
         }
       }
     end

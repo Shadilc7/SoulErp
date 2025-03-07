@@ -53,16 +53,18 @@ Rails.application.routes.draw do
   authenticate :user, lambda { |u| u.institute_admin? } do
     namespace :institute_admin do
       root "dashboard#index"
+      
+      # Add profile routes
+      get 'profile', to: 'profile#show'
+      
       resources :sections do
-        collection do
-          get :fetch
-        end
         member do
-          get :participants
           get :reassign_users
           post :reassign_users
+          get :participants
         end
       end
+
       resources :trainers
       resources :participants
       resources :questions do
@@ -72,9 +74,10 @@ Rails.application.routes.draw do
       end
       resources :question_sets
       resources :training_programs do
-        resources :attendances, only: [:index]
-        resources :feedbacks, only: [:index], controller: "training_program_feedbacks"
+        resources :attendances, only: [:index, :new, :create]
         member do
+          patch :update_status
+          patch :update_progress
           patch :mark_completed
         end
       end

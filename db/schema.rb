@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_07_150421) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_07_182143) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -153,6 +153,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_07_150421) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "phone_number"
+    t.string "participant_type"
+    t.string "job_role"
+    t.string "qualification"
+    t.integer "years_of_experience"
+    t.integer "guardian_for_participant_id"
     t.index ["institute_id"], name: "index_participants_on_institute_id"
     t.index ["phone_number"], name: "index_participants_on_phone_number"
     t.index ["section_id"], name: "index_participants_on_section_id"

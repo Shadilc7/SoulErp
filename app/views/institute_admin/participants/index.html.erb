@@ -16,6 +16,7 @@
             <tr>
               <th>Name</th>
               <th>Email</th>
+              <th>Type</th>
               <th>Section</th>
               <th>Status</th>
               <th>Actions</th>
@@ -26,7 +27,24 @@
               <tr>
                 <td><%= participant.user.full_name %></td>
                 <td><%= participant.user.email %></td>
-                <td><%= participant.section&.name || 'Not Assigned' %></td>
+                <td>
+                  <span class="badge bg-primary">
+                    <%= participant.participant_type&.titleize || "Student" %>
+                  </span>
+                </td>
+                <td>
+                  <% if participant.student? || participant.participant_type.nil? %>
+                    <%= participant.section&.name || 'Not Assigned' %>
+                  <% elsif participant.employee? %>
+                    <%= participant.section&.name || 'Not Assigned' %>
+                  <% elsif participant.guardian? %>
+                    <% if participant.guardian_for_participant&.section %>
+                      <%= participant.guardian_for_participant.section.name %>
+                    <% else %>
+                      <span class="text-muted">Student's Section</span>
+                    <% end %>
+                  <% end %>
+                </td>
                 <td>
                   <span class="badge <%= participant.active? ? 'badge-success' : 'badge-warning' %>">
                     <%= participant.status.titleize %>

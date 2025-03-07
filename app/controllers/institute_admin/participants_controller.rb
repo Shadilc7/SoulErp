@@ -1,4 +1,5 @@
 require "csv"
+require "securerandom"
 
 module InstituteAdmin
   class ParticipantsController < InstituteAdmin::BaseController
@@ -21,46 +22,73 @@ module InstituteAdmin
 
     def create
       @user = User.new(user_params)
-      @user.role = :participant
       @user.institute = current_institute
-      
-      # Set the section_id on the user model from the participant attributes
-      if @user.participant && @user.participant.section_id.present?
-        @user.section_id = @user.participant.section_id
-      end
-      
+      @user.role = :participant
+
+      # Set institute for participant
       @user.participant.institute = current_institute if @user.participant
 
+      # Set section ID for students and employees
+      if params[:user][:participant_attributes][:participant_type].in?(['student', 'employee'])
+        @user.section_id = params[:user][:participant_attributes][:section_id]
+      end
+
+      # For guardians, set section ID based on the selected student's section
+      if params[:user][:participant_attributes][:participant_type] == 'guardian' && 
+         params[:user][:participant_attributes][:guardian_for_participant_id].present?
+        student = Participant.find(params[:user][:participant_attributes][:guardian_for_participant_id])
+        @user.section_id = student.section_id if student.present?
+      end
+
       if @user.save
-        redirect_to institute_admin_participants_path,
-          notice: "Participant was successfully created."
+        redirect_to institute_admin_participants_path, notice: 'Participant was successfully created.'
       else
+        set_sections
         render :new, status: :unprocessable_entity
       end
     end
 
     def edit
       @user = @participant.user
+      
+      # Ensure institute is set for participant
+      @participant.institute = current_institute
+      
+      # Ensure participant attributes are properly loaded
+      if @participant.guardian? && @participant.guardian_for_participant.nil? && @participant.guardian_for_participant_id.present?
+        # Try to load the guardian_for_participant if it exists but isn't loaded
+        @participant.guardian_for_participant = Participant.find_by(id: @participant.guardian_for_participant_id)
+        
+        # If we found the associated student, also load their section
+        if @participant.guardian_for_participant
+          @participant.guardian_for_participant.section = Section.find_by(id: @participant.guardian_for_participant.section_id)
+        end
+      end
     end
 
     def update
-      @user = @participant.user
+      @user = User.find(params[:id])
+      @participant = @user.participant
 
-      # Only include password params if they're present
-      update_params = user_params
-      if update_params[:password].blank? && update_params[:password_confirmation].blank?
-        update_params = update_params.except(:password, :password_confirmation)
-      end
-      
-      # Set the section_id on the user model from the participant attributes
-      if update_params[:participant_attributes] && update_params[:participant_attributes][:section_id].present?
-        @user.section_id = update_params[:participant_attributes][:section_id]
+      # Ensure institute is set for participant
+      @participant.institute = current_institute if @participant
+
+      # Set section ID for students and employees
+      if params[:user][:participant_attributes][:participant_type].in?(['student', 'employee'])
+        @user.section_id = params[:user][:participant_attributes][:section_id]
       end
 
-      if @user.update(update_params)
-        redirect_to institute_admin_participants_path,
-          notice: "Participant was successfully updated."
+      # For guardians, set section ID based on the selected student's section
+      if params[:user][:participant_attributes][:participant_type] == 'guardian' && 
+         params[:user][:participant_attributes][:guardian_for_participant_id].present?
+        student = Participant.find(params[:user][:participant_attributes][:guardian_for_participant_id])
+        @user.section_id = student.section_id if student.present?
+      end
+
+      if @user.update(user_params)
+        redirect_to institute_admin_participants_path, notice: 'Participant was successfully updated.'
       else
+        set_sections
         render :edit, status: :unprocessable_entity
       end
     end
@@ -119,7 +147,12 @@ module InstituteAdmin
           :phone_number,
           :section_id,
           :status,
-          :institute_id
+          :institute_id,
+          :participant_type,
+          :job_role,
+          :qualification,
+          :years_of_experience,
+          :guardian_for_participant_id
         ]
       )
     end

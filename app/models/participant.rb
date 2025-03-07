@@ -3,6 +3,8 @@ class Participant < ApplicationRecord
   belongs_to :institute
   has_one :guardian, dependent: :destroy
   has_many :assignment_responses, dependent: :destroy
+  belongs_to :guardian_for_participant, class_name: 'Participant', optional: true
+  has_many :guardians, class_name: 'Participant', foreign_key: 'guardian_for_participant_id'
 
   # Get section through user
   has_one :section, through: :user
@@ -19,11 +21,20 @@ class Participant < ApplicationRecord
   has_many :assignment_participants, dependent: :destroy
   has_many :assignments, through: :assignment_participants
 
+  # Enum for participant type
+  enum :participant_type, { 
+    student: 'student',
+    guardian: 'guardian',
+    employee: 'employee'
+  }, default: :student
+
   # Simplified phone number validation
   validates :phone_number, presence: true
   validates :date_of_birth, presence: true
   validates :institute_id, presence: true
   validates :user, presence: true
+  validates :participant_type, presence: true
+  
 
   # Add callbacks for both create and update
   after_create :sync_user_associations
@@ -77,6 +88,19 @@ class Participant < ApplicationRecord
     Assignment.where(id: individual_assignments)
       .or(Assignment.where(id: section_assignments))
       .distinct
+  end
+
+  # Helper methods to check participant type
+  def student?
+    self[:participant_type] == 'student' || self[:participant_type].nil?
+  end
+
+  def guardian?
+    self[:participant_type] == 'guardian'
+  end
+
+  def employee?
+    self[:participant_type] == 'employee'
   end
 
   private

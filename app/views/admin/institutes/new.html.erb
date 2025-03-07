@@ -83,7 +83,7 @@
         <div class="col-md-6 mb-3">
           <div class="form-group">
             <%= f.label :billing_type, "Billing Type", class: "form-label" %>
-            <%= f.select :billing_type, options_for_select([['Monthly', 'Monthly'], ['Quarterly', 'Quarterly'], ['Yearly', 'Yearly'], ['One-time', 'One-time']]), { include_blank: 'Select billing type' }, { class: 'form-select' } %>
+            <%= f.text_field :billing_type, class: "form-control", placeholder: "Enter billing type" %>
           </div>
         </div>
 

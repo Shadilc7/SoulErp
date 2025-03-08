@@ -2,7 +2,7 @@
   <div class="card-header card-header-custom">
     <h5 class="mb-0">Add New Institute Admin</h5>
   </div>
-  
+
   <div class="card-body">
     <%= form_with(model: [:admin, @user], local: true) do |f| %>
       <% if @user.errors.any? %>
@@ -28,6 +28,13 @@
           <div class="form-group">
             <%= f.label :email, class: "form-label" %>
             <%= f.email_field :email, class: "form-control", placeholder: "Enter email address" %>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <div class="form-group">
+            <%= f.label :phone, class: "form-label" %>
+            <%= f.telephone_field :phone, class: "form-control", placeholder: "Enter phone number" %>
           </div>
         </div>
 

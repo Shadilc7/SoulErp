@@ -27,8 +27,10 @@ class User < ApplicationRecord
   }, default: :participant
 
   validates :email, presence: true, uniqueness: true
-  validates :first_name, presence: true, length: { maximum: 50 }
-  validates :last_name, presence: true, length: { maximum: 50 }
+  validates :first_name, presence: true, length: { maximum: 50 }, if: :requires_first_name?
+  validates :phone, format: { with: /\A\d{10}\z/, message: "must be a valid 10-digit number" }, 
+                   allow_blank: true,
+                   uniqueness: { case_sensitive: false }
 
   attr_accessor :login
 
@@ -43,16 +45,16 @@ class User < ApplicationRecord
   accepts_nested_attributes_for :trainer
 
   def login
-    @login || username || email
+    @login || username || email || phone
   end
 
-  # Allow login with username or email
+  # Allow login with username, email or phone
   def self.find_for_database_authentication(warden_conditions)
     conditions = warden_conditions.dup
     if (login = conditions.delete(:login))
-      where(conditions.to_h).where([ "lower(username) = :value OR lower(email) = :value",
+      where(conditions.to_h).where([ "lower(username) = :value OR lower(email) = :value OR phone = :value",
         { value: login.downcase } ]).first
-    elsif conditions.has_key?(:username) || conditions.has_key?(:email)
+    elsif conditions.has_key?(:username) || conditions.has_key?(:email) || conditions.has_key?(:phone)
       where(conditions.to_h).first
     end
   end
@@ -75,5 +77,11 @@ class User < ApplicationRecord
 
   def participant?
     role == "participant"
+  end
+
+  private
+
+  def requires_first_name?
+    participant? || trainer?
   end
 end

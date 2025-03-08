@@ -2,7 +2,7 @@
   <div class="card-header card-header-custom">
     <h5 class="mb-0">Edit Institute Admin</h5>
   </div>
-  
+
   <div class="card-body">
     <%= form_with(model: [:admin, @user], local: true) do |f| %>
       <% if @user.errors.any? %>
@@ -33,31 +33,32 @@
 
         <div class="col-md-6 mb-3">
           <div class="form-group">
-            <%= f.label :password, "New Password (leave blank if no change)", class: "form-label" %>
-            <%= f.password_field :password, class: "form-control", placeholder: "Enter new password" %>
+            <%= f.label :phone, class: "form-label" %>
+            <%= f.telephone_field :phone, class: "form-control", placeholder: "Enter phone number" %>
           </div>
         </div>
 
         <div class="col-md-6 mb-3">
           <div class="form-group">
-            <%= f.label :password_confirmation, "Confirm New Password", class: "form-label" %>
-            <%= f.password_field :password_confirmation, class: "form-control", placeholder: "Confirm new password" %>
+            <%= f.label :password, class: "form-label" %>
+            <%= f.password_field :password, class: "form-control", placeholder: "Enter new password" %>
+            <small class="form-text text-muted">Leave blank if you don't want to change it</small>
           </div>
         </div>
 
         <div class="col-md-6 mb-3">
+          <div class="form-group">
+            <%= f.label :password_confirmation, class: "form-label" %>
+            <%= f.password_field :password_confirmation, class: "form-control", placeholder: "Confirm new password" %>
+          </div>
+        </div>
+
+        <div class="col-md-12 mb-3">
           <div class="form-group">
             <%= f.label :institute_id, "Select Institute", class: "form-label" %>
             <%= f.collection_select :institute_id, @institutes, :id, :name, 
                 { prompt: "Choose an institute" }, 
                 { class: "form-select" } %>
-          </div>
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <div class="form-check mt-4">
-            <%= f.check_box :active, class: "form-check-input" %>
-            <%= f.label :active, "Account Active", class: "form-check-label" %>
           </div>
         </div>
       </div>

@@ -24,6 +24,7 @@ module InstituteAdmin
       @user = User.new(user_params)
       @user.institute = current_institute
       @user.role = :participant
+      @user.phone = user_params[:participant_attributes][:phone_number]
 
       # Set institute for participant
       @user.participant.institute = current_institute if @user.participant

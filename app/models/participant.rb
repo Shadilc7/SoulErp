@@ -32,6 +32,7 @@ class Participant < ApplicationRecord
   validates :phone_number, presence: true
   validates :date_of_birth, presence: true
   validates :institute_id, presence: true
+  validates :section_id, presence: true
   validates :user, presence: true
   validates :participant_type, presence: true
   

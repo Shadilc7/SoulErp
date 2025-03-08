@@ -1,0 +1,136 @@
+<div class="container py-4">
+  <div class="row">
+    <div class="col-12 mb-4">
+      <div class="card card-custom shadow-sm">
+        <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Student Information</h5>
+          <%= link_to participant_portal_profile_path, class: "btn btn-outline-secondary" do %>
+            <i class="bi bi-arrow-left"></i> Back to Profile
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Personal Information -->
+    <div class="col-12 col-lg-6">
+      <div class="card card-custom shadow-sm h-100">
+        <div class="card-header card-header-custom py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-person me-2"></i>
+            Personal Information
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="list-group list-group-flush">
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">Full Name</small>
+              <span class="fw-medium"><%= @student.user.full_name %></span>
+            </div>
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">Date of Birth</small>
+              <span class="fw-medium">
+                <%= @student.date_of_birth&.strftime("%B %d, %Y") || "Not provided" %>
+              </span>
+            </div>
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">Phone Number</small>
+              <span class="fw-medium">+91 <%= @student.phone_number %></span>
+            </div>
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">Address</small>
+              <span class="fw-medium"><%= @student.address || "Not provided" %></span>
+            </div>
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">PIN Code</small>
+              <span class="fw-medium"><%= @student.pin_code || "Not provided" %></span>
+            </div>
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">District</small>
+              <span class="fw-medium"><%= @student.district || "Not provided" %></span>
+            </div>
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">State</small>
+              <span class="fw-medium"><%= @student.state || "Not provided" %></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Academic Information -->
+    <div class="col-12 col-lg-6">
+      <div class="card card-custom shadow-sm h-100">
+        <div class="card-header card-header-custom py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-mortarboard me-2"></i>
+            Academic Information
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="list-group list-group-flush">
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">Section</small>
+              <span class="fw-medium"><%= @student.section&.name || "Not Assigned" %></span>
+            </div>
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">Enrollment Date</small>
+              <span class="fw-medium">
+                <%= @student.enrollment_date&.strftime("%B %d, %Y") || "Not specified" %>
+              </span>
+            </div>
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">Status</small>
+              <span class="badge bg-<%= @student.active? ? 'success' : 'warning' %>">
+                <%= @student.status.titleize %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Training Programs -->
+    <div class="col-12">
+      <div class="card card-custom shadow-sm">
+        <div class="card-header card-header-custom py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-journal-text me-2"></i>
+            Training Programs
+          </h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th>Program</th>
+                  <th>Trainer</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @student.all_training_programs.each do |program| %>
+                  <tr>
+                    <td><%= program.title %></td>
+                    <td><%= program.trainer.user.full_name %></td>
+                    <td><%= program.start_date.strftime("%b %d, %Y") %></td>
+                    <td><%= program.end_date.strftime("%b %d, %Y") %></td>
+                    <td>
+                      <span class="badge bg-<%= program.status == 'completed' ? 'success' : 'primary' %>">
+                        <%= program.status.titleize %>
+                      </span>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

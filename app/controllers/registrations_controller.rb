@@ -51,7 +51,11 @@ class RegistrationsController < Devise::RegistrationsController
         :date_of_birth,
         :institute_id,
         :section_id,
-        :participant_type
+        :participant_type,
+        :address,
+        :pin_code,
+        :district,
+        :state
       ]
     ])
   end

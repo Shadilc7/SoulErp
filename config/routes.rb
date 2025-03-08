@@ -158,6 +158,7 @@ Rails.application.routes.draw do
         end
       end
       resource :profile, only: [ :show ]
+      get 'my_student', to: 'profiles#student_info', as: :student_info
     end
   end
 end

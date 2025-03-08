@@ -35,8 +35,28 @@
         </div>
 
         <div class="mb-4">
-          <h6 class="text-muted mb-2">Phone Number</h6>
-          <p class="fs-5"><%= @participant.phone_number %></p>
+          <h6 class="text-muted mb-2">Address</h6>
+          <p class="fs-5"><%= @participant.address.present? ? @participant.address : "Not provided" %></p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">PIN Code</h6>
+          <p class="fs-5"><%= @participant.pin_code.present? ? @participant.pin_code : "Not provided" %></p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">District</h6>
+          <p class="fs-5"><%= @participant.district.present? ? @participant.district : "Not provided" %></p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">State</h6>
+          <p class="fs-5"><%= @participant.state.present? ? @participant.state : "Not provided" %></p>
+        </div>
+
+        <div class="mb-3">
+          <h6 class="text-muted mb-1">Phone Number</h6>
+          <p class="mb-0">+91 <%= @participant.phone_number %></p>
         </div>
 
         <div class="mb-4">
@@ -46,6 +66,11 @@
               <%= @participant.participant_type&.titleize || "Student" %>
             </span>
           </p>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-muted mb-2">Enrollment Date</h6>
+          <p class="fs-5"><%= @participant.enrollment_date&.strftime("%B %d, %Y") || "Not specified" %></p>
         </div>
 
         <div class="mb-4">

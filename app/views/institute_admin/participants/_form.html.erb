@@ -31,6 +31,7 @@
   <%= f.hidden_field :section_id, id: 'user_section_id' %>
 
   <div class="row">
+    <!-- Basic Information -->
     <div class="col-md-6 mb-3">
       <div class="form-group">
         <%= f.label :first_name, class: "form-label" %>
@@ -78,6 +79,20 @@
 
       <div class="col-md-6 mb-3">
         <div class="form-group">
+          <%= participant_form.label :date_of_birth, class: "form-label" %>
+          <%= participant_form.date_field :date_of_birth, class: "form-control" %>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <div class="form-group">
+          <%= participant_form.label :enrollment_date, "Enrollment Date", class: "form-label" %>
+          <%= participant_form.date_field :enrollment_date, class: "form-control", value: @user.participant.enrollment_date || Date.current %>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <div class="form-group">
           <%= participant_form.label :participant_type, "Participant Type", class: "form-label" %>
           <%= participant_form.select :participant_type, 
               [['Student', 'student'], ['Guardian', 'guardian'], ['Employee', 'employee']],
@@ -86,87 +101,106 @@
         </div>
       </div>
 
-      <div class="col-md-6 mb-3">
+      <!-- Section and Student Selection -->
+      <div class="col-md-6 mb-3 section-field">
         <div class="form-group">
-          <%= participant_form.label :date_of_birth, class: "form-label" %>
-          <%= participant_form.date_field :date_of_birth, class: "form-control" %>
-        </div>
-      </div>
-
-      <div class="row section-and-student-container">
-        <div class="col-md-6 mb-3 section-field">
-          <div class="form-group">
-            <%= participant_form.label :section_id, "Section", class: "form-label" %>
-            <%= participant_form.collection_select :section_id, 
-                @sections, :id, :name,
-                { prompt: "Select Section" }, 
-                { class: "form-select", 
-                  onchange: "loadStudentsForSection(this.value); document.getElementById('user_section_id').value = this.value" } %>
-          </div>
-        </div>
-
-        <div class="col-md-6 mb-3 guardian-field" style="display: <%= @user&.participant&.guardian? ? 'block' : 'none' %>;">
-          <div class="form-group">
-            <%= participant_form.label :guardian_for_participant_id, "Student", class: "form-label" %>
-            <%= participant_form.collection_select :guardian_for_participant_id, 
-                @user&.participant&.guardian? && @user&.participant&.guardian_for_participant ? [@user.participant.guardian_for_participant] : [],
-                :id, :full_name,
-                { prompt: "Select Student" }, 
-                { class: "form-select", id: "guardian_student_select" } %>
-          </div>
+          <%= participant_form.label :section_id, "Section", class: "form-label" %>
+          <%= participant_form.collection_select :section_id, 
+              @sections, :id, :name,
+              { prompt: "Select Section" }, 
+              { class: "form-select", 
+                onchange: "loadStudentsForSection(this.value); document.getElementById('user_section_id').value = this.value" } %>
         </div>
       </div>
 
       <!-- Employee-specific fields -->
-      <div class="col-md-6 mb-3 employee-field" style="display: <%= @user&.participant&.employee? ? 'block' : 'none' %>;">
+      <div class="col-md-4 mb-3 employee-field" style="display: <%= @user&.participant&.employee? ? 'block' : 'none' %>;">
         <div class="form-group">
           <%= participant_form.label :job_role, "Job Role", class: "form-label" %>
           <%= participant_form.text_field :job_role, class: "form-control", placeholder: "Enter job role" %>
         </div>
       </div>
 
-      <div class="col-md-6 mb-3 employee-field" style="display: <%= @user&.participant&.employee? ? 'block' : 'none' %>;">
+      <div class="col-md-4 mb-3 employee-field" style="display: <%= @user&.participant&.employee? ? 'block' : 'none' %>;">
         <div class="form-group">
           <%= participant_form.label :qualification, "Qualification", class: "form-label" %>
           <%= participant_form.text_field :qualification, class: "form-control", placeholder: "Enter qualification" %>
         </div>
       </div>
 
-      <div class="col-md-6 mb-3 employee-field" style="display: <%= @user&.participant&.employee? ? 'block' : 'none' %>;">
+      <div class="col-md-4 mb-3 employee-field" style="display: <%= @user&.participant&.employee? ? 'block' : 'none' %>;">
         <div class="form-group">
-          <%= participant_form.label :years_of_experience, "Years of Experience", class: "form-label" %>
-          <%= participant_form.number_field :years_of_experience, class: "form-control", min: 0, placeholder: "Enter years of experience" %>
+          <%= participant_form.label :years_of_experience, "Experience (Years)", class: "form-label" %>
+          <%= participant_form.number_field :years_of_experience, class: "form-control", min: 0, placeholder: "Enter years" %>
         </div>
       </div>
 
-      <div class="col-md-6 mb-3">
+      <div class="col-md-6 mb-3 guardian-field" style="display: <%= @user&.participant&.guardian? ? 'block' : 'none' %>;">
         <div class="form-group">
-          <%= participant_form.label :status, class: "form-label" %>
-          <%= participant_form.select :status, 
-              [['Active', 'active'], ['Inactive', 'inactive'], ['On Leave', 'on_leave'], ['Graduated', 'graduated'], ['Dropped', 'dropped']],
-              {}, 
-              { class: "form-select" } %>
+          <%= participant_form.label :guardian_for_participant_id, "Student", class: "form-label" %>
+          <%= participant_form.collection_select :guardian_for_participant_id, 
+              @user&.participant&.guardian? && @user&.participant&.guardian_for_participant ? [@user.participant.guardian_for_participant] : [],
+              :id, :full_name,
+              { prompt: "Select Student" }, 
+              { class: "form-select", id: "guardian_student_select" } %>
+        </div>
+      </div>
+
+      <!-- Address Information -->
+      <div class="col-md-12 mb-3">
+        <div class="form-group">
+          <%= participant_form.label :address, "Address", class: "form-label" %>
+          <%= participant_form.text_area :address, class: "form-control", rows: 3, placeholder: "Enter full address" %>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <div class="form-group">
+            <%= participant_form.label :pin_code, "PIN Code", class: "form-label" %>
+            <%= participant_form.text_field :pin_code, class: "form-control", placeholder: "Enter PIN code" %>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <div class="form-group">
+            <%= participant_form.label :district, "District", class: "form-label" %>
+            <%= participant_form.text_field :district, class: "form-control", placeholder: "Enter district" %>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <div class="form-group">
+            <%= participant_form.label :state, "State", class: "form-label" %>
+            <%= participant_form.text_field :state, class: "form-control", placeholder: "Enter state" %>
+          </div>
         </div>
       </div>
     <% end %>
 
+    <!-- Move password fields to the end -->
     <div class="col-md-6 mb-3">
       <div class="form-group">
         <%= f.label :password, class: "form-label" %>
         <%= f.password_field :password, class: "form-control", placeholder: "Enter password" %>
+        <% if @user.new_record? %>
+          <small class="text-muted">Minimum 6 characters</small>
+        <% else %>
+          <small class="text-muted">Leave blank if you don't want to change it</small>
+        <% end %>
       </div>
     </div>
 
     <div class="col-md-6 mb-3">
       <div class="form-group">
-        <%= f.label :password_confirmation, class: "form-label" %>
+        <%= f.label :password_confirmation, "Confirm Password", class: "form-label" %>
         <%= f.password_field :password_confirmation, class: "form-control", placeholder: "Confirm password" %>
       </div>
     </div>
   </div>
 
   <div class="form-actions mt-4 d-flex gap-2">
-    <%= f.submit "Update Participant", class: "btn btn-primary" %>
+    <%= f.submit @user.new_record? ? "Create Participant" : "Update Participant", class: "btn btn-primary" %>
     <%= link_to "Cancel", institute_admin_participants_path, class: "btn btn-secondary" %>
   </div>
 <% end %>
@@ -175,11 +209,20 @@
   function toggleParticipantFields() {
     const participantType = document.getElementById('participant_type_select').value;
     const guardianFields = document.querySelectorAll('.guardian-field');
+    const employeeFields = document.querySelectorAll('.employee-field');
+    const sectionFields = document.querySelectorAll('.section-field');
     
-    // Hide guardian fields by default
+    // Hide all conditional fields first
+    employeeFields.forEach(field => field.style.display = 'none');
     guardianFields.forEach(field => field.style.display = 'none');
     
-    if (participantType === 'guardian') {
+    // Always show section field by default
+    sectionFields.forEach(field => field.style.display = 'block');
+    
+    // Show fields based on participant type
+    if (participantType === 'employee') {
+      employeeFields.forEach(field => field.style.display = 'block');
+    } else if (participantType === 'guardian') {
       guardianFields.forEach(field => field.style.display = 'block');
       
       // If switching to guardian, ensure section is properly initialized
@@ -232,8 +275,16 @@
     <% if !@user.new_record? && @user.participant.participant_type.present? %>
       const participantTypeSelect = document.getElementById('participant_type_select');
       
+      // Check if the select element exists
       if (participantTypeSelect) {
         participantTypeSelect.value = '<%= @user.participant.participant_type %>';
+        
+        // Immediately apply styles for employee fields if participant is an employee
+        <% if @user.participant.employee? %>
+          document.querySelectorAll('.employee-field').forEach(field => {
+            field.style.display = 'block';
+          });
+        <% end %>
         
         // Immediately apply styles for guardian fields if participant is a guardian
         <% if @user.participant.guardian? %>

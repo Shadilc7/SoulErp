@@ -7,7 +7,7 @@ module InstituteAdmin
     before_action :set_sections, only: [ :new, :create, :edit, :update ]
 
     def index
-      @participants = current_institute.participants.includes(:user, :section)
+      @participants = current_institute.participants.includes(:user, :section).order(created_at: :desc)
     end
 
     def show
@@ -152,7 +152,12 @@ module InstituteAdmin
           :job_role,
           :qualification,
           :years_of_experience,
-          :guardian_for_participant_id
+          :enrollment_date,
+          :guardian_for_participant_id,
+          :address,
+          :pin_code,
+          :district,
+          :state
         ]
       )
     end

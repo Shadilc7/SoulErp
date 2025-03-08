@@ -15,7 +15,6 @@
           <thead>
             <tr>
               <th>Name</th>
-              <th>Email</th>
               <th>Type</th>
               <th>Section</th>
               <th>Status</th>
@@ -26,7 +25,6 @@
             <% @participants.each do |participant| %>
               <tr>
                 <td><%= participant.user.full_name %></td>
-                <td><%= participant.user.email %></td>
                 <td>
                   <span class="badge bg-primary">
                     <%= participant.participant_type&.titleize || "Student" %>

@@ -1,35 +1,16 @@
 <!-- Profile Header -->
 <div class="container py-4">
   <div class="row">
-    <div class="col-12">
+    <div class="col-12 mb-4">
       <div class="card card-custom shadow-sm">
-        <div class="card-body p-4">
-          <div class="d-flex flex-column flex-md-row align-items-center gap-4">
-            <!-- Profile Avatar -->
-            <div class="profile-avatar bg-primary rounded-circle d-flex align-items-center justify-content-center">
-              <span class="text-white fs-1">
-                <%= current_user.first_name&.first&.upcase || current_user.email.first.upcase %>
-              </span>
-            </div>
-            <!-- Profile Info -->
-            <div class="text-center text-md-start">
-              <h4 class="mb-1"><%= current_user.full_name %></h4>
-              <p class="text-muted mb-2"><%= current_user.email %></p>
-              <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-start">
-                <span class="badge bg-primary">Participant</span>
-                <% if @participant.section.present? %>
-                  <span class="badge bg-info">Section: <%= @participant.section.name %></span>
-                <% end %>
-              </div>
-            </div>
-          </div>
+        <div class="card-header card-header-custom">
+          <h5 class="mb-0">My Profile</h5>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Profile Details -->
-  <div class="row mt-4 g-4">
+  <div class="row g-4">
     <!-- Personal Information -->
     <div class="col-12 col-lg-6">
       <div class="card card-custom shadow-sm h-100">
@@ -43,15 +24,11 @@
           <div class="list-group list-group-flush">
             <div class="list-group-item px-0">
               <small class="text-muted d-block">Full Name</small>
-              <span class="fw-medium"><%= current_user.full_name %></span>
+              <span class="fw-medium"><%= @participant.user.full_name %></span>
             </div>
             <div class="list-group-item px-0">
               <small class="text-muted d-block">Email</small>
-              <span class="fw-medium"><%= current_user.email %></span>
-            </div>
-            <div class="list-group-item px-0">
-              <small class="text-muted d-block">Phone Number</small>
-              <span class="fw-medium"><%= @participant.phone_number || "Not provided" %></span>
+              <span class="fw-medium"><%= @participant.user.email %></span>
             </div>
             <div class="list-group-item px-0">
               <small class="text-muted d-block">Date of Birth</small>
@@ -60,46 +37,144 @@
               </span>
             </div>
             <div class="list-group-item px-0">
-              <small class="text-muted d-block">Education Level</small>
-              <span class="fw-medium"><%= @participant.education_level || "Not provided" %></span>
+              <small class="text-muted d-block">Phone Number</small>
+              <span class="fw-medium">+91 <%= @participant.phone_number %></span>
+            </div>
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">Participant Type</small>
+              <span class="badge bg-primary">
+                <%= @participant.participant_type.titleize %>
+              </span>
+            </div>
+            <div class="list-group-item px-0">
+              <small class="text-muted d-block">Status</small>
+              <span class="badge bg-<%= @participant.active? ? 'success' : 'warning' %>">
+                <%= @participant.status.titleize %>
+              </span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Training Information -->
-    <div class="col-12 col-lg-6">
-      <div class="card card-custom shadow-sm h-100">
+    <!-- Guardian Information (shown only for guardians) -->
+    <% if @participant.guardian? %>
+      <div class="col-12 col-lg-6">
+        <div class="card card-custom shadow-sm h-100">
+          <div class="card-header card-header-custom py-3">
+            <h5 class="mb-0">
+              <i class="bi bi-people me-2"></i>
+              Guardian Information
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush">
+              <div class="list-group-item px-0">
+                <small class="text-muted d-block">Student Name</small>
+                <span class="fw-medium">
+                  <%= @participant.guardian_for_participant&.user&.full_name || "Not assigned" %>
+                </span>
+              </div>
+              <div class="list-group-item px-0">
+                <small class="text-muted d-block">Student's Section</small>
+                <span class="fw-medium">
+                  <%= @participant.guardian_for_participant&.section&.name || "Not assigned" %>
+                </span>
+              </div>
+              <div class="list-group-item px-0">
+                <small class="text-muted d-block">Relationship</small>
+                <span class="fw-medium">Guardian</span>
+              </div>
+              <div class="list-group-item px-0">
+                <small class="text-muted d-block">Enrollment Date</small>
+                <span class="fw-medium">
+                  <%= @participant.enrollment_date&.strftime("%B %d, %Y") || "Not specified" %>
+                </span>
+              </div>
+              <div class="list-group-item px-0 border-bottom-0">
+                <%= link_to participant_portal_student_info_path, class: "btn btn-primary w-100" do %>
+                  <i class="bi bi-mortarboard me-2"></i>
+                  View Complete Student Information
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Employee Information (shown only for employees) -->
+    <% if @participant.employee? %>
+      <div class="col-12 col-lg-6">
+        <div class="card card-custom shadow-sm h-100">
+          <div class="card-header card-header-custom py-3">
+            <h5 class="mb-0">
+              <i class="bi bi-briefcase me-2"></i>
+              Employee Information
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush">
+              <div class="list-group-item px-0">
+                <small class="text-muted d-block">Job Role</small>
+                <span class="fw-medium"><%= @participant.job_role || "Not specified" %></span>
+              </div>
+              <div class="list-group-item px-0">
+                <small class="text-muted d-block">Qualification</small>
+                <span class="fw-medium"><%= @participant.qualification || "Not specified" %></span>
+              </div>
+              <div class="list-group-item px-0">
+                <small class="text-muted d-block">Years of Experience</small>
+                <span class="fw-medium">
+                  <% if @participant.years_of_experience %>
+                    <%= pluralize(@participant.years_of_experience, 'year') %>
+                  <% else %>
+                    Not specified
+                  <% end %>
+                </span>
+              </div>
+              <div class="list-group-item px-0">
+                <small class="text-muted d-block">Section</small>
+                <span class="fw-medium"><%= @participant.section&.name || "Not Assigned" %></span>
+              </div>
+              <div class="list-group-item px-0">
+                <small class="text-muted d-block">Enrollment Date</small>
+                <span class="fw-medium">
+                  <%= @participant.enrollment_date&.strftime("%B %d, %Y") || "Not specified" %>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Address Information -->
+    <div class="col-12">
+      <div class="card card-custom shadow-sm">
         <div class="card-header card-header-custom py-3">
           <h5 class="mb-0">
-            <i class="bi bi-mortarboard me-2"></i>
-            Training Information
+            <i class="bi bi-geo-alt me-2"></i>
+            Address Information
           </h5>
         </div>
         <div class="card-body">
           <div class="list-group list-group-flush">
             <div class="list-group-item px-0">
-              <small class="text-muted d-block">Institute</small>
-              <span class="fw-medium"><%= current_institute.name %></span>
+              <small class="text-muted d-block">Address</small>
+              <span class="fw-medium"><%= @participant.address || "Not provided" %></span>
             </div>
             <div class="list-group-item px-0">
-              <small class="text-muted d-block">Section</small>
-              <span class="fw-medium">
-                <%= @participant.section&.name || "Not assigned" %>
-              </span>
+              <small class="text-muted d-block">PIN Code</small>
+              <span class="fw-medium"><%= @participant.pin_code || "Not provided" %></span>
             </div>
             <div class="list-group-item px-0">
-              <small class="text-muted d-block">Enrollment Date</small>
-              <span class="fw-medium">
-                <%= @participant.enrollment_date&.strftime("%B %d, %Y") %>
-              </span>
+              <small class="text-muted d-block">District</small>
+              <span class="fw-medium"><%= @participant.district || "Not provided" %></span>
             </div>
             <div class="list-group-item px-0">
-              <small class="text-muted d-block">Status</small>
-              <span class="badge bg-<%= @participant.status == 'active' ? 'success' : 'warning' %>">
-                <%= @participant.status&.titleize %>
-              </span>
+              <small class="text-muted d-block">State</small>
+              <span class="fw-medium"><%= @participant.state || "Not provided" %></span>
             </div>
           </div>
         </div>
@@ -125,7 +200,6 @@
                   <th>Start Date</th>
                   <th>End Date</th>
                   <th>Status</th>
-                  <th>Feedback</th>
                 </tr>
               </thead>
               <tbody>
@@ -139,19 +213,6 @@
                       <span class="badge bg-<%= program.status == 'completed' ? 'success' : 'primary' %>">
                         <%= program.status.titleize %>
                       </span>
-                    </td>
-                    <td>
-                      <% if program.completed? && !program.feedback.present? %>
-                        <%= link_to new_participant_portal_training_program_feedback_path(program), class: "btn btn-sm btn-outline-primary" do %>
-                          <i class="bi bi-star me-1"></i> Give Feedback
-                        <% end %>
-                      <% elsif program.feedback.present? %>
-                        <span class="badge bg-success">
-                          <i class="bi bi-check-circle me-1"></i> Submitted
-                        </span>
-                      <% else %>
-                        <span class="text-muted">Not available</span>
-                      <% end %>
                     </td>
                   </tr>
                 <% end %>

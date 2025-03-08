@@ -73,6 +73,55 @@
                   </div>
 
                   <div class="form-floating mb-3">
+                    <%= p.text_area :address,
+                        class: "form-control #{p.object.errors[:address].any? ? 'is-invalid' : ''}", 
+                        placeholder: "Address",
+                        style: "height: 100px;" %>
+                    <%= p.label :address, "Address" %>
+                    <% if p.object.errors[:address].any? %>
+                      <div class="invalid-feedback"><%= p.object.errors[:address].first %></div>
+                    <% end %>
+                  </div>
+
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                      <div class="form-floating">
+                        <%= p.text_field :pin_code,
+                            class: "form-control #{p.object.errors[:pin_code].any? ? 'is-invalid' : ''}", 
+                            placeholder: "PIN Code" %>
+                        <%= p.label :pin_code, "PIN Code" %>
+                        <% if p.object.errors[:pin_code].any? %>
+                          <div class="invalid-feedback"><%= p.object.errors[:pin_code].first %></div>
+                        <% end %>
+                      </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                      <div class="form-floating">
+                        <%= p.text_field :district,
+                            class: "form-control #{p.object.errors[:district].any? ? 'is-invalid' : ''}", 
+                            placeholder: "District" %>
+                        <%= p.label :district, "District" %>
+                        <% if p.object.errors[:district].any? %>
+                          <div class="invalid-feedback"><%= p.object.errors[:district].first %></div>
+                        <% end %>
+                      </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                      <div class="form-floating">
+                        <%= p.text_field :state,
+                            class: "form-control #{p.object.errors[:state].any? ? 'is-invalid' : ''}", 
+                            placeholder: "State" %>
+                        <%= p.label :state, "State" %>
+                        <% if p.object.errors[:state].any? %>
+                          <div class="invalid-feedback"><%= p.object.errors[:state].first %></div>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-floating mb-3">
                     <%= p.select :participant_type,
                         [['Student', 'student'], ['Guardian', 'guardian'], ['Employee', 'employee']],
                         { prompt: "Select Type" },

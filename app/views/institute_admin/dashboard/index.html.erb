@@ -332,44 +332,72 @@
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Participants by Section Chart
-    var sectionChartOptions = {
-      chart: { type: 'bar', height: 300 },
-      series: [{
-        name: 'Participants',
-        data: <%= @section_data[:participants] %>
-      }, {
-        name: 'Capacity',
-        data: <%= @section_data[:capacity] %>
-      }],
-      xaxis: { categories: <%= raw @section_labels.to_json %> },
-      colors: ['#6366f1', '#c7d2fe']
-    };
-    new ApexCharts(document.querySelector("#participants-section-chart"), sectionChartOptions).render();
+  document.addEventListener('turbo:load', function() {
+    console.log('Turbo load event triggered');
+    // Destroy existing chart instances if they exist
+    if (window.sectionChart) {
+      console.log('Destroying existing section chart');
+      window.sectionChart.destroy();
+    }
+    if (window.typeChart) {
+      console.log('Destroying existing type chart');
+      window.typeChart.destroy();
+    }
+    if (window.feedbackChart) {
+      console.log('Destroying existing feedback chart');
+      window.feedbackChart.destroy();
+    }
 
-    // Participants by Type Pie Chart
-    var optionsType = {
-      chart: { type: 'pie', height: 300 },
-      series: <%= @type_data %>,
-      labels: <%= raw @type_labels.to_json %>
-    };
-    var chartType = new ApexCharts(document.querySelector("#participants-type-chart"), optionsType);
-    chartType.render();
+    // Check if chart containers exist before initializing
+    var sectionChartContainer = document.querySelector("#participants-section-chart");
+    var typeChartContainer = document.querySelector("#participants-type-chart");
+    var feedbackChartContainer = document.querySelector("#feedback-training-chart");
 
-    // Feedback by Training Program Chart
-    var feedbackChartOptions = {
-      chart: { type: 'bar', height: 300 },
-      series: [{
-        name: 'Received',
-        data: <%= @program_feedback_data.map { |d| d[:received].to_i } %>
-      }, {
-        name: 'Pending',
-        data: <%= @program_feedback_data.map { |d| d[:pending].to_i } %>
-      }],
-      xaxis: { categories: <%= raw @program_feedback_data.map { |d| d[:name] }.to_json %> },
-      colors: ['#22c55e', '#f59e0b']
-    };
-    new ApexCharts(document.querySelector("#feedback-training-chart"), feedbackChartOptions).render();
+    if (sectionChartContainer) {
+      console.log('Initializing Participants by Section Chart');
+      var sectionChartOptions = {
+        chart: { type: 'bar', height: 300 },
+        series: [{
+          name: 'Participants',
+          data: <%= @section_data[:participants] %>
+        }, {
+          name: 'Capacity',
+          data: <%= @section_data[:capacity] %>
+        }],
+        xaxis: { categories: <%= raw @section_labels.to_json %> },
+        colors: ['#6366f1', '#c7d2fe']
+      };
+      window.sectionChart = new ApexCharts(sectionChartContainer, sectionChartOptions);
+      window.sectionChart.render();
+    }
+
+    if (typeChartContainer) {
+      console.log('Initializing Participants by Type Pie Chart');
+      var optionsType = {
+        chart: { type: 'pie', height: 300 },
+        series: <%= @type_data %>,
+        labels: <%= raw @type_labels.to_json %>
+      };
+      window.typeChart = new ApexCharts(typeChartContainer, optionsType);
+      window.typeChart.render();
+    }
+
+    if (feedbackChartContainer) {
+      console.log('Initializing Feedback by Training Program Chart');
+      var feedbackChartOptions = {
+        chart: { type: 'bar', height: 300 },
+        series: [{
+          name: 'Received',
+          data: <%= @program_feedback_data.map { |d| d[:received].to_i } %>
+        }, {
+          name: 'Pending',
+          data: <%= @program_feedback_data.map { |d| d[:pending].to_i } %>
+        }],
+        xaxis: { categories: <%= raw @program_feedback_data.map { |d| d[:name] }.to_json %> },
+        colors: ['#22c55e', '#f59e0b']
+      };
+      window.feedbackChart = new ApexCharts(feedbackChartContainer, feedbackChartOptions);
+      window.feedbackChart.render();
+    }
   });
 </script>

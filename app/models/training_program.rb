@@ -11,7 +11,7 @@ class TrainingProgram < ApplicationRecord
   has_many :training_program_sections, dependent: :destroy
   has_many :sections, through: :training_program_sections
   
-  has_one :feedback, class_name: "TrainingProgramFeedback", dependent: :destroy
+  has_many :feedbacks, class_name: "TrainingProgramFeedback", dependent: :destroy
   has_many :training_program_feedbacks, dependent: :destroy
   
   # Add attendance association

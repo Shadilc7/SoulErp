@@ -4,11 +4,11 @@ module ParticipantPortal
     before_action :check_attendance_requirement
 
     def new
-      @feedback = @training_program.build_feedback(participant: current_participant)
+      @feedback = @training_program.feedbacks.build(participant: current_participant)
     end
 
     def create
-      @feedback = @training_program.build_feedback(feedback_params)
+      @feedback = @training_program.feedbacks.build(feedback_params)
       @feedback.participant = current_participant
 
       if @feedback.save

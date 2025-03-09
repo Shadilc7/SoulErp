@@ -24,7 +24,9 @@
                               @question.multiple_choice? ? 'bi-record-circle' :
                               @question.checkboxes? ? 'bi-check-square' :
                               @question.dropdown? ? 'bi-chevron-down' :
-                              @question.date? ? 'bi-calendar' : 'bi-clock' %>"></i>
+                              @question.date? ? 'bi-calendar' :
+                              @question.time? ? 'bi-clock' :
+                              @question.number? ? 'bi-123' : 'bi-star' %>"></i>
               </div>
               <span class="type-text"><%= @question.question_type.titleize %></span>
             </div>
@@ -71,6 +73,8 @@
                   <input type="date" class="form-control" disabled>
                 <% when 'time' %>
                   <input type="time" class="form-control" disabled>
+                <% when 'number' %>
+                  <input type="number" class="form-control" placeholder="Enter a number" disabled>
                 <% end %>
               </div>
             <% end %>

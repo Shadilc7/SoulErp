@@ -13,4 +13,19 @@ class Section < ApplicationRecord
   validates :capacity, presence: true, numericality: { greater_than: 0 }
 
   scope :active, -> { where(status: :active) }
+
+  def participants_count
+    participants.count
+  end
+
+  before_destroy :check_for_participants
+
+  private
+
+  def check_for_participants
+    if participants.exists?
+      errors.add(:base, "Cannot delete section because it has participants")
+      throw :abort
+    end
+  end
 end

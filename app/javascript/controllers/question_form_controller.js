@@ -4,7 +4,7 @@ export default class extends Controller {
   static targets = [
     "titleInput", "optionsWrapper",
     "shortAnswerPreview", "paragraphPreview", "optionsSection",
-    "datePreview", "timePreview", "submitButton"
+    "datePreview", "timePreview", "numberPreview", "submitButton"
   ]
 
   connect() {
@@ -46,6 +46,9 @@ export default class extends Controller {
       case 'time':
         this.timePreviewTarget.classList.remove('d-none')
         break
+      case 'number':
+        this.numberPreviewTarget.classList.remove('d-none')
+        break
       case 'rating':
         this.showRatingOptions(true)
         break
@@ -53,18 +56,11 @@ export default class extends Controller {
   }
 
   handleTypeChange(event) {
-    // Hide all previews
+    const type = event.target.value
     this.hideAllPreviews()
-
-    // Show appropriate preview based on type
-    const selectedType = event.target.value
-    if (!selectedType) return
-
-    // Hide all option-specific elements
     this.showOptionsContainer(false)
-    this.showRatingOptions(false)
 
-    switch(selectedType) {
+    switch(type) {
       case 'short_answer':
         this.shortAnswerPreviewTarget.classList.remove('d-none')
         break
@@ -74,22 +70,8 @@ export default class extends Controller {
       case 'multiple_choice':
       case 'checkboxes':
       case 'dropdown':
-        this.optionsSectionTarget.classList.remove('d-none')
-        this.updateOptionIndicators(selectedType)
         this.showOptionsContainer(true)
-        
-        // Trigger the nested form controller to add default options if needed
-        const nestedFormController = this.application.getControllerForElementAndIdentifier(
-          document.querySelector('[data-controller="nested-form"]'),
-          'nested-form'
-        )
-        if (nestedFormController) {
-          const existingOptions = document.querySelectorAll('.option-item')
-          if (existingOptions.length === 0) {
-            nestedFormController.add()
-            nestedFormController.add()
-          }
-        }
+        this.updateOptionIndicators(type)
         break
       case 'date':
         this.datePreviewTarget.classList.remove('d-none')
@@ -97,8 +79,8 @@ export default class extends Controller {
       case 'time':
         this.timePreviewTarget.classList.remove('d-none')
         break
-      case 'rating':
-        this.showRatingOptions(true)
+      case 'number':
+        this.numberPreviewTarget.classList.remove('d-none')
         break
     }
   }
@@ -109,6 +91,7 @@ export default class extends Controller {
     this.optionsSectionTarget.classList.add('d-none')
     this.datePreviewTarget.classList.add('d-none')
     this.timePreviewTarget.classList.add('d-none')
+    this.numberPreviewTarget.classList.add('d-none')
   }
 
   updateOptionIndicators(type) {
@@ -128,9 +111,10 @@ export default class extends Controller {
   }
 
   showOptionsContainer(show) {
-    const optionsContainer = document.querySelector('.options-container')
-    if (optionsContainer) {
-      optionsContainer.style.display = show ? 'block' : 'none'
+    if (show) {
+      this.optionsSectionTarget.style.display = ''
+    } else {
+      this.optionsSectionTarget.style.display = 'none'
     }
   }
   

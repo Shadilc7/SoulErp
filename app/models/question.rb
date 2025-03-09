@@ -25,7 +25,8 @@ class Question < ApplicationRecord
     dropdown: 4,        # Dropdown select, single answer
     date: 5,            # Date picker
     time: 6,            # Time picker
-    rating: 7           # Star rating
+    rating: 7,          # Star rating
+    number: 8           # Number input
   }
 
   # Add scope for active questions

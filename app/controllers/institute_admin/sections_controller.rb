@@ -50,15 +50,12 @@ module InstituteAdmin
 
     def destroy
       @section = current_institute.sections.find(params[:id])
-
-      begin
-        if @section.destroy
-          redirect_to institute_admin_sections_path, notice: "Section was successfully deleted."
-        else
-          redirect_to institute_admin_sections_path, alert: "Cannot delete section because it has associated users. Please reassign or remove the users first."
-        end
-      rescue ActiveRecord::InvalidForeignKey
-        redirect_to institute_admin_sections_path, alert: "Cannot delete section because it has associated users. Please reassign or remove the users first."
+      
+      if @section.destroy
+        redirect_to institute_admin_sections_path, notice: "Section was successfully deleted."
+      else
+        redirect_to institute_admin_sections_path, 
+          alert: @section.errors.full_messages.first || "Unable to delete section."
       end
     end
 

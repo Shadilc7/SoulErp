@@ -9,10 +9,11 @@
 
     <div class="card-body">
       <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-8" data-controller="star-rating">
           <%= form_with(model: @feedback,
                         url: participant_portal_training_program_feedbacks_path(@training_program),
-                        local: true) do |f| %>
+                        local: true,
+                        data: { turbo_cache: false }) do |f| %>
             <% if @feedback.errors.any? %>
               <div class="alert alert-danger">
                 <h6>Please fix the following errors:</h6>
@@ -32,11 +33,11 @@
 
             <div class="mb-3">
               <label class="form-label">Rating</label>
-              <div class="rating">
+              <div class="star-rating">
                 <% (1..5).each do |i| %>
-                  <input type="radio" id="star<%= i %>" name="training_program_feedback[rating]" value="<%= i %>" <%= 'required' if i == 1 %>>
+                  <input type="radio" id="star<%= i %>" name="training_program_feedback[rating]" value="<%= i %>" <%= 'required' if i == 1 %> style="display:none;">
                   <label for="star<%= i %>" title="<%= i %> stars">
-                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star"></i>
                   </label>
                 <% end %>
               </div>
@@ -60,30 +61,202 @@
 
 <% content_for :styles do %>
   <style>
-    .rating {
+    .star-rating {
       display: flex;
       flex-direction: row;
       justify-content: flex-start;
+      margin-bottom: 10px;
     }
 
-    .rating input[type="radio"] {
+    .star-rating input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      visibility: hidden;
+      pointer-events: none;
       display: none;
     }
 
-    .rating label {
+    .star-rating label {
       cursor: pointer;
       font-size: 2rem;
+      padding: 0 0.1em;
+      margin: 0;
+      display: inline-block;
+      background: transparent;
+      border: none;
+    }
+
+    .star-rating label i {
       color: #ddd;
-      transition: color 0.2s;
+      transition: all 0.2s ease;
     }
 
-    .rating input:checked ~ label {
+    /* These CSS selectors won't work correctly with left-to-right, we'll handle this in JavaScript */
+    /* .star-rating input:checked ~ label i {
       color: #FFD700;
     }
 
-    .rating label:hover,
-    .rating label:hover ~ label {
+    .star-rating label:hover i,
+    .star-rating label:hover ~ label i {
       color: #FFD700;
-    }
+    } */
   </style>
-<% end %> 
+<% end %>
+
+<script>
+  // Function to initialize star rating
+  function initializeStarRating() {
+    console.log("Initializing star rating");
+    
+    // Hide radio buttons with inline styles as a fallback
+    document.querySelectorAll('.star-rating input[type="radio"]').forEach(input => {
+      input.style.display = 'none';
+      input.style.visibility = 'hidden';
+      input.style.position = 'absolute';
+      input.style.opacity = '0';
+      input.style.pointerEvents = 'none';
+      input.style.width = '0';
+      input.style.height = '0';
+    });
+    
+    const starLabels = document.querySelectorAll('.star-rating label');
+    
+    // Function to update stars based on selection
+    function updateStars() {
+      console.log("Updating stars");
+      // Reset all stars first
+      document.querySelectorAll('.star-rating label i').forEach(star => {
+        star.classList.remove('bi-star-fill');
+        star.classList.add('bi-star');
+        star.style.color = '';
+      });
+      
+      // Fill stars for the selected rating
+      const checkedInput = document.querySelector('.star-rating input:checked');
+      if (checkedInput) {
+        console.log("Checked input found:", checkedInput.id);
+        
+        // Get the rating value (1-5)
+        const ratingValue = parseInt(checkedInput.value);
+        
+        // Fill all stars up to and including the selected rating
+        document.querySelectorAll('.star-rating label').forEach((label, index) => {
+          if (index < ratingValue) {
+            const icon = label.querySelector('i');
+            icon.classList.remove('bi-star');
+            icon.classList.add('bi-star-fill');
+            icon.style.color = '#FFD700';
+          }
+        });
+      }
+    }
+    
+    // Function to handle star selection
+    function selectStar(label) {
+      const input = label.previousElementSibling;
+      if (input && input.tagName === 'INPUT') {
+        console.log("Selecting star:", input.id);
+        // Check the radio button
+        input.checked = true;
+        
+        // Trigger a change event on the input
+        const event = new Event('change', { bubbles: true });
+        input.dispatchEvent(event);
+        
+        // Update stars immediately
+        updateStars();
+      }
+    }
+    
+    // Remove any existing event listeners (to prevent duplicates)
+    starLabels.forEach(label => {
+      const newLabel = label.cloneNode(true);
+      label.parentNode.replaceChild(newLabel, label);
+    });
+    
+    // Get the fresh labels after replacement
+    const freshStarLabels = document.querySelectorAll('.star-rating label');
+    
+    // Initial setup - ensure stars are empty
+    freshStarLabels.forEach((label, index) => {
+      const icon = label.querySelector('i');
+      icon.classList.remove('bi-star-fill');
+      icon.classList.add('bi-star');
+      
+      label.addEventListener('mouseenter', function() {
+        // Fill this star and all previous stars (to the left)
+        for (let i = 0; i <= index; i++) {
+          const currentLabel = freshStarLabels[i];
+          if (currentLabel) {
+            const icon = currentLabel.querySelector('i');
+            icon.classList.remove('bi-star');
+            icon.classList.add('bi-star-fill');
+            icon.style.color = '#FFD700';
+          }
+        }
+      });
+      
+      label.addEventListener('mouseleave', function() {
+        updateStars();
+      });
+      
+      // Handle click to maintain the filled state
+      label.addEventListener('click', function(e) {
+        e.preventDefault(); // Prevent default behavior
+        selectStar(this);
+      });
+      
+      // Also handle clicks directly on the star icon
+      const starIcon = label.querySelector('i');
+      if (starIcon) {
+        starIcon.addEventListener('click', function(e) {
+          e.preventDefault(); // Prevent default behavior
+          e.stopPropagation(); // Stop event from bubbling up
+          selectStar(label);
+        });
+      }
+    });
+    
+    // Listen for changes on the radio buttons
+    document.querySelectorAll('.star-rating input[type="radio"]').forEach(input => {
+      input.addEventListener('change', function() {
+        console.log("Radio changed:", this.id);
+        updateStars();
+      });
+      
+      // Also handle direct clicks on the input (though they should be hidden)
+      input.addEventListener('click', function() {
+        console.log("Radio clicked:", this.id);
+        updateStars();
+      });
+    });
+    
+    // Initial update in case there's a pre-selected value
+    updateStars();
+  }
+
+  // Initialize on DOMContentLoaded (for regular page loads)
+  document.addEventListener('DOMContentLoaded', initializeStarRating);
+  
+  // Initialize on turbo:load (for Turbo Drive navigation)
+  document.addEventListener('turbo:load', initializeStarRating);
+  
+  // Also initialize on turbo:render (for partial page updates)
+  document.addEventListener('turbo:render', initializeStarRating);
+  
+  // Handle browser back button navigation
+  window.addEventListener('pageshow', function(event) {
+    // If the page is loaded from the browser cache (back button)
+    if (event.persisted) {
+      console.log("Page loaded from cache (back button)");
+      initializeStarRating();
+    }
+  });
+  
+  // Run immediately in case the DOM is already loaded
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initializeStarRating();
+  }
+</script> 

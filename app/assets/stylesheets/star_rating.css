@@ -1,7 +1,7 @@
 .star-rating {
   display: flex !important;
   flex-direction: row-reverse !important;
-  justify-content: flex-start !important;
+  justify-content: flex-end !important;
   margin-bottom: 10px !important;
 }
 

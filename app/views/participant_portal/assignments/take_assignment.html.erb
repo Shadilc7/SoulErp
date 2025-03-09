@@ -35,83 +35,69 @@
             </div>
 
             <% case question.question_type %>
-            <% when "short_answer", "long_answer" %>
-              <%= text_area_tag "responses[#{question.id}][answer]", nil,
+            <% when "short_answer" %>
+              <%= text_field_tag "responses[#{question.id}][answer]",
+                  nil,
                   class: "form-control",
-                  rows: question.question_type == "long_answer" ? 4 : 2,
                   required: question.required?,
                   data: { 
                     action: "input->assignment-form#validateField",
                     question_id: question.id
                   } %>
-              <% if question.required? %>
-                <div class="invalid-feedback" data-assignment-form-target="error" data-question-id="<%= question.id %>">
-                  This field is required
-                </div>
-              <% end %>
-
+            <% when "paragraph" %>
+              <%= text_area_tag "responses[#{question.id}][answer]",
+                  nil,
+                  class: "form-control",
+                  rows: 4,
+                  required: question.required?,
+                  data: { 
+                    action: "input->assignment-form#validateField",
+                    question_id: question.id
+                  } %>
             <% when "multiple_choice" %>
               <div class="options-list">
                 <% question.options.each do |option| %>
                   <div class="form-check">
-                    <%= radio_button_tag "responses[#{question.id}][selected_options]",
-                        option.value,
+                    <%= radio_button_tag "responses[#{question.id}][answer]",
+                        option.text,
                         false,
                         class: "form-check-input",
                         required: question.required?,
                         data: { 
-                          action: "change->assignment-form#validateField",
+                          action: "input->assignment-form#validateField",
                           question_id: question.id
                         } %>
-                    <%= label_tag nil, option.value, class: "form-check-label" %>
-                  </div>
-                <% end %>
-                <% if question.required? %>
-                  <div class="invalid-feedback" data-assignment-form-target="error" data-question-id="<%= question.id %>">
-                    Please select an option
+                    <%= label_tag nil, option.text, class: "form-check-label" %>
                   </div>
                 <% end %>
               </div>
-
             <% when "checkboxes" %>
               <div class="options-list">
                 <% question.options.each do |option| %>
                   <div class="form-check">
                     <%= check_box_tag "responses[#{question.id}][selected_options][]",
-                        option.value,
+                        option.text,
                         false,
                         class: "form-check-input",
                         required: question.required?,
                         data: { 
-                          action: "change->assignment-form#validateField",
+                          action: "input->assignment-form#validateField",
                           question_id: question.id
                         } %>
-                    <%= label_tag nil, option.value, class: "form-check-label" %>
-                  </div>
-                <% end %>
-                <% if question.required? %>
-                  <div class="invalid-feedback" data-assignment-form-target="error" data-question-id="<%= question.id %>">
-                    Please select at least one option
+                    <%= label_tag nil, option.text, class: "form-check-label" %>
                   </div>
                 <% end %>
               </div>
-
             <% when "dropdown" %>
-              <%= select_tag "responses[#{question.id}][selected_options]",
-                  options_for_select(question.options.pluck(:value)),
-                  prompt: "Select an option",
+              <%= select_tag "responses[#{question.id}][answer]",
+                  options_for_select(question.options.pluck(:text)),
+                  include_blank: "Select an option",
                   class: "form-select",
                   required: question.required?,
                   data: { 
-                    action: "change->assignment-form#validateField",
+                    action: "input->assignment-form#validateField",
                     question_id: question.id
                   } %>
-              <% if question.required? %>
-                <div class="invalid-feedback" data-assignment-form-target="error" data-question-id="<%= question.id %>">
-                  Please select an option
-                </div>
-              <% end %>
-
             <% when "date" %>
               <%= date_field_tag "responses[#{question.id}][answer]",
                   nil,
@@ -121,12 +107,6 @@
                     action: "input->assignment-form#validateField",
                     question_id: question.id
                   } %>
-              <% if question.required? %>
-                <div class="invalid-feedback" data-assignment-form-target="error" data-question-id="<%= question.id %>">
-                  Please select a date
-                </div>
-              <% end %>
-
             <% when "time" %>
               <%= time_field_tag "responses[#{question.id}][answer]",
                   nil,
@@ -136,12 +116,16 @@
                     action: "input->assignment-form#validateField",
                     question_id: question.id
                   } %>
-              <% if question.required? %>
-                <div class="invalid-feedback" data-assignment-form-target="error" data-question-id="<%= question.id %>">
-                  Please select a time
-                </div>
-              <% end %>
-
+            <% when "number" %>
+              <%= number_field_tag "responses[#{question.id}][answer]",
+                  nil,
+                  class: "form-control",
+                  required: question.required?,
+                  placeholder: "Enter a number",
+                  data: { 
+                    action: "input->assignment-form#validateField",
+                    question_id: question.id
+                  } %>
             <% when "rating" %>
               <div class="rating-container">
                 <%= render 'rating_question', question: question %>

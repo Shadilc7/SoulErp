@@ -74,6 +74,7 @@ Rails.application.routes.draw do
       end
       resources :question_sets
       resources :training_programs do
+        resources :training_program_feedbacks, only: [:index], path: 'feedbacks'
         resources :attendances, only: [:index, :new, :create]
         member do
           patch :update_status

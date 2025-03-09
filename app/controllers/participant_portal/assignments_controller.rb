@@ -71,52 +71,53 @@ module ParticipantPortal
         return
       end
 
-      ActiveRecord::Base.transaction do
-        all_saved = true
+      begin
+        ActiveRecord::Base.transaction do
+          all_saved = true
 
-        @responses.each do |question_id, response_data|
-          response = current_participant.assignment_responses.find_or_initialize_by(
-            assignment: @assignment,
-            question_id: question_id,
-            response_date: @selected_date
-          )
+          @responses.each do |question_id, response_data|
+            question = Question.find(question_id)
+            response = current_participant.assignment_responses.find_or_initialize_by(
+              assignment: @assignment,
+              question_id: question_id,
+              response_date: @selected_date
+            )
 
-          # Handle selected options properly
-          selected_options = case response_data[:selected_options]
-          when Array
-            response_data[:selected_options]
-          when String
-            response_data[:selected_options].present? ? [ response_data[:selected_options] ] : []
+            # Handle different question types
+            case question.question_type
+            when 'checkboxes'
+              response.selected_options = response_data[:selected_options].presence || []
+              response.answer = nil
+            when 'multiple_choice', 'dropdown'
+              response.answer = response_data[:answer]
+              response.selected_options = [response_data[:answer]].compact
+            else
+              response.answer = response_data[:answer]
+              response.selected_options = []
+            end
+
+            response.submitted_at = Time.current
+
+            unless response.save
+              Rails.logger.error "Failed to save response: #{response.errors.full_messages}"
+              all_saved = false
+              break
+            end
+          end
+
+          if all_saved
+            redirect_to participant_portal_root_path(date: @selected_date),
+                        notice: "Assignment submitted successfully!"
           else
-            []
-          end
-
-          response.assign_attributes(
-            answer: response_data[:answer],
-            selected_options: selected_options,
-            submitted_at: Time.current
-          )
-
-          unless response.save
-            Rails.logger.error "Failed to save response: #{response.errors.full_messages}"
-            all_saved = false
-            break
+            raise ActiveRecord::Rollback
           end
         end
-
-        if all_saved
-          redirect_to participant_portal_root_path(date: @selected_date),
-                      notice: "Assignment submitted successfully!"
-        else
-          raise ActiveRecord::Rollback
-        end
+      rescue => e
+        Rails.logger.error "Assignment submission error: #{e.message}"
+        flash.now[:alert] = "Error submitting assignment. Please try again."
+        @questions = @assignment.all_questions
+        render :take_assignment, status: :unprocessable_entity
       end
-
-    rescue => e
-      Rails.logger.error "Assignment submission error: #{e.message}"
-      flash.now[:alert] = "Error submitting assignment. Please try again."
-      @questions = @assignment.all_questions
-      render :take_assignment
     end
 
     private

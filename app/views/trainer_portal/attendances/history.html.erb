@@ -4,10 +4,10 @@
       <h5 class="mb-0">
         Attendance History: <%= @training_program.title %>
       </h5>
-      <div>
-        <%= link_to export_history_csv_trainer_portal_attendances_path(format: :csv, training_program_id: @training_program.id), 
-            class: "btn btn-success me-2" do %>
-          <i class="bi bi-file-earmark-excel me-1"></i> Export CSV
+      <div class="d-flex gap-2">
+        <%= link_to export_history_csv_trainer_portal_attendances_path(training_program_id: @training_program.id, format: :csv),
+            class: "btn btn-outline-success" do %>
+          <i class="bi bi-file-earmark-excel me-1"></i> Export
         <% end %>
         <%= link_to trainer_portal_attendances_path, class: "btn btn-outline-secondary" do %>
           <i class="bi bi-arrow-left me-1"></i> Back
@@ -26,6 +26,12 @@
               <% @attendance_dates.each do |date| %>
                 <th class="text-center">
                   <%= date.strftime("%b %d") %>
+                  <div>
+                    <%= link_to edit_trainer_portal_attendance_path(@training_program, date: date), 
+                        class: "btn btn-sm btn-link p-0" do %>
+                      <i class="bi bi-pencil-square"></i>
+                    <% end %>
+                  </div>
                 </th>
               <% end %>
               <th class="text-center">Attendance %</th>
@@ -34,36 +40,39 @@
           <tbody>
             <% @participants.each do |participant| %>
               <tr>
-                <td><%= participant.user&.full_name || "Unknown Participant" %></td>
+                <td><%= participant.user.full_name %></td>
                 <% @attendance_dates.each do |date| %>
                   <% attendance = @attendance_records[date]&.[](participant.id) %>
                   <td class="text-center">
                     <% if attendance %>
-                      <% if attendance.present? %>
-                        <span class="badge bg-success">P</span>
-                      <% elsif attendance.late? %>
-                        <span class="badge bg-warning">L</span>
-                      <% elsif attendance.absent? %>
-                        <span class="badge bg-danger">A</span>
+                      <% case attendance.status %>
+                      <% when "present" %>
+                        <span class="badge bg-success">
+                          <i class="bi bi-check-lg"></i> Present
+                        </span>
+                      <% when "absent" %>
+                        <span class="badge bg-danger">
+                          <i class="bi bi-x-lg"></i> Absent
+                        </span>
+                      <% when "late" %>
+                        <span class="badge bg-warning text-dark">
+                          <i class="bi bi-clock"></i> Late
+                        </span>
                       <% end %>
                     <% else %>
-                      <span class="text-muted">-</span>
+                      <span class="badge bg-secondary">N/A</span>
                     <% end %>
                   </td>
                 <% end %>
                 <td class="text-center">
                   <% percentage = @training_program.attendance_percentage_for(participant) %>
                   <div class="d-flex align-items-center justify-content-center">
-                    <div class="progress me-2" style="width: 60px; height: 8px;">
-                      <div class="progress-bar <%= percentage >= 75 ? 'bg-success' : percentage >= 50 ? 'bg-warning' : 'bg-danger' %>" 
+                    <div class="progress" style="width: 80px; height: 10px;">
+                      <div class="progress-bar bg-<%= percentage >= 75 ? 'success' : (percentage >= 50 ? 'warning' : 'danger') %>" 
                            role="progressbar" 
-                           style="width: <%= percentage %>%" 
-                           aria-valuenow="<%= percentage %>" 
-                           aria-valuemin="0" 
-                           aria-valuemax="100">
-                      </div>
+                           style="width: <%= percentage %>%"></div>
                     </div>
-                    <span><%= percentage %>%</span>
+                    <span class="ms-2"><%= percentage %>%</span>
                   </div>
                 </td>
               </tr>
@@ -82,12 +91,37 @@
 
 <% content_for :styles do %>
   <style>
-    .table th {
-      background-color: #f8f9fa;
+    .bg-present { 
+      background-color: #198754 !important;
     }
     
-    .badge {
-      font-weight: 500;
+    .bg-absent {
+      background-color: #dc3545 !important;
+    }
+    
+    .bg-late {
+      background-color: #fd7e14 !important;
+    }
+    
+    .bg-excused {
+      background-color: #0dcaf0 !important;
+    }
+
+    .progress {
+      background-color: #e9ecef;
+      border-radius: 0.25rem;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+      color: #fff;
+      text-align: center;
+      white-space: nowrap;
+      transition: width 0.6s ease;
     }
   </style>
 <% end %> 

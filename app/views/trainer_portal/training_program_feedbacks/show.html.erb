@@ -1,57 +1,51 @@
-<div class="container-fluid">
-  <div class="row mb-4">
-    <div class="col">
-      <h1 class="h3 mb-0">Feedbacks for <%= @training_program.title %></h1>
-      <p class="text-muted">View all participant feedbacks for this training program</p>
-    </div>
-    <div class="col-auto">
+<div class="card card-custom">
+  <div class="card-header card-header-custom py-3">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Feedbacks for <%= @training_program.title %></h5>
       <%= link_to trainer_portal_training_program_feedbacks_path, class: "btn btn-outline-secondary" do %>
-        <i class="bi bi-arrow-left"></i> Back to Feedbacks
+        <i class="bi bi-arrow-left"></i> Back to Programs
       <% end %>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-body">
-      <% if @feedbacks.any? %>
-        <div class="table-responsive">
-          <table class="table table-hover">
-            <thead>
+  <div class="card-body">
+    <% if @feedbacks.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Participant</th>
+              <th>Rating</th>
+              <th>Feedback</th>
+              <th>Submitted On</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @feedbacks.each do |feedback| %>
               <tr>
-                <th>Participant</th>
-                <th>Rating</th>
-                <th>Feedback</th>
-                <th>Submitted On</th>
+                <td><%= feedback.participant.user.full_name %></td>
+                <td>
+                  <div class="d-flex">
+                    <% feedback.rating.times do %>
+                      <i class="bi bi-star-fill text-warning"></i>
+                    <% end %>
+                    <% (5 - feedback.rating).times do %>
+                      <i class="bi bi-star text-muted"></i>
+                    <% end %>
+                  </div>
+                </td>
+                <td><%= feedback.content %></td>
+                <td><%= feedback.created_at.strftime("%b %d, %Y %I:%M %p") %></td>
               </tr>
-            </thead>
-            <tbody>
-              <% @feedbacks.each do |feedback| %>
-                <tr>
-                  <td><%= feedback.participant.user.full_name %></td>
-                  <td>
-                    <div class="d-flex">
-                      <% feedback.rating.times do %>
-                        <i class="bi bi-star-fill text-warning"></i>
-                      <% end %>
-                      <% (5 - feedback.rating).times do %>
-                        <i class="bi bi-star text-muted"></i>
-                      <% end %>
-                    </div>
-                  </td>
-                  <td><%= feedback.content %></td>
-                  <td><%= feedback.created_at.strftime("%b %d, %Y %I:%M %p") %></td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
-        </div>
-      <% else %>
-        <div class="text-center py-5">
-          <i class="bi bi-chat-square-text fs-1 text-muted mb-3"></i>
-          <h5>No Feedbacks Yet</h5>
-          <p class="text-muted">There are no feedbacks submitted for this training program yet.</p>
-        </div>
-      <% end %>
-    </div>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="bi bi-chat-square-text fs-1 text-muted mb-3"></i>
+        <p class="text-muted mb-0">No feedbacks submitted yet for this training program.</p>
+      </div>
+    <% end %>
   </div>
 </div> 

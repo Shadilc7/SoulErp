@@ -32,12 +32,12 @@
 
             <div class="mb-3">
               <label class="form-label">Rating</label>
-              <div class="rating-buttons">
-                <% (1..5).each do |rating| %>
-                  <div class="form-check form-check-inline">
-                    <%= f.radio_button :rating, rating, class: "form-check-input", required: true %>
-                    <%= f.label "rating_#{rating}", rating, class: "form-check-label" %>
-                  </div>
+              <div class="rating">
+                <% (1..5).each do |i| %>
+                  <input type="radio" id="star<%= i %>" name="training_program_feedback[rating]" value="<%= i %>" <%= 'required' if i == 1 %>>
+                  <label for="star<%= i %>" title="<%= i %> stars">
+                    <i class="bi bi-star-fill"></i>
+                  </label>
                 <% end %>
               </div>
             </div>
@@ -60,9 +60,30 @@
 
 <% content_for :styles do %>
   <style>
-    .rating-buttons {
+    .rating {
       display: flex;
-      gap: 1rem;
+      flex-direction: row;
+      justify-content: flex-start;
+    }
+
+    .rating input[type="radio"] {
+      display: none;
+    }
+
+    .rating label {
+      cursor: pointer;
+      font-size: 2rem;
+      color: #ddd;
+      transition: color 0.2s;
+    }
+
+    .rating input:checked ~ label {
+      color: #FFD700;
+    }
+
+    .rating label:hover,
+    .rating label:hover ~ label {
+      color: #FFD700;
     }
   </style>
 <% end %> 

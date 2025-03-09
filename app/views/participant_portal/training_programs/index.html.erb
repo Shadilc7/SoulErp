@@ -73,15 +73,14 @@
                 <i class="bi bi-eye me-1"></i> View Details
               <% end %>
 
-              <% if program.completed? %>
-                <% if program.feedback.present? %>
-                  <button class="btn btn-success" disabled>
-                    <i class="bi bi-check-circle me-1"></i> Feedback Submitted
-                  </button>
-                <% else %>
-                  <%= link_to new_participant_portal_training_program_feedback_path(program), class: "btn btn-primary" do %>
-                    <i class="bi bi-star me-1"></i> Give Feedback
-                  <% end %>
+              <% participant_feedback = program.feedbacks.find_by(participant: current_participant) %>
+              <% if participant_feedback.present? %>
+                <button class="btn btn-success" disabled>
+                  <i class="bi bi-check-circle me-1"></i> Feedback Submitted
+                </button>
+              <% else %>
+                <%= link_to new_participant_portal_training_program_feedback_path(program), class: "btn btn-primary" do %>
+                  <i class="bi bi-star me-1"></i> Give Feedback
                 <% end %>
               <% end %>
             </div>

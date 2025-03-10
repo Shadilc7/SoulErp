@@ -5,17 +5,9 @@ module ParticipantPortal
 
     def index
       @selected_date = parse_date(params[:date])
-
-      # Add debugging
-      Rails.logger.debug "Selected Date: #{@selected_date}"
-
       @assignments = Assignment.for_participant(current_participant)
         .for_date(@selected_date)
         .order(created_at: :desc)
-
-      # Add debugging
-      Rails.logger.debug "Found Assignments: #{@assignments.to_sql}"
-      Rails.logger.debug "Assignment Count: #{@assignments.count}"
 
       respond_to do |format|
         format.html { redirect_to participant_portal_root_path }
@@ -51,13 +43,6 @@ module ParticipantPortal
     def take_assignment
       @selected_date = parse_date(params[:date])
       @questions = @assignment.all_questions
-
-      # Add debugging
-      Rails.logger.debug "Questions loaded: #{@questions.count}"
-      @questions.each do |q|
-        Rails.logger.debug "Question #{q.id}: #{q.question_type} - #{q.title}"
-        Rails.logger.debug "Options: #{q.options.pluck(:value)}" if q.requires_options?
-      end
     end
 
     def submit
@@ -74,6 +59,7 @@ module ParticipantPortal
       begin
         ActiveRecord::Base.transaction do
           all_saved = true
+          saved_response_ids = []
 
           @responses.each do |question_id, response_data|
             question = Question.find(question_id)
@@ -98,14 +84,22 @@ module ParticipantPortal
 
             response.submitted_at = Time.current
 
-            unless response.save
-              Rails.logger.error "Failed to save response: #{response.errors.full_messages}"
+            if response.save
+              saved_response_ids << response.id
+            else
               all_saved = false
               break
             end
           end
 
           if all_saved
+            AssignmentResponseLog.log_responses(
+              participant: current_participant,
+              assignment: @assignment,
+              response_ids: saved_response_ids,
+              response_date: @selected_date
+            )
+
             redirect_to participant_portal_root_path(date: @selected_date),
                         notice: "Assignment submitted successfully!"
           else
@@ -113,7 +107,6 @@ module ParticipantPortal
           end
         end
       rescue => e
-        Rails.logger.error "Assignment submission error: #{e.message}"
         flash.now[:alert] = "Error submitting assignment. Please try again."
         @questions = @assignment.all_questions
         render :take_assignment, status: :unprocessable_entity

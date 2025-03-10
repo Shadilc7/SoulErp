@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_08_073221) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_10_002255) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -41,6 +41,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_08_073221) do
     t.datetime "updated_at", null: false
     t.index ["assignment_id"], name: "index_assignment_questions_on_assignment_id"
     t.index ["question_id"], name: "index_assignment_questions_on_question_id"
+  end
+
+  create_table "assignment_response_logs", force: :cascade do |t|
+    t.bigint "institute_id", null: false
+    t.bigint "participant_id", null: false
+    t.datetime "response_date"
+    t.bigint "assignment_id", null: false
+    t.jsonb "assignment_response_ids", default: []
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assignment_id"], name: "index_assignment_response_logs_on_assignment_id"
+    t.index ["institute_id"], name: "index_assignment_response_logs_on_institute_id"
+    t.index ["participant_id"], name: "index_assignment_response_logs_on_participant_id"
   end
 
   create_table "assignment_responses", force: :cascade do |t|
@@ -331,6 +344,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_08_073221) do
   add_foreign_key "assignment_question_sets", "question_sets"
   add_foreign_key "assignment_questions", "assignments"
   add_foreign_key "assignment_questions", "questions"
+  add_foreign_key "assignment_response_logs", "assignments"
+  add_foreign_key "assignment_response_logs", "institutes"
+  add_foreign_key "assignment_response_logs", "participants"
   add_foreign_key "assignment_responses", "assignments"
   add_foreign_key "assignment_responses", "participants"
   add_foreign_key "assignment_responses", "questions"

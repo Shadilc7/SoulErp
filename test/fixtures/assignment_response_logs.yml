@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  institution: one
+  participant: one
+  response_date: 2025-03-10 05:52:55
+  assignment: one
+  assignment_response_ids: MyText
+
+two:
+  institution: two
+  participant: two
+  response_date: 2025-03-10 05:52:55
+  assignment: two
+  assignment_response_ids: MyText

@@ -505,6 +505,12 @@
               <i class="bi bi-clipboard2-check"></i>
               <span>Responses</span>
             <% end %>
+
+            <%= link_to institute_admin_reports_path,
+                class: "nav-link #{'active' if controller.controller_name == 'reports'}" do %>
+              <i class="bi bi-graph-up"></i>
+              <span>Reports</span>
+            <% end %>
           </nav>
         </div>
       </div>

@@ -17,6 +17,7 @@ class Assignment < ApplicationRecord
   has_many :question_sets, through: :assignment_question_sets
 
   has_many :assignment_responses, dependent: :destroy
+  has_many :assignment_response_logs, dependent: :destroy
 
   validates :title, presence: true
   validates :start_date, presence: true

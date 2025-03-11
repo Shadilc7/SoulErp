@@ -104,6 +104,7 @@ Rails.application.routes.draw do
         get "section/:section_id", action: :index, on: :collection
         get "section/:section_id/participant/:participant_id", action: :index, on: :collection
       end
+      resources :reports, only: [:index]
     end
   end
 

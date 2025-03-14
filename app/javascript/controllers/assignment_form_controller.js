@@ -15,6 +15,23 @@ export default class extends Controller {
   ]
 
   connect() {
+    console.log("Assignment form controller connected")
+    
+    // Initialize the selectedAssignmentType property
+    const individualRadio = this.element.querySelector('input[name="assignment[assignment_type]"][value="individual"]')
+    const sectionRadio = this.element.querySelector('input[name="assignment[assignment_type]"][value="section"]')
+    
+    if (individualRadio && individualRadio.checked) {
+      this.selectedAssignmentType = 'individual'
+      console.log("Initial assignment type: individual")
+    } else if (sectionRadio && sectionRadio.checked) {
+      this.selectedAssignmentType = 'section'
+      console.log("Initial assignment type: section")
+    } else {
+      this.selectedAssignmentType = null
+      console.log("No assignment type selected initially")
+    }
+    
     // Check if we're on the assignment creation page or the take assignment page
     const isCreationPage = this.hasQuestionsCounterTarget && this.hasSetsCounterTarget;
     
@@ -25,15 +42,35 @@ export default class extends Controller {
     }
     
     // Setup rating stars for both pages
-    this.setupRatingStars()
+    if (typeof this.setupRatingStars === 'function') {
+      this.setupRatingStars()
+    }
   }
 
   handleTypeChange(event) {
-    const selectedType = event.target.value
+    console.log("Type changed:", event.target.value)
     
-    // Show/hide appropriate views
-    this.individualViewTarget.classList.toggle('d-none', selectedType !== 'individual')
-    this.sectionViewTarget.classList.toggle('d-none', selectedType !== 'section')
+    // Get the selected type from the radio button
+    const selectedType = event.target.value
+    console.log("Selected assignment type:", selectedType)
+    
+    // Store the selected type in a class property instead of trying to set the target
+    this.selectedAssignmentType = selectedType
+    
+    // Show/hide appropriate views if they exist
+    if (this.hasIndividualViewTarget) {
+      console.log("Toggling individual view:", selectedType === 'individual')
+      this.individualViewTarget.classList.toggle('d-none', selectedType !== 'individual')
+    } else {
+      console.log("individualViewTarget not found")
+    }
+    
+    if (this.hasSectionViewTarget) {
+      console.log("Toggling section view:", selectedType === 'section')
+      this.sectionViewTarget.classList.toggle('d-none', selectedType !== 'section')
+    } else {
+      console.log("sectionViewTarget not found")
+    }
 
     // Clear selections when switching types
     if (selectedType === 'individual') {
@@ -44,14 +81,23 @@ export default class extends Controller {
 
     // Hide participants view when switching types
     if (selectedType === 'section') {
-      this.sectionParticipantsViewTarget.classList.add('d-none')
-      this.sectionParticipantsListTarget.innerHTML = ''
+      if (this.hasSectionParticipantsViewTarget) {
+        this.sectionParticipantsViewTarget.classList.add('d-none')
+      }
+      if (this.hasSectionParticipantsListTarget) {
+        this.sectionParticipantsListTarget.innerHTML = ''
+      }
     }
 
     this.validateForm()
   }
 
   handleSectionChange(event) {
+    console.log("Section changed:", event.target.value)
+    
+    // Skip if the targets don't exist
+    if (!this.hasSectionParticipantsViewTarget || !this.hasSectionParticipantsListTarget) return;
+    
     const sectionId = event.target.value
     if (!sectionId) {
       this.sectionParticipantsViewTarget.classList.add('d-none')
@@ -76,23 +122,31 @@ export default class extends Controller {
                    checked
                    data-action="change->assignment-form#updateSectionParticipantsCounter">
             <label class="form-check-label" for="participant_${participant.id}">
-              ${participant.full_name}
+              ${participant.full_name || 'Participant'}
             </label>
           </div>
         `).join('')
         
         this.sectionParticipantsListTarget.innerHTML = participantsHtml
-        this.updateSectionParticipantsCounter()
+        
+        // Only call updateSectionParticipantsCounter if the target exists
+        if (this.hasSectionParticipantsCounterTarget) {
+          this.updateSectionParticipantsCounter()
+        }
       })
   }
 
-  updateSectionParticipantsCount() {
+  updateSectionParticipantsCounter() {
+    // Skip if the targets don't exist
+    if (!this.hasSectionParticipantsCounterTarget || !this.hasSectionParticipantsListTarget) return;
+    
     const count = this.sectionParticipantsListTarget.querySelectorAll('input:checked').length
     this.sectionParticipantsCounterTarget.textContent = `${count} Selected`
     this.validateForm()
   }
 
-  updateParticipantsCount() {
+  updateParticipantsCounter() {
+    // Skip if the target doesn't exist
     if (!this.hasParticipantsCounterTarget) return;
     
     const count = document.querySelectorAll('input[name="assignment[participant_ids][]"]:checked').length
@@ -124,6 +178,7 @@ export default class extends Controller {
       if (endDate.value && endDate.value < minEnd) {
         endDate.value = minEnd
       }
+      this.validateForm()
     })
 
     endDate.addEventListener('change', () => {
@@ -131,6 +186,7 @@ export default class extends Controller {
       if (startDate.value && startDate.value > maxStart) {
         startDate.value = maxStart
       }
+      this.validateForm()
     })
   }
 
@@ -153,21 +209,38 @@ export default class extends Controller {
   updateAllCounters() {
     if (this.hasQuestionsCounterTarget) this.updateQuestionsCount()
     if (this.hasSetsCounterTarget) this.updateSetsCount()
-    if (this.hasParticipantsCounterTarget) this.updateParticipantsCount()
+    if (this.hasParticipantsCounterTarget) this.updateParticipantsCounter()
   }
 
   validateForm() {
-    // Skip validation if we're not on the creation page
-    if (!this.hasTitleInputTarget || !this.hasStartDateTarget || !this.hasEndDateTarget || !this.hasSubmitButtonTarget) return;
+    console.log("Validating form")
     
-    const title = this.titleInputTarget.value.trim()
-    const startDate = this.startDateTarget.value
-    const endDate = this.endDateTarget.value
+    // Skip validation if we're not on the creation page or if any required target is missing
+    if (!this.hasSubmitButtonTarget) return;
+    
+    let title = ""
+    let startDate = ""
+    let endDate = ""
+    
+    if (this.hasTitleInputTarget) {
+      title = this.titleInputTarget.value.trim()
+    }
+    
+    if (this.hasStartDateTarget) {
+      startDate = this.startDateTarget.value
+    }
+    
+    if (this.hasEndDateTarget) {
+      endDate = this.endDateTarget.value
+    }
+    
     const hasQuestions = this.hasQuestionsSelected()
     const hasAssignees = this.hasAssigneesSelected()
 
-    this.submitButtonTarget.disabled = 
-      !title || !startDate || !endDate || !hasQuestions || !hasAssignees
+    const isValid = title && startDate && endDate && hasQuestions && hasAssignees
+    console.log("Form validation:", { title, startDate, endDate, hasQuestions, hasAssignees, isValid })
+    
+    this.submitButtonTarget.disabled = !isValid
   }
 
   hasQuestionsSelected() {
@@ -180,47 +253,85 @@ export default class extends Controller {
   }
 
   hasAssigneesSelected() {
-    // If we're not on the creation page, return true
-    if (!this.hasTypeSelectTarget) return true;
+    console.log("Checking if assignees are selected")
     
-    const assignmentType = this.typeSelectTarget.value
+    // Use the stored assignment type if available
+    let assignmentType = this.selectedAssignmentType
+    
+    // If not available, get it from the radio buttons
+    if (!assignmentType) {
+      const individualRadio = this.element.querySelector('input[name="assignment[assignment_type]"][value="individual"]')
+      const sectionRadio = this.element.querySelector('input[name="assignment[assignment_type]"][value="section"]')
+      
+      if (!individualRadio || !sectionRadio) {
+        console.log("Radio buttons not found, returning true")
+        return true
+      }
+      
+      assignmentType = individualRadio.checked ? 'individual' : 'section'
+    }
+    
+    console.log("Assignment type for validation:", assignmentType)
     
     if (assignmentType === 'section') {
-      return this.sectionParticipantsListTarget.querySelectorAll('input:checked').length > 0
+      // Check if any sections are selected
+      const selectedSections = document.querySelectorAll('input[name="assignment[section_ids][]"]:checked').length
+      console.log("Selected sections:", selectedSections)
+      
+      if (selectedSections > 0) {
+        // If we have sections selected, check if any participants are selected
+        const selectedParticipants = document.querySelectorAll('input[name="assignment[participant_ids][]"]:checked').length
+        console.log("Selected participants:", selectedParticipants)
+        return selectedParticipants > 0
+      }
+      
+      return false
     } else {
-      return document.querySelectorAll('input[name="assignment[participant_ids][]"]:checked').length > 0
+      // For individual type, check if any participants are selected
+      const selectedParticipants = document.querySelectorAll('input[name="assignment[participant_ids][]"]:checked').length
+      console.log("Selected participants (individual):", selectedParticipants)
+      return selectedParticipants > 0
     }
   }
 
   toggleAllQuestions(event) {
+    console.log("Toggle all questions:", event.target.checked)
     const checked = event.target.checked
     this.element.querySelectorAll('.question-checkbox').forEach(checkbox => {
       checkbox.checked = checked
     })
-    this.updateCounter()
+    this.updateQuestionsCount()
   }
 
   toggleAllQuestionSets(event) {
+    console.log("Toggle all question sets:", event.target.checked)
     const checked = event.target.checked
     this.element.querySelectorAll('.question-set-checkbox').forEach(checkbox => {
       checkbox.checked = checked
     })
-    this.updateCounter()
+    this.updateSetsCount()
   }
 
   updateSelectAllQuestions() {
+    // Skip if the target doesn't exist
+    if (!this.hasSelectAllQuestionsTarget) return;
+    
     const totalQuestions = this.element.querySelectorAll('.question-checkbox').length
     const checkedQuestions = this.element.querySelectorAll('.question-checkbox:checked').length
     this.selectAllQuestionsTarget.checked = totalQuestions === checkedQuestions
   }
 
   updateSelectAllSets() {
+    // Skip if the target doesn't exist
+    if (!this.hasSelectAllSetsTarget) return;
+    
     const totalSets = this.element.querySelectorAll('.question-set-checkbox').length
     const checkedSets = this.element.querySelectorAll('.question-set-checkbox:checked').length
     this.selectAllSetsTarget.checked = totalSets === checkedSets
   }
 
   toggleAllSections(event) {
+    console.log("Toggle all sections:", event.target.checked)
     const checked = event.target.checked
     this.element.querySelectorAll('.section-checkbox').forEach(checkbox => {
       checkbox.checked = checked
@@ -229,52 +340,148 @@ export default class extends Controller {
   }
 
   handleSectionSelection(event) {
+    console.log("Section selection changed")
+    
     const checkbox = event.target
     const sectionId = checkbox.dataset.sectionId
-    const sectionName = checkbox.nextElementSibling.textContent.trim()
+    
+    if (!sectionId) {
+      console.error("No section ID found in the checkbox data attribute")
+      return
+    }
+    
+    console.log(`Section ${sectionId} selection changed to ${checkbox.checked}`)
+    
+    // Get the section name from the label
+    let sectionName = "Section"
+    const label = checkbox.nextElementSibling
+    if (label) {
+      sectionName = label.textContent.trim()
+    }
+    
     const participantsContainerId = `section_${sectionId}_participants`
     
     if (checkbox.checked) {
+      console.log(`Fetching participants for section ${sectionId}`)
+      
+      // Show loading indicator
+      if (this.hasSectionParticipantsContainerTarget) {
+        const loadingHtml = `
+          <div id="loading_${sectionId}" class="text-center p-3">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading participants...</p>
+          </div>
+        `
+        this.sectionParticipantsContainerTarget.insertAdjacentHTML('beforeend', loadingHtml)
+      }
+      
       fetch(`/institute_admin/sections/${sectionId}/participants`)
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`)
+          }
+          return response.json()
+        })
         .then(participants => {
-          const containerHtml = this.createParticipantsContainer(sectionId, participants)
-          this.sectionParticipantsContainerTarget.insertAdjacentHTML('beforeend', containerHtml)
+          console.log(`Received ${participants.length} participants for section ${sectionId}`)
           
-          // Set the section name
-          const container = document.getElementById(participantsContainerId)
-          container.querySelector('.section-name').textContent = sectionName
+          // Remove loading indicator if it exists
+          const loadingElement = document.getElementById(`loading_${sectionId}`)
+          if (loadingElement) {
+            loadingElement.remove()
+          }
+          
+          if (this.hasSectionParticipantsContainerTarget) {
+            const containerHtml = this.createParticipantsContainer(sectionId, participants, sectionName)
+            this.sectionParticipantsContainerTarget.insertAdjacentHTML('beforeend', containerHtml)
+            
+            // Set the section name
+            const container = document.getElementById(participantsContainerId)
+            if (container) {
+              const sectionNameElement = container.querySelector('.section-name')
+              if (sectionNameElement) {
+                sectionNameElement.textContent = sectionName
+              }
+            }
+            
+            this.validateForm()
+          } else {
+            console.error("sectionParticipantsContainerTarget not found")
+          }
+        })
+        .catch(error => {
+          console.error("Error fetching participants:", error)
+          
+          // Remove loading indicator and show error
+          const loadingElement = document.getElementById(`loading_${sectionId}`)
+          if (loadingElement) {
+            loadingElement.remove()
+          }
+          
+          if (this.hasSectionParticipantsContainerTarget) {
+            const errorHtml = `
+              <div id="error_${sectionId}" class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                Error loading participants: ${error.message}
+              </div>
+            `
+            this.sectionParticipantsContainerTarget.insertAdjacentHTML('beforeend', errorHtml)
+          }
         })
     } else {
+      console.log(`Removing participants container for section ${sectionId}`)
       const container = document.getElementById(participantsContainerId)
-      if (container) container.remove()
+      if (container) {
+        container.remove()
+      } else {
+        console.warn(`Container for section ${sectionId} not found`)
+      }
+      
+      // Also remove any error messages
+      const errorElement = document.getElementById(`error_${sectionId}`)
+      if (errorElement) {
+        errorElement.remove()
+      }
+      
+      this.validateForm()
     }
     
     this.updateSelectAllSections()
   }
 
-  createParticipantsContainer(sectionId, participants) {
-    const participantsHtml = participants.map(participant => `
-      <div class="form-check">
-        <input type="checkbox" 
-               name="assignment[participant_ids][]" 
-               value="${participant.id}" 
-               id="participant_${participant.id}" 
-               class="form-check-input section-${sectionId}-participant"
-               checked
-               data-action="change->assignment-form#updateParticipantsCounter change->assignment-form#updateSectionSelectAll"
-               data-section-id="${sectionId}">
-        <label class="form-check-label" for="participant_${participant.id}">
-          ${participant.full_name}
-        </label>
-      </div>
-    `).join('')
+  createParticipantsContainer(sectionId, participants, sectionName) {
+    console.log(`Creating participants container for section ${sectionId} with ${participants.length} participants`)
+    
+    const participantsHtml = participants.map(participant => {
+      // Safely get participant name, with fallback
+      const participantName = participant.full_name || 
+                             (participant.user && participant.user.full_name) || 
+                             `Participant ${participant.id}`
+      
+      return `
+        <div class="form-check">
+          <input type="checkbox" 
+                 name="assignment[participant_ids][]" 
+                 value="${participant.id}" 
+                 id="participant_${participant.id}" 
+                 class="form-check-input section-${sectionId}-participant"
+                 checked
+                 data-action="change->assignment-form#updateCounter change->assignment-form#updateSectionSelectAll"
+                 data-section-id="${sectionId}">
+          <label class="form-check-label" for="participant_${participant.id}">
+            ${participantName}
+          </label>
+        </div>
+      `
+    }).join('')
 
     return `
       <div id="section_${sectionId}_participants" class="card border mb-3">
         <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
           <div>
-            <h6 class="mb-0 section-name"></h6>
+            <h6 class="mb-0 section-name">${sectionName || 'Section'}</h6>
           </div>
           <div class="d-flex align-items-center gap-2">
             <div class="form-check mb-0">
@@ -288,7 +495,9 @@ export default class extends Controller {
                 Select All
               </label>
             </div>
-           
+            <span class="badge bg-secondary">
+              ${participants.length} participants
+            </span>
           </div>
         </div>
         <div class="card-body">
@@ -299,12 +508,16 @@ export default class extends Controller {
   }
 
   updateSelectAllSections() {
+    // Skip if the target doesn't exist
+    if (!this.hasSelectAllSectionsTarget) return;
+    
     const totalSections = this.element.querySelectorAll('.section-checkbox').length
     const checkedSections = this.element.querySelectorAll('.section-checkbox:checked').length
     this.selectAllSectionsTarget.checked = totalSections === checkedSections
   }
 
   toggleSectionParticipants(event) {
+    console.log("Toggle section participants")
     const checkbox = event.target
     const sectionId = checkbox.dataset.sectionId
     const checked = checkbox.checked
@@ -313,7 +526,12 @@ export default class extends Controller {
       participantCheckbox.checked = checked
     })
     
-    this.updateParticipantsCounter()
+    // Only call updateParticipantsCounter if it exists and we have the target
+    if (this.hasParticipantsCounterTarget) {
+      this.updateParticipantsCounter()
+    }
+    
+    this.validateForm()
   }
 
   updateSectionSelectAll(event) {
@@ -321,50 +539,34 @@ export default class extends Controller {
     const sectionId = checkbox.dataset.sectionId
     const selectAllCheckbox = document.getElementById(`select_all_participants_${sectionId}`)
     
+    if (!selectAllCheckbox) return;
+    
     const totalParticipants = this.element.querySelectorAll(`.section-${sectionId}-participant`).length
     const checkedParticipants = this.element.querySelectorAll(`.section-${sectionId}-participant:checked`).length
     
     selectAllCheckbox.checked = totalParticipants === checkedParticipants
-  }
-
-  updateParticipantsCounter() {
-    const count = document.querySelectorAll('input[name="assignment[participant_ids][]"]:checked').length
-    this.participantsCounterTarget.textContent = `${count} Selected`
+    
     this.validateForm()
   }
 
-  validateField(event) {
-    const field = event.target
-    const questionId = field.dataset.questionId
-    const errorElement = this.errorTargets.find(el => el.dataset.questionId === questionId)
+  // This is the method that's called from the view for individual question checkboxes
+  updateCounter(event) {
+    console.log("updateCounter called for", event.target.className)
+    const checkbox = event.target
     
-    if (!errorElement) return
+    // Determine which counter to update based on the checkbox class
+    if (checkbox.classList.contains('question-checkbox')) {
+      this.updateQuestionsCount()
+    } else if (checkbox.classList.contains('question-set-checkbox')) {
+      this.updateSetsCount()
+    } else if (checkbox.name === 'assignment[participant_ids][]') {
+      // For participant checkboxes
+      if (this.hasParticipantsCounterTarget) {
+        this.updateParticipantsCounter()
+      }
+    }
     
-    if (field.type === 'checkbox') {
-      // For checkboxes, check if at least one is checked
-      const checkboxes = document.querySelectorAll(`input[name="${field.name}"]`)
-      const isValid = Array.from(checkboxes).some(cb => cb.checked)
-      this.toggleValidation(field, errorElement, isValid)
-    } else if (field.type === 'radio') {
-      // For radio buttons, check if any in the group is checked
-      const radios = document.querySelectorAll(`input[name="${field.name}"]`)
-      const isValid = Array.from(radios).some(r => r.checked)
-      this.toggleValidation(field, errorElement, isValid)
-    } else {
-      // For other inputs, check if they have a value
-      const isValid = field.value.trim() !== ''
-      this.toggleValidation(field, errorElement, isValid)
-    }
-  }
-  
-  toggleValidation(field, errorElement, isValid) {
-    if (isValid) {
-      field.classList.remove('is-invalid')
-      errorElement.style.display = 'none'
-    } else {
-      field.classList.add('is-invalid')
-      errorElement.style.display = 'block'
-    }
+    this.validateForm()
   }
 
   setupRatingStars() {

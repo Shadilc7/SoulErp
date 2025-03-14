@@ -78,11 +78,65 @@ module InstituteAdmin
     end
 
     def update
-      if @assignment.update(assignment_params)
-        redirect_to institute_admin_assignments_path, notice: "Assignment was successfully updated."
-      else
-        render :edit, status: :unprocessable_entity
+      cleaned_params = assignment_params.to_h
+      cleaned_params["question_ids"]&.reject!(&:blank?)
+      cleaned_params["question_set_ids"]&.reject!(&:blank?)
+      cleaned_params["participant_ids"]&.reject!(&:blank?)
+
+      # Extract the association IDs
+      question_ids = cleaned_params.delete("question_ids") || []
+      question_set_ids = cleaned_params.delete("question_set_ids") || []
+      participant_ids = cleaned_params.delete("participant_ids") || []
+      section_ids = cleaned_params.delete("section_ids") || []
+
+      ActiveRecord::Base.transaction do
+        # Update basic assignment attributes
+        if @assignment.update(cleaned_params)
+          # Clear existing associations
+          @assignment.assignment_questions.destroy_all
+          @assignment.assignment_question_sets.destroy_all
+          @assignment.assignment_participants.destroy_all
+
+          # Rebuild all associations
+          question_ids.each do |qid|
+            @assignment.assignment_questions.build(question_id: qid)
+          end
+
+          question_set_ids.each do |qsid|
+            @assignment.assignment_question_sets.build(question_set_id: qsid)
+          end
+
+          participant_ids.each do |pid|
+            @assignment.assignment_participants.build(participant_id: pid)
+          end
+
+          # Save all associations at once
+          if @assignment.assignment_questions.all?(&:valid?) &&
+             @assignment.assignment_question_sets.all?(&:valid?) &&
+             @assignment.assignment_participants.all?(&:valid?)
+
+            @assignment.assignment_questions.each(&:save!)
+            @assignment.assignment_question_sets.each(&:save!)
+            @assignment.assignment_participants.each(&:save!)
+
+            # Final validation of the complete assignment
+            if @assignment.valid?
+              redirect_to institute_admin_assignments_path, notice: "Assignment updated successfully."
+              return
+            end
+          end
+
+          # If we get here, something failed
+          raise ActiveRecord::Rollback
+        end
       end
+
+      # If we get here, the transaction was rolled back
+      Rails.logger.debug "Assignment update failed: #{@assignment.errors.full_messages}"
+      @sections = current_institute.sections.active
+      @selected_sections = @assignment.sections
+      @selected_participants = @assignment.participants.includes(:user)
+      render :edit, status: :unprocessable_entity
     end
 
     def destroy

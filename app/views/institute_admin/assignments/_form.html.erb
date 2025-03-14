@@ -179,6 +179,12 @@
           <!-- Individual Selection -->
           <div class="p-3 <%= @assignment.assignment_type == 'individual' ? '' : 'd-none' %>"
                data-assignment-form-target="individualView">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="mb-0">Individual Participants</h6>
+              <span class="badge bg-primary" data-assignment-form-target="participantsCounter">
+                <%= @assignment.participants.count %> Selected
+              </span>
+            </div>
             <div class="recipients-list">
               <% current_institute.participants.active.each do |participant| %>
                 <div class="form-check">
@@ -188,7 +194,7 @@
                       id: "participant_#{participant.id}",
                       data: { action: "change->assignment-form#updateParticipantsCounter" } %>
                   <%= label_tag "participant_#{participant.id}",
-                      participant.user.full_name,
+                      participant.user&.full_name || "Participant #{participant.id}",
                       class: "form-check-label small" %>
                 </div>
               <% end %>
@@ -229,56 +235,9 @@
                               section_id: section.id 
                             } %>
                         <%= label_tag "section_#{section.id}", 
-                            "#{section.name}", 
+                            section.name.presence || "Section #{section.id}", 
                             class: "form-check-label" %>
                       </div>
-
-                      <% if @assignment.section_ids.include?(section.id) %>
-                        <div id="section_<%= section.id %>_participants" class="card border mb-3 ms-4">
-                          <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
-                            <div>
-                              <h6 class="mb-0 section-name"><%= section.name %></h6>
-                              <small class="text-muted">Section Participants</small>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                              <div class="form-check mb-0">
-                                <%= check_box_tag "select_all_participants_#{section.id}",
-                                    nil,
-                                    section.participants.count == @assignment.participants.where(id: section.participant_ids).count,
-                                    class: "form-check-input",
-                                    data: {
-                                      action: "change->assignment-form#toggleSectionParticipants",
-                                      section_id: section.id
-                                    } %>
-                                <%= label_tag "select_all_participants_#{section.id}",
-                                    "Select All",
-                                    class: "form-check-label small" %>
-                              </div>
-                              <span class="badge bg-secondary">
-                                <%= section.participants.count %> participants
-                              </span>
-                            </div>
-                          </div>
-                          <div class="card-body">
-                            <% section.participants.includes(:user).each do |participant| %>
-                              <div class="form-check">
-                                <%= check_box_tag 'assignment[participant_ids][]',
-                                    participant.id,
-                                    @assignment.participant_ids.include?(participant.id),
-                                    id: "participant_#{participant.id}",
-                                    class: "form-check-input section-#{section.id}-participant",
-                                    data: {
-                                      action: "change->assignment-form#updateParticipantsCounter change->assignment-form#updateSectionSelectAll",
-                                      section_id: section.id
-                                    } %>
-                                <%= label_tag "participant_#{participant.id}",
-                                    participant.user.full_name,
-                                    class: "form-check-label small" %>
-                              </div>
-                            <% end %>
-                          </div>
-                        </div>
-                      <% end %>
                     <% end %>
                   <% else %>
                     <div class="alert alert-info mb-0">
@@ -292,8 +251,79 @@
 
             <!-- Section Participants Container -->
             <div data-assignment-form-target="sectionParticipantsContainer">
-              <!-- New sections' participants will be rendered here -->
+              <!-- Existing section participants will be rendered here -->
+              <% if @assignment.persisted? && @assignment.assignment_type == 'section' %>
+                <% @assignment.sections.each do |section| %>
+                  <div id="section_<%= section.id %>_participants" class="card border mb-3">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                      <div>
+                        <h6 class="mb-0 section-name"><%= section.name.presence || "Section #{section.id}" %></h6>
+                      </div>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="form-check mb-0">
+                          <%= check_box_tag "select_all_participants_#{section.id}",
+                              nil,
+                              section.participants.count == @assignment.participants.where(id: section.participant_ids).count,
+                              class: "form-check-input",
+                              data: {
+                                action: "change->assignment-form#toggleSectionParticipants",
+                                section_id: section.id
+                              } %>
+                          <%= label_tag "select_all_participants_#{section.id}",
+                              "Select All",
+                              class: "form-check-label small" %>
+                        </div>
+                        <span class="badge bg-secondary">
+                          <%= section.participants.count %> participants
+                        </span>
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <% section.participants.includes(:user).each do |participant| %>
+                        <div class="form-check">
+                          <%= check_box_tag 'assignment[participant_ids][]',
+                              participant.id,
+                              @assignment.participant_ids.include?(participant.id),
+                              id: "participant_#{participant.id}",
+                              class: "form-check-input section-#{section.id}-participant",
+                              data: {
+                                action: "change->assignment-form#updateCounter change->assignment-form#updateSectionSelectAll",
+                                section_id: section.id
+                              } %>
+                          <%= label_tag "participant_#{participant.id}",
+                              participant.user&.full_name || "Participant #{participant.id}",
+                              class: "form-check-label small" %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              <% end %>
             </div>
+            
+            <!-- Add a hidden sectionParticipantsView target to prevent errors -->
+            <div class="d-none" data-assignment-form-target="sectionParticipantsView">
+              <div data-assignment-form-target="sectionParticipantsList"></div>
+              <span data-assignment-form-target="sectionParticipantsCounter">0 Selected</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Questions and Sets Counters -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <span>Questions:</span>
+            <span class="badge bg-primary" data-assignment-form-target="questionsCounter">
+              <%= @assignment.questions.count %> Selected
+            </span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <span>Question Sets:</span>
+            <span class="badge bg-primary" data-assignment-form-target="setsCounter">
+              <%= @assignment.question_sets.count %> Selected
+            </span>
           </div>
         </div>
       </div>

@@ -11,158 +11,152 @@
   <% end %>
 
   <!-- Question Title -->
-  <div class="question-preview-card mb-4">
-    <div class="mb-4">
-      <div class="question-input-group">
-        <%= f.text_field :title, 
-            class: "form-control form-control-lg",
-            placeholder: "Enter your question",
-            data: { 
-              question_form_target: "titleInput",
-              action: "input->question-form#validateForm"
-            } %>
+  <div class="mb-4">
+    <%= f.text_field :title, 
+        class: "form-control form-control-lg",
+        placeholder: "Enter your question",
+        data: { 
+          question_form_target: "titleInput",
+          action: "input->question-form#validateForm"
+        } %>
+  </div>
+
+  <!-- Question Description -->
+  <div class="mb-4">
+    <%= f.text_area :description,
+        class: "form-control",
+        rows: 3,
+        placeholder: "Enter question description (optional)" %>
+  </div>
+
+  <!-- Question Type Selection -->
+  <div class="row mb-3">
+    <div class="col-md-12">
+      <%= f.label :question_type, class: "form-label" %>
+      <%= f.select :question_type,
+          options_for_select(Question.question_types.keys.map { |k| [k.titleize, k] }, @question.question_type),
+          { include_blank: "Select Question Type" },
+          { class: "form-select", required: true, data: { action: "change->question-form#handleTypeChange" } } %>
+    </div>
+  </div>
+
+  <!-- Rating options (for rating type) -->
+  <div class="row mb-3 rating-options" style="<%= @question.rating? ? '' : 'display: none;' %>">
+    <div class="col-md-6">
+      <%= f.label :max_rating, "Maximum Rating (1-10 stars)", class: "form-label" %>
+      <%= f.select :max_rating, 
+                     options_for_select((1..10).map { |n| [pluralize(n, "star"), n] }, @question.max_rating || 5),
+                     {}, 
+                     { class: "form-select" } %>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Preview</label>
+      <div class="rating-preview">
+        <% (1..5).each do |i| %>
+          <i class="bi bi-star-fill text-warning fs-3 me-1"></i>
+        <% end %>
       </div>
     </div>
+  </div>
 
-    <!-- Question Description -->
-    <div class="mb-4">
-      <div class="question-input-group">
-        <%= f.text_area :description,
-            class: "form-control",
-            rows: 3,
-            placeholder: "Enter question description (optional)" %>
-      </div>
+  <!-- Dynamic Answer Options -->
+  <div class="answer-options-wrapper mt-4" 
+      data-question-form-target="optionsWrapper">
+    
+    <!-- Short Answer Preview -->
+    <div class="answer-preview short-answer d-none"
+        data-question-form-target="shortAnswerPreview">
+      <input type="text" class="form-control" 
+          placeholder="Short answer text" disabled>
     </div>
 
-    <!-- Question Type Selection -->
-    <div class="row mb-3">
-      <div class="col-md-12">
-        <%= f.label :question_type, class: "form-label" %>
-        <%= f.select :question_type,
-            options_for_select(Question.question_types.keys.map { |k| [k.titleize, k] }, @question.question_type),
-            { include_blank: "Select Question Type" },
-            { class: "form-select", required: true, data: { action: "change->question-form#handleTypeChange" } } %>
-      </div>
+    <!-- Paragraph Preview -->
+    <div class="answer-preview paragraph d-none"
+        data-question-form-target="paragraphPreview">
+      <textarea class="form-control" rows="3" 
+          placeholder="Long answer text" disabled></textarea>
     </div>
 
-    <!-- Rating options (for rating type) -->
-    <div class="row mb-3 rating-options" style="<%= @question.rating? ? '' : 'display: none;' %>">
-      <div class="col-md-6">
-        <%= f.label :max_rating, "Maximum Rating (1-10 stars)", class: "form-label" %>
-        <%= f.select :max_rating, 
-                       options_for_select((1..10).map { |n| [pluralize(n, "star"), n] }, @question.max_rating || 5),
-                       {}, 
-                       { class: "form-select" } %>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Preview</label>
-        <div class="rating-preview">
-          <% (1..5).each do |i| %>
-            <i class="bi bi-star-fill text-warning fs-3 me-1"></i>
-          <% end %>
-        </div>
-      </div>
-    </div>
-
-    <!-- Dynamic Answer Options -->
-    <div class="answer-options-wrapper mt-4" 
-        data-question-form-target="optionsWrapper">
-      
-      <!-- Short Answer Preview -->
-      <div class="answer-preview short-answer d-none"
-          data-question-form-target="shortAnswerPreview">
-        <input type="text" class="form-control" 
-            placeholder="Short answer text" disabled>
+    <!-- Multiple Choice/Checkbox Options -->
+    <div class="options-container" style="<%= @question.requires_options? ? '' : 'display: none;' %>" data-question-form-target="optionsSection">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <label class="form-label text-muted small text-uppercase mb-0">Answer Options</label>
+        <button type="button" 
+            class="btn btn-primary btn-sm"
+            data-action="nested-form#add">
+          <i class="bi bi-plus-lg"></i> Add Option
+        </button>
       </div>
 
-      <!-- Paragraph Preview -->
-      <div class="answer-preview paragraph d-none"
-          data-question-form-target="paragraphPreview">
-        <textarea class="form-control" rows="3" 
-            placeholder="Long answer text" disabled></textarea>
-      </div>
-
-      <!-- Multiple Choice/Checkbox Options -->
-      <div class="options-container" style="<%= @question.requires_options? ? '' : 'display: none;' %>" data-question-form-target="optionsSection">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <label class="form-label text-muted small text-uppercase mb-0">Answer Options</label>
-          <button type="button" 
-              class="btn btn-primary btn-sm"
-              data-action="nested-form#add">
-            <i class="bi bi-plus-lg"></i> Add Option
-          </button>
-        </div>
-
-        <template data-nested-form-target="template">
-          <%= f.fields_for :options, Option.new, child_index: 'NEW_RECORD' do |option| %>
-            <div class="option-item mb-3">
-              <div class="d-flex align-items-center gap-3">
-                <div class="option-indicator">
-                  <i class="bi bi-circle"></i>
-                </div>
-                <%= option.text_field :text, 
-                    class: "form-control",
-                    placeholder: "Option text",
-                    required: true,
-                    value: option.object.text.presence || "Option #{Time.now.to_i}" %>
-                <div class="form-check">
-                  <%= option.check_box :correct, class: "form-check-input" %>
-                  <label class="form-check-label small">Correct</label>
-                </div>
-                <button type="button" 
-                    class="btn btn-outline-danger btn-sm"
-                    data-action="nested-form#remove">
-                  <i class="bi bi-trash"></i>
-                </button>
+      <template data-nested-form-target="template">
+        <%= f.fields_for :options, Option.new, child_index: 'NEW_RECORD' do |option| %>
+          <div class="option-item mb-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="option-indicator">
+                <i class="bi bi-circle"></i>
               </div>
-            </div>
-          <% end %>
-        </template>
-
-        <div data-nested-form-target="items">
-          <%= f.fields_for :options do |option| %>
-            <div class="option-item mb-3">
-              <div class="d-flex align-items-center gap-3">
-                <div class="option-indicator">
-                  <i class="bi bi-circle"></i>
-                </div>
-                <%= option.text_field :text, 
-                    class: "form-control",
-                    placeholder: "Option text",
-                    required: true,
-                    value: option.object.text.presence || "Option #{Time.now.to_i}" %>
-                <div class="form-check">
-                  <%= option.check_box :correct, class: "form-check-input" %>
-                  <label class="form-check-label small">Correct</label>
-                </div>
-                <button type="button" 
-                    class="btn btn-outline-danger btn-sm"
-                    data-action="nested-form#remove">
-                  <i class="bi bi-trash"></i>
-                </button>
+              <%= option.text_field :text, 
+                  class: "form-control",
+                  placeholder: "Option text",
+                  required: true,
+                  value: option.object.text.presence || "Option #{Time.now.to_i}" %>
+              <div class="form-check">
+                <%= option.check_box :correct, class: "form-check-input" %>
+                <label class="form-check-label small">Correct</label>
               </div>
+              <button type="button" 
+                  class="btn btn-outline-danger btn-sm"
+                  data-action="nested-form#remove">
+                <i class="bi bi-trash"></i>
+              </button>
             </div>
-          <% end %>
-        </div>
-      </div>
+          </div>
+        <% end %>
+      </template>
 
-      <!-- Date Preview -->
-      <div class="answer-preview date d-none"
-          data-question-form-target="datePreview">
-        <input type="date" class="form-control" disabled>
+      <div data-nested-form-target="items">
+        <%= f.fields_for :options do |option| %>
+          <div class="option-item mb-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="option-indicator">
+                <i class="bi bi-circle"></i>
+              </div>
+              <%= option.text_field :text, 
+                  class: "form-control",
+                  placeholder: "Option text",
+                  required: true,
+                  value: option.object.text.presence || "Option #{Time.now.to_i}" %>
+              <div class="form-check">
+                <%= option.check_box :correct, class: "form-check-input" %>
+                <label class="form-check-label small">Correct</label>
+              </div>
+              <button type="button" 
+                  class="btn btn-outline-danger btn-sm"
+                  data-action="nested-form#remove">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+        <% end %>
       </div>
+    </div>
 
-      <!-- Time Preview -->
-      <div class="answer-preview time d-none"
-          data-question-form-target="timePreview">
-        <input type="time" class="form-control" disabled>
-      </div>
+    <!-- Date Preview -->
+    <div class="answer-preview date d-none"
+        data-question-form-target="datePreview">
+      <input type="date" class="form-control" disabled>
+    </div>
 
-      <!-- Number Preview -->
-      <div class="answer-preview number d-none"
-          data-question-form-target="numberPreview">
-        <input type="number" class="form-control" disabled placeholder="Enter a number">
-      </div>
+    <!-- Time Preview -->
+    <div class="answer-preview time d-none"
+        data-question-form-target="timePreview">
+      <input type="time" class="form-control" disabled>
+    </div>
+
+    <!-- Number Preview -->
+    <div class="answer-preview number d-none"
+        data-question-form-target="numberPreview">
+      <input type="number" class="form-control" disabled placeholder="Enter a number">
     </div>
   </div>
 
@@ -199,88 +193,94 @@
 
 <% content_for :styles do %>
   <style>
+    .form-control {
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .form-control-lg {
+      font-size: 1.25rem;
+      padding: 1rem 1.25rem;
+    }
+
     .question-input-group {
-      border: 1px solid #dee2e6;
-      border-radius: 12px;
+      margin-bottom: 1rem;
+    }
+
+    .options-container {
+      background: #f8f9fa;
+      border-radius: 8px;
       padding: 1.5rem;
-      background: white;
-      transition: all 0.3s ease;
-    }
-
-    .question-input-group:focus-within {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 0.2rem rgba(152, 216, 170, 0.25);
-    }
-
-    .question-type-card {
-      background: white;
+      margin-top: 1.5rem;
       border: 1px solid #dee2e6;
-      border-radius: 12px;
-      padding: 1.25rem;
-      text-align: center;
-      cursor: pointer;
+    }
+
+    .option-item {
+      background: white;
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+      border: 1px solid #dee2e6;
       transition: all 0.3s ease;
     }
 
-    .question-type-card:hover {
-      border-color: var(--primary-color);
-      transform: translateY(-2px);
+    .option-item:hover {
+      border-color: var(--bs-primary);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
-    .question-type-card.active {
-      background: var(--primary-color);
-      border-color: var(--primary-color);
-      color: white;
+    .option-indicator {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6c757d;
     }
 
-    .question-type-card .type-icon {
+    .answer-preview {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1.5rem;
+      border: 1px solid #dee2e6;
+    }
+
+    .detail-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: white;
+      border-radius: 8px;
+      padding: 1.25rem;
+      border: 1px solid #dee2e6;
+      height: 100%;
+    }
+
+    .detail-icon {
       width: 48px;
       height: 48px;
       background: #f8f9fa;
-      border-radius: 12px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.25rem;
-      margin: 0 auto 1rem;
-      color: var(--primary-color);
-      transition: all 0.3s ease;
+      color: var(--bs-primary);
     }
 
-    .question-type-card.active .type-icon {
-      background: white;
+    .detail-content {
+      flex: 1;
     }
 
-    .question-type-card .type-label {
-      font-weight: 500;
+    .form-actions {
+      margin-top: 2rem;
     }
-
-    .question-type-select {
-      position: relative;
-    }
-
-    .question-type-dropdown {
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
-      border: 1px solid #dee2e6;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-    }
-
-    .question-type-dropdown:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 0.2rem rgba(152, 216, 170, 0.25);
-    }
-
-    .question-type-dropdown option {
-      padding: 10px;
-    }
-
-    /* Style for the select options */
-    select.question-type-dropdown option i {
-      margin-right: 8px;
-    }
-
-    /* Rest of the styles from show.html.erb */
   </style>
 <% end %> 

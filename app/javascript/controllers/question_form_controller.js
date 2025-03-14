@@ -57,9 +57,12 @@ export default class extends Controller {
 
   handleTypeChange(event) {
     const type = event.target.value
+    console.log("Question type changed to:", type)
+    
+    // Hide all previews first
     this.hideAllPreviews()
-    this.showOptionsContainer(false)
-
+    
+    // Show appropriate preview based on type
     switch(type) {
       case 'short_answer':
         this.shortAnswerPreviewTarget.classList.remove('d-none')
@@ -70,8 +73,27 @@ export default class extends Controller {
       case 'multiple_choice':
       case 'checkboxes':
       case 'dropdown':
-        this.showOptionsContainer(true)
+        console.log("Showing options section for:", type)
+        this.optionsSectionTarget.classList.remove('d-none')
+        this.optionsSectionTarget.style.display = 'block'
         this.updateOptionIndicators(type)
+        
+        // Ensure we have at least two options
+        const optionsCount = this.optionsSectionTarget.querySelectorAll('.option-item').length
+        if (optionsCount < 2) {
+          // Use the nested form controller to add options
+          const nestedFormController = this.application.getControllerForElementAndIdentifier(
+            this.element, 'nested-form'
+          )
+          if (nestedFormController) {
+            if (optionsCount === 0) {
+              nestedFormController.add()
+              nestedFormController.add()
+            } else if (optionsCount === 1) {
+              nestedFormController.add()
+            }
+          }
+        }
         break
       case 'date':
         this.datePreviewTarget.classList.remove('d-none')
@@ -82,16 +104,23 @@ export default class extends Controller {
       case 'number':
         this.numberPreviewTarget.classList.remove('d-none')
         break
+      case 'rating':
+        this.showRatingOptions(true)
+        break
     }
   }
 
   hideAllPreviews() {
+    console.log("Hiding all previews")
     this.shortAnswerPreviewTarget.classList.add('d-none')
     this.paragraphPreviewTarget.classList.add('d-none')
-    this.optionsSectionTarget.classList.add('d-none')
     this.datePreviewTarget.classList.add('d-none')
     this.timePreviewTarget.classList.add('d-none')
     this.numberPreviewTarget.classList.add('d-none')
+    
+    // Hide options section but don't remove it from DOM
+    this.optionsSectionTarget.classList.add('d-none')
+    this.showRatingOptions(false)
   }
 
   updateOptionIndicators(type) {
@@ -111,9 +140,12 @@ export default class extends Controller {
   }
 
   showOptionsContainer(show) {
+    console.log("showOptionsContainer called with:", show)
     if (show) {
-      this.optionsSectionTarget.style.display = ''
+      this.optionsSectionTarget.classList.remove('d-none')
+      this.optionsSectionTarget.style.display = 'block'
     } else {
+      this.optionsSectionTarget.classList.add('d-none')
       this.optionsSectionTarget.style.display = 'none'
     }
   }

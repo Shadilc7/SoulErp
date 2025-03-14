@@ -4,11 +4,16 @@ export default class extends Controller {
   static targets = ["template", "items"]
 
   connect() {
+    console.log("Nested form controller connected")
+    
     // Add at least two options for question types that require options
     const questionType = document.getElementById('question_question_type')?.value
     const existingOptions = this.itemsTarget.querySelectorAll('.option-item')
     
+    console.log("Question type:", questionType, "Existing options:", existingOptions.length)
+    
     if (['multiple_choice', 'checkboxes', 'dropdown'].includes(questionType) && existingOptions.length === 0) {
+      console.log("Adding default options")
       this.add()
       this.add()
     }
@@ -16,6 +21,7 @@ export default class extends Controller {
 
   add(event) {
     if (event) event.preventDefault()
+    console.log("Adding new option")
     
     // Get the template HTML and replace NEW_RECORD with a unique ID
     const timestamp = new Date().getTime()
@@ -57,6 +63,13 @@ export default class extends Controller {
     event.preventDefault()
     
     const item = event.target.closest('.option-item')
+    const allItems = this.itemsTarget.querySelectorAll('.option-item')
+    
+    // Don't allow removing if there are only 2 options left
+    if (allItems.length <= 2) {
+      console.log("Cannot remove option - minimum 2 required")
+      return
+    }
     
     // If this is a persisted record, mark it for destruction instead of removing from DOM
     const destroyInput = item.querySelector('input[name*="_destroy"]')
@@ -72,6 +85,8 @@ export default class extends Controller {
   updateOptionIndicators() {
     const questionType = document.getElementById('question_question_type')?.value
     if (!questionType) return
+    
+    console.log("Updating option indicators for", questionType)
     
     const indicators = document.querySelectorAll('.option-indicator i')
     indicators.forEach(indicator => {

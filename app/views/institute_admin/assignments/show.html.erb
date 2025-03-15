@@ -69,36 +69,20 @@
         </div>
         <div class="card-body">
           <% if @assignment.questions.any? %>
-            <div class="mb-4">
-              <h6 class="text-muted mb-3">Individual Questions</h6>
-              <div class="list-group">
-                <% @assignment.questions.each do |question| %>
-                  <div class="list-group-item list-group-item-action">
-                    <div class="d-flex w-100 justify-content-between">
-                      <h6 class="mb-1"><%= question.title %></h6>
-                      <small class="text-muted"><%= question.question_type&.titleize %></small>
-                    </div>
+            <div class="list-group">
+              <% @assignment.questions.each do |question| %>
+                <div class="list-group-item list-group-item-action">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1"><%= question.title %></h6>
+                    <small class="text-muted"><%= question.question_type&.titleize %></small>
                   </div>
-                <% end %>
-              </div>
+                </div>
+              <% end %>
             </div>
-          <% end %>
-
-          <% if @assignment.question_sets.any? %>
-            <div>
-              <h6 class="text-muted mb-3">Question Sets</h6>
-              <div class="list-group">
-                <% @assignment.question_sets.each do |set| %>
-                  <div class="list-group-item list-group-item-action">
-                    <div class="d-flex w-100 justify-content-between">
-                      <h6 class="mb-1"><%= set.title %></h6>
-                      <span class="badge bg-primary rounded-pill">
-                        <%= pluralize(set.questions.count, 'question') %>
-                      </span>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
+          <% else %>
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              No questions assigned.
             </div>
           <% end %>
         </div>

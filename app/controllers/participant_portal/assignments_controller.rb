@@ -73,13 +73,17 @@ module ParticipantPortal
             case question.question_type
             when 'checkboxes'
               response.selected_options = response_data[:selected_options].presence || []
-              response.answer = nil
-            when 'multiple_choice', 'dropdown'
+              response.answer = response.selected_options.join(", ")
+            when 'multiple_choice', 'dropdown', 'rating'
               response.answer = response_data[:answer]
               response.selected_options = [response_data[:answer]].compact
-            else
+            when 'short_answer', 'paragraph', 'number', 'date', 'time'
               response.answer = response_data[:answer]
               response.selected_options = []
+            else
+              # Default handling for any other question types
+              response.answer = response_data[:answer]
+              response.selected_options = response_data[:selected_options].presence || []
             end
 
             response.submitted_at = Time.current
@@ -87,6 +91,7 @@ module ParticipantPortal
             if response.save
               saved_response_ids << response.id
             else
+              Rails.logger.error("Failed to save response: #{response.errors.full_messages.join(', ')}")
               all_saved = false
               break
             end
@@ -107,6 +112,7 @@ module ParticipantPortal
           end
         end
       rescue => e
+        Rails.logger.error("Error in submit action: #{e.message}")
         flash.now[:alert] = "Error submitting assignment. Please try again."
         @questions = @assignment.all_questions
         render :take_assignment, status: :unprocessable_entity

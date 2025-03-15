@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_10_002255) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_15_145543) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -51,6 +51,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_10_002255) do
     t.jsonb "assignment_response_ids", default: []
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "response_count"
     t.index ["assignment_id"], name: "index_assignment_response_logs_on_assignment_id"
     t.index ["institute_id"], name: "index_assignment_response_logs_on_institute_id"
     t.index ["participant_id"], name: "index_assignment_response_logs_on_participant_id"

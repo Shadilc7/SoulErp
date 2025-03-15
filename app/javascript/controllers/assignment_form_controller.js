@@ -6,10 +6,11 @@ export default class extends Controller {
     "typeSelect", "individualView", "sectionView",
     "sectionSelect", "sectionParticipantsView", "sectionParticipantsList",
     "sectionParticipantsCounter", "participantsCounter",
-    "questionsCounter", "setsCounter",
+    "questionsCounter",
     "selectAllQuestions",
-    "selectAllSets",
     "selectAllSections",
+    "selectAllRecipients",
+    "recipientsSelectAllContainer",
     "sectionParticipantsContainer",
     "error"
   ]
@@ -24,21 +25,36 @@ export default class extends Controller {
     if (individualRadio && individualRadio.checked) {
       this.selectedAssignmentType = 'individual'
       console.log("Initial assignment type: individual")
+      this.showRecipientsSelectAll()
     } else if (sectionRadio && sectionRadio.checked) {
       this.selectedAssignmentType = 'section'
       console.log("Initial assignment type: section")
+      this.hideRecipientsSelectAll()
     } else {
       this.selectedAssignmentType = null
       console.log("No assignment type selected initially")
     }
     
     // Check if we're on the assignment creation page or the take assignment page
-    const isCreationPage = this.hasQuestionsCounterTarget && this.hasSetsCounterTarget;
+    const isCreationPage = this.hasQuestionsCounterTarget;
     
     if (isCreationPage) {
       this.updateAllCounters()
       this.validateForm()
       this.validateDates()
+      
+      // Initialize select all checkboxes
+      if (this.hasSelectAllQuestionsTarget) {
+        this.updateSelectAllQuestions()
+      }
+      
+      if (this.hasSelectAllSectionsTarget) {
+        this.updateSelectAllSections()
+      }
+      
+      if (this.hasSelectAllRecipientsTarget) {
+        this.updateSelectAllRecipients()
+      }
     }
     
     // Setup rating stars for both pages
@@ -70,6 +86,13 @@ export default class extends Controller {
       this.sectionViewTarget.classList.toggle('d-none', selectedType !== 'section')
     } else {
       console.log("sectionViewTarget not found")
+    }
+
+    // Show/hide the recipients select all checkbox
+    if (selectedType === 'individual') {
+      this.showRecipientsSelectAll()
+    } else {
+      this.hideRecipientsSelectAll()
     }
 
     // Clear selections when switching types
@@ -198,17 +221,8 @@ export default class extends Controller {
     this.validateForm()
   }
 
-  updateSetsCount() {
-    if (!this.hasSetsCounterTarget) return;
-    
-    const count = document.querySelectorAll('input[name="assignment[question_set_ids][]"]:checked').length
-    this.setsCounterTarget.textContent = `${count} Selected`
-    this.validateForm()
-  }
-
   updateAllCounters() {
     if (this.hasQuestionsCounterTarget) this.updateQuestionsCount()
-    if (this.hasSetsCounterTarget) this.updateSetsCount()
     if (this.hasParticipantsCounterTarget) this.updateParticipantsCounter()
   }
 
@@ -245,11 +259,10 @@ export default class extends Controller {
 
   hasQuestionsSelected() {
     // If we're not on the creation page, return true
-    if (!this.hasQuestionsCounterTarget && !this.hasSetsCounterTarget) return true;
+    if (!this.hasQuestionsCounterTarget) return true;
     
     const questions = document.querySelectorAll('input[name="assignment[question_ids][]"]:checked').length
-    const sets = document.querySelectorAll('input[name="assignment[question_set_ids][]"]:checked').length
-    return questions > 0 || sets > 0
+    return questions > 0
   }
 
   hasAssigneesSelected() {
@@ -303,15 +316,6 @@ export default class extends Controller {
     this.updateQuestionsCount()
   }
 
-  toggleAllQuestionSets(event) {
-    console.log("Toggle all question sets:", event.target.checked)
-    const checked = event.target.checked
-    this.element.querySelectorAll('.question-set-checkbox').forEach(checkbox => {
-      checkbox.checked = checked
-    })
-    this.updateSetsCount()
-  }
-
   updateSelectAllQuestions() {
     // Skip if the target doesn't exist
     if (!this.hasSelectAllQuestionsTarget) return;
@@ -319,15 +323,6 @@ export default class extends Controller {
     const totalQuestions = this.element.querySelectorAll('.question-checkbox').length
     const checkedQuestions = this.element.querySelectorAll('.question-checkbox:checked').length
     this.selectAllQuestionsTarget.checked = totalQuestions === checkedQuestions
-  }
-
-  updateSelectAllSets() {
-    // Skip if the target doesn't exist
-    if (!this.hasSelectAllSetsTarget) return;
-    
-    const totalSets = this.element.querySelectorAll('.question-set-checkbox').length
-    const checkedSets = this.element.querySelectorAll('.question-set-checkbox:checked').length
-    this.selectAllSetsTarget.checked = totalSets === checkedSets
   }
 
   toggleAllSections(event) {
@@ -385,7 +380,7 @@ export default class extends Controller {
           return response.json()
         })
         .then(participants => {
-          console.log(`Received ${participants.length} participants for section ${sectionId}`)
+          console.log(`Received ${participants.length} participants for section ${sectionId}:`, participants)
           
           // Remove loading indicator if it exists
           const loadingElement = document.getElementById(`loading_${sectionId}`)
@@ -394,16 +389,24 @@ export default class extends Controller {
           }
           
           if (this.hasSectionParticipantsContainerTarget) {
-            const containerHtml = this.createParticipantsContainer(sectionId, participants, sectionName)
-            this.sectionParticipantsContainerTarget.insertAdjacentHTML('beforeend', containerHtml)
-            
-            // Set the section name
-            const container = document.getElementById(participantsContainerId)
-            if (container) {
-              const sectionNameElement = container.querySelector('.section-name')
-              if (sectionNameElement) {
-                sectionNameElement.textContent = sectionName
-              }
+            if (participants.length === 0) {
+              const emptyHtml = `
+                <div id="section_${sectionId}_participants" class="card border mb-3">
+                  <div class="card-header bg-light py-2">
+                    <h6 class="mb-0 section-name">${sectionName}</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="alert alert-info mb-0">
+                      <i class="bi bi-info-circle me-2"></i>
+                      No participants found in this section.
+                    </div>
+                  </div>
+                </div>
+              `
+              this.sectionParticipantsContainerTarget.insertAdjacentHTML('beforeend', emptyHtml)
+            } else {
+              const containerHtml = this.createParticipantsContainer(sectionId, participants, sectionName)
+              this.sectionParticipantsContainerTarget.insertAdjacentHTML('beforeend', containerHtml)
             }
             
             this.validateForm()
@@ -453,12 +456,39 @@ export default class extends Controller {
 
   createParticipantsContainer(sectionId, participants, sectionName) {
     console.log(`Creating participants container for section ${sectionId} with ${participants.length} participants`)
+    console.log("Participants data:", participants)
+    
+    if (!participants || !Array.isArray(participants) || participants.length === 0) {
+      return `
+        <div id="section_${sectionId}_participants" class="card border mb-3">
+          <div class="card-header bg-light py-2">
+            <h6 class="mb-0 section-name">${sectionName || 'Section'}</h6>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info mb-0">
+              <i class="bi bi-info-circle me-2"></i>
+              No participants found in this section.
+            </div>
+          </div>
+        </div>
+      `
+    }
     
     const participantsHtml = participants.map(participant => {
       // Safely get participant name, with fallback
-      const participantName = participant.full_name || 
-                             (participant.user && participant.user.full_name) || 
-                             `Participant ${participant.id}`
+      let participantName = "Participant"
+      
+      if (participant.full_name) {
+        participantName = participant.full_name
+      } else if (participant.user && participant.user.full_name) {
+        participantName = participant.user.full_name
+      } else if (participant.name) {
+        participantName = participant.name
+      } else {
+        participantName = `Participant ${participant.id}`
+      }
+      
+      console.log(`Participant ${participant.id} name:`, participantName)
       
       return `
         <div class="form-check">
@@ -557,8 +587,6 @@ export default class extends Controller {
     // Determine which counter to update based on the checkbox class
     if (checkbox.classList.contains('question-checkbox')) {
       this.updateQuestionsCount()
-    } else if (checkbox.classList.contains('question-set-checkbox')) {
-      this.updateSetsCount()
     } else if (checkbox.name === 'assignment[participant_ids][]') {
       // For participant checkboxes
       if (this.hasParticipantsCounterTarget) {
@@ -686,5 +714,40 @@ export default class extends Controller {
         });
       });
     });
+  }
+
+  toggleAllParticipants(event) {
+    console.log("Toggle all participants:", event.target.checked)
+    const checked = event.target.checked
+    this.element.querySelectorAll('.participant-checkbox').forEach(checkbox => {
+      checkbox.checked = checked
+    })
+    this.updateParticipantsCounter()
+    
+    // Keep both select all checkboxes in sync
+    if (this.hasSelectAllRecipientsTarget && event.target !== this.selectAllRecipientsTarget) {
+      this.selectAllRecipientsTarget.checked = checked
+    }
+  }
+
+  updateSelectAllRecipients() {
+    // Skip if the target doesn't exist
+    if (!this.hasSelectAllRecipientsTarget) return;
+    
+    const totalParticipants = this.element.querySelectorAll('.participant-checkbox').length
+    const checkedParticipants = this.element.querySelectorAll('.participant-checkbox:checked').length
+    this.selectAllRecipientsTarget.checked = totalParticipants === checkedParticipants && totalParticipants > 0
+  }
+
+  showRecipientsSelectAll() {
+    if (this.hasRecipientsSelectAllContainerTarget) {
+      this.recipientsSelectAllContainerTarget.classList.remove('d-none')
+    }
+  }
+
+  hideRecipientsSelectAll() {
+    if (this.hasRecipientsSelectAllContainerTarget) {
+      this.recipientsSelectAllContainerTarget.classList.add('d-none')
+    }
   }
 } 

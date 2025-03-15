@@ -3,7 +3,9 @@ module InstituteAdmin
     before_action :set_assignment, only: [ :show, :edit, :update, :destroy ]
 
     def index
-      @assignments = current_institute.assignments.order(created_at: :desc)
+      @assignments = current_institute.assignments
+        .includes(:sections, :participants, :questions, :question_sets)
+        .order(created_at: :desc)
     end
 
     def show

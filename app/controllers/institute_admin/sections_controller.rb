@@ -114,7 +114,12 @@ module InstituteAdmin
       render json: @participants.map { |p|
         {
           id: p.id,
-          name: p.user.full_name
+          full_name: p.user&.full_name || "Participant #{p.id}",
+          user: {
+            id: p.user&.id,
+            full_name: p.user&.full_name,
+            email: p.user&.email
+          }
         }
       }
     end

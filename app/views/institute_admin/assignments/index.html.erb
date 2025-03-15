@@ -44,9 +44,9 @@
                 <td>
                   <div class="d-flex align-items-center gap-1">
                     <% if assignment.assignment_type == "section" %>
-                      <% assignment.sections.each do |section| %>
-                        <span class="badge bg-info"><%= section.name %></span>
-                      <% end %>
+                      <span class="badge bg-primary">
+                        <%= pluralize(assignment.sections.count, 'Batch') %>
+                      </span>
                     <% else %>
                       <span class="badge bg-success">
                         <%= pluralize(assignment.participants.count, 'Participant') %>

@@ -5,17 +5,60 @@ module ParticipantPortal
 
     def index
       @selected_date = parse_date(params[:date])
-      @assignments = Assignment.for_participant(current_participant)
-        .for_date(@selected_date)
-        .order(created_at: :desc)
-
+      
+      # Direct SQL approach for PostgreSQL compatibility
+      # This avoids the DISTINCT issues by explicitly selecting all columns we need to order by
+      base_sql = <<-SQL
+        SELECT DISTINCT ON (assignments.id) assignments.*
+        FROM assignments
+        LEFT JOIN assignment_participants ON assignments.id = assignment_participants.assignment_id
+        LEFT JOIN assignment_sections ON assignments.id = assignment_sections.assignment_id
+        WHERE assignments.active = true
+        AND (assignment_participants.participant_id = :participant_id OR assignment_sections.section_id = :section_id)
+      SQL
+      
+      base_params = {
+        participant_id: current_participant.id,
+        section_id: current_participant.section_id
+      }
+      
+      # Today's assignments
+      today_sql = base_sql + " AND DATE(assignments.start_date) <= :today AND DATE(assignments.end_date) >= :today ORDER BY assignments.id, assignments.created_at DESC"
+      @today_assignments = Assignment.find_by_sql([today_sql, base_params.merge(today: Date.current)])
+      
+      # IDs of today's assignments to exclude from upcoming
+      today_ids = @today_assignments.map(&:id)
+      
+      # Upcoming assignments
+      upcoming_sql = base_sql + " AND DATE(assignments.end_date) >= :today AND assignments.id NOT IN (:today_ids) ORDER BY assignments.id, assignments.start_date ASC"
+      upcoming_params = base_params.merge(today: Date.current, today_ids: today_ids.empty? ? [0] : today_ids)
+      @upcoming_assignments = Assignment.find_by_sql([upcoming_sql, upcoming_params])
+      
+      # Past assignments
+      past_sql = base_sql + " AND DATE(assignments.end_date) < :today ORDER BY assignments.id, assignments.end_date DESC"
+      @past_assignments = Assignment.find_by_sql([past_sql, base_params.merge(today: Date.current)])
+      
+      # For the date selection in the view
+      date_sql = base_sql + " AND DATE(assignments.start_date) <= :selected_date AND DATE(assignments.end_date) >= :selected_date ORDER BY assignments.id, assignments.created_at DESC"
+      date_assignments = Assignment.find_by_sql([date_sql, base_params.merge(selected_date: @selected_date)])
+      
+      # Also create a regular relation for all assignments
+      @assignments = Assignment.select("assignments.*")
+                               .active
+                               .joins("LEFT JOIN assignment_participants ON assignments.id = assignment_participants.assignment_id")
+                               .joins("LEFT JOIN assignment_sections ON assignments.id = assignment_sections.assignment_id")
+                               .where("assignment_participants.participant_id = :participant_id OR assignment_sections.section_id = :section_id",
+                                 participant_id: current_participant.id,
+                                 section_id: current_participant.section_id)
+                               .distinct
+      
       respond_to do |format|
-        format.html { redirect_to participant_portal_root_path }
+        format.html # Will render index.html.erb template
         format.turbo_stream {
           render turbo_stream: turbo_stream.update("assignment_content",
             partial: "participant_portal/dashboard/daily_assignments",
             locals: {
-              assignments: @assignments,
+              assignments: date_assignments,
               selected_date: @selected_date
             }
           )

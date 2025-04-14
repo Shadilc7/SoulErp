@@ -41,7 +41,8 @@ class Assignment < ApplicationRecord
   }
 
   scope :for_participant, ->(participant) {
-    active
+    select("assignments.*")
+      .active
       .joins("LEFT JOIN assignment_participants ON assignments.id = assignment_participants.assignment_id")
       .joins("LEFT JOIN assignment_sections ON assignments.id = assignment_sections.assignment_id")
       .where("assignment_participants.participant_id = :participant_id OR assignment_sections.section_id = :section_id",

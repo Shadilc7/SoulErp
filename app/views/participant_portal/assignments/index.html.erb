@@ -1,0 +1,280 @@
+<div class="container py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card card-custom mb-4">
+        <div class="card-header card-header-custom">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">My Assignments</h5>
+            <div>
+              <a href="#" onclick="history.back()" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today's Assignments -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card card-custom">
+        <div class="card-header card-header-custom">
+          <h5 class="mb-0">
+            <i class="bi bi-calendar-day me-2 text-primary"></i>Today's Assignments
+          </h5>
+        </div>
+        <div class="card-body">
+          <% if @today_assignments.any? %>
+            <div class="assignments-list">
+              <% @today_assignments.each do |assignment| %>
+                <div class="card assignment-card mb-3">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                      <div>
+                        <h6 class="card-title mb-1"><%= assignment.title %></h6>
+                        <p class="text-muted small mb-0"><%= assignment.description %></p>
+                      </div>
+                      <% if assignment.answered_by_on_date?(current_participant, Date.current) %>
+                        <span class="badge bg-success">Completed</span>
+                      <% else %>
+                        <%= link_to take_assignment_participant_portal_assignment_path(assignment, date: Date.current),
+                            class: "btn btn-custom-primary btn-sm",
+                            data: { turbo_frame: "_top" } do %>
+                          <i class="bi bi-play-fill me-1"></i>Start Assignment
+                        <% end %>
+                      <% end %>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                          <i class="bi bi-calendar-range text-primary me-2"></i>
+                          <small>
+                            <%= assignment.start_date.strftime("%b %d") %> - 
+                            <%= assignment.end_date.strftime("%b %d, %Y") %>
+                          </small>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                          <i class="bi bi-question-circle text-primary me-2"></i>
+                          <small>
+                            <%= pluralize(
+                              assignment.questions.count + 
+                              assignment.question_sets.sum { |qs| qs.questions.count },
+                              'question'
+                            ) %>
+                          </small>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                          <i class="bi bi-check2-circle text-primary me-2"></i>
+                          <small>
+                            <%= assignment.completed_days(current_participant) %> of 
+                            <%= assignment.total_days %> days completed
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-success" 
+                           style="width: <%= assignment.completion_percentage(current_participant) %>%">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="text-center py-4">
+              <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
+              <p class="text-muted mb-0">No assignments for today</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming Assignments -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card card-custom">
+        <div class="card-header card-header-custom">
+          <h5 class="mb-0">
+            <i class="bi bi-calendar-plus me-2 text-primary"></i>Upcoming Assignments
+          </h5>
+        </div>
+        <div class="card-body">
+          <% if @upcoming_assignments.any? %>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>Assignment</th>
+                    <th>Period</th>
+                    <th>Questions</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @upcoming_assignments.each do |assignment| %>
+                    <tr>
+                      <td>
+                        <strong><%= assignment.title %></strong>
+                        <% if assignment.description.present? %>
+                          <br><small class="text-muted"><%= assignment.description.truncate(80) %></small>
+                        <% end %>
+                      </td>
+                      <td>
+                        <%= assignment.start_date.strftime("%b %d") %> - 
+                        <%= assignment.end_date.strftime("%b %d, %Y") %>
+                      </td>
+                      <td>
+                        <%= assignment.questions.count + 
+                           assignment.question_sets.sum { |qs| qs.questions.count } %>
+                      </td>
+                      <td>
+                        <% completion = assignment.completion_percentage(current_participant) %>
+                        <% if completion > 0 %>
+                          <div class="d-flex align-items-center">
+                            <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                              <div class="progress-bar bg-success" style="width: <%= completion %>%"></div>
+                            </div>
+                            <span><%= completion %>%</span>
+                          </div>
+                        <% else %>
+                          <span class="badge bg-light text-dark">Not Started</span>
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <div class="text-center py-4">
+              <i class="bi bi-calendar-plus fs-1 text-muted mb-3"></i>
+              <p class="text-muted mb-0">No upcoming assignments</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Past Assignments -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card card-custom">
+        <div class="card-header card-header-custom">
+          <h5 class="mb-0">
+            <i class="bi bi-calendar-check me-2 text-primary"></i>Past Assignments
+          </h5>
+        </div>
+        <div class="card-body">
+          <% if @past_assignments.any? %>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>Assignment</th>
+                    <th>Period</th>
+                    <th>Completion</th>
+                    <th class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @past_assignments.each do |assignment| %>
+                    <tr>
+                      <td>
+                        <strong><%= assignment.title %></strong>
+                        <% if assignment.description.present? %>
+                          <br><small class="text-muted"><%= assignment.description.truncate(80) %></small>
+                        <% end %>
+                      </td>
+                      <td>
+                        <%= assignment.start_date.strftime("%b %d") %> - 
+                        <%= assignment.end_date.strftime("%b %d, %Y") %>
+                      </td>
+                      <td>
+                        <% completion = assignment.completion_percentage(current_participant) %>
+                        <div class="d-flex align-items-center">
+                          <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                            <div class="progress-bar <%= completion == 100 ? 'bg-success' : 'bg-warning' %>" 
+                                 style="width: <%= completion %>%"></div>
+                          </div>
+                          <span><%= completion %>%</span>
+                        </div>
+                      </td>
+                      <td class="text-end">
+                        <% if assignment.assignment_response_logs.where(participant: current_participant).exists? %>
+                          <%= link_to participant_portal_assignment_path(assignment),
+                              class: "btn btn-sm btn-outline-primary" do %>
+                            <i class="bi bi-eye"></i> View
+                          <% end %>
+                        <% else %>
+                          <span class="badge bg-danger">Missed</span>
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <div class="text-center py-4">
+              <i class="bi bi-calendar-check fs-1 text-muted mb-3"></i>
+              <p class="text-muted mb-0">No past assignments</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% content_for :styles do %>
+  <style>
+    .assignment-card {
+      border: none;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease;
+    }
+    
+    .assignment-card:hover {
+      transform: translateY(-3px);
+    }
+    
+    .progress {
+      background-color: #e9ecef;
+      overflow: hidden;
+      border-radius: 0.25rem;
+    }
+    
+    .icon-box {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+    }
+    
+    .bg-primary-subtle {
+      background-color: rgba(99, 102, 241, 0.1);
+    }
+    
+    .bg-success-subtle {
+      background-color: rgba(46, 125, 50, 0.1);
+    }
+    
+    .bg-info-subtle {
+      background-color: rgba(25, 118, 210, 0.1);
+    }
+  </style>
+<% end %> 

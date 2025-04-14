@@ -26,7 +26,8 @@
                               @question.dropdown? ? 'bi-chevron-down' :
                               @question.date? ? 'bi-calendar' :
                               @question.time? ? 'bi-clock' :
-                              @question.number? ? 'bi-123' : 'bi-star' %>"></i>
+                              @question.number? ? 'bi-123' : 
+                              @question.yes_or_no? ? 'bi-toggle-on' : 'bi-star' %>"></i>
               </div>
               <span class="type-text"><%= @question.question_type.titleize %></span>
             </div>
@@ -48,7 +49,7 @@
                     <div class="d-flex align-items-center gap-3">
                       <div class="option-number"><%= ('A'.ord + index).chr %></div>
                       <div class="option-indicator">
-                        <i class="bi <%= @question.multiple_choice? ? 'bi-circle' : 
+                        <i class="bi <%= @question.multiple_choice? || @question.yes_or_no? ? 'bi-circle' : 
                                       @question.checkboxes? ? 'bi-square' : 
                                       'bi-chevron-down' %>"></i>
                       </div>

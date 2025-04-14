@@ -39,6 +39,16 @@ export default class extends Controller {
         this.optionsSectionTarget.classList.remove('d-none')
         this.updateOptionIndicators(type)
         this.showOptionsContainer(true)
+        
+        // Hide correct checkboxes for these question types
+        this.hideCorrectCheckboxes()
+        break
+      case 'yes_or_no':
+        this.optionsSectionTarget.classList.remove('d-none')
+        this.updateOptionIndicators('multiple_choice')
+        this.showOptionsContainer(true)
+        // For Yes/No, we'll auto-populate the options
+        this.createYesNoOptions()
         break
       case 'date':
         this.datePreviewTarget.classList.remove('d-none')
@@ -61,6 +71,11 @@ export default class extends Controller {
     
     // Hide all previews first
     this.hideAllPreviews()
+    
+    // If coming from yes_or_no type, restore correct checkboxes
+    if (type !== 'yes_or_no') {
+      this.restoreCorrectCheckboxes()
+    }
     
     // Show appropriate preview based on type
     switch(type) {
@@ -94,6 +109,18 @@ export default class extends Controller {
             }
           }
         }
+        
+        // Hide correct checkboxes for these question types
+        this.hideCorrectCheckboxes()
+        break
+      case 'yes_or_no':
+        console.log("Showing Yes/No options")
+        this.optionsSectionTarget.classList.remove('d-none')
+        this.optionsSectionTarget.style.display = 'block'
+        this.updateOptionIndicators('multiple_choice')
+        
+        // Clear existing options and create Yes/No options
+        this.createYesNoOptions()
         break
       case 'date':
         this.datePreviewTarget.classList.remove('d-none')
@@ -165,6 +192,11 @@ export default class extends Controller {
     
     // Hide/show rating options based on question type
     this.showRatingOptions(questionType === 'rating')
+    
+    // Hide correct checkboxes for multiple choice, checkbox, dropdown, and yes/no
+    if (['multiple_choice', 'checkboxes', 'dropdown', 'yes_or_no'].includes(questionType)) {
+      this.hideCorrectCheckboxes()
+    }
   }
   
   updateRatingPreview() {
@@ -194,5 +226,124 @@ export default class extends Controller {
     
     // You can add additional logic here if needed
     // For example, updating UI elements based on the required status
+  }
+
+  createYesNoOptions() {
+    // Clear existing options first
+    const optionsContainer = this.optionsSectionTarget.querySelector('[data-nested-form-target="items"]')
+    if (optionsContainer) {
+      optionsContainer.innerHTML = ''
+      
+      // Use the nested form controller to add Yes/No options
+      const nestedFormController = this.application.getControllerForElementAndIdentifier(
+        this.element, 'nested-form'
+      )
+      
+      if (nestedFormController) {
+        // Hide the "Add Option" button for Yes/No questions
+        const addOptionButton = this.optionsSectionTarget.querySelector('button[data-action="nested-form#add"]')
+        if (addOptionButton) {
+          addOptionButton.style.display = 'none'
+        }
+        
+        // Add two options (Yes and No) programmatically
+        // First, add the options
+        nestedFormController.add()
+        nestedFormController.add()
+        
+        // Now get all option items
+        const optionItems = optionsContainer.querySelectorAll('.option-item')
+        
+        // Set values for Yes and No options
+        if (optionItems.length >= 2) {
+          const yesOption = optionItems[0]
+          const noOption = optionItems[1]
+          
+          // Set text for Yes option
+          const yesTextField = yesOption.querySelector('input[type="text"]')
+          if (yesTextField) yesTextField.value = 'Yes'
+          
+          // Set text for No option
+          const noTextField = noOption.querySelector('input[type="text"]')
+          if (noTextField) noTextField.value = 'No'
+          
+          // Hide correct checkboxes for both options
+          optionItems.forEach(option => {
+            const correctCheckboxContainer = option.querySelector('.form-check')
+            if (correctCheckboxContainer) {
+              correctCheckboxContainer.style.display = 'none'
+            }
+            
+            // Hide delete buttons
+            const deleteButton = option.querySelector('button[data-action="nested-form#remove"]')
+            if (deleteButton) {
+              deleteButton.style.display = 'none'
+            }
+          })
+          
+          // Also hide correct checkboxes in the template for any new options
+          const template = this.element.querySelector('[data-nested-form-target="template"]')
+          if (template) {
+            const templateCorrectCheckbox = template.querySelector('.form-check')
+            if (templateCorrectCheckbox) {
+              templateCorrectCheckbox.dataset.yesNoHidden = 'true'
+            }
+          }
+        }
+      }
+    }
+  }
+
+  restoreCorrectCheckboxes() {
+    // Restore visibility of all correct checkboxes
+    const checkboxContainers = this.element.querySelectorAll('.form-check')
+    checkboxContainers.forEach(container => {
+      container.style.display = ''
+    })
+    
+    // Also restore in template
+    const template = this.element.querySelector('[data-nested-form-target="template"]')
+    if (template) {
+      const templateCorrectCheckbox = template.querySelector('.form-check')
+      if (templateCorrectCheckbox) {
+        delete templateCorrectCheckbox.dataset.yesNoHidden
+      }
+    }
+    
+    // Restore the "Add Option" button
+    const addOptionButton = this.optionsSectionTarget.querySelector('button[data-action="nested-form#add"]')
+    if (addOptionButton) {
+      addOptionButton.style.display = ''
+    }
+    
+    // Restore delete buttons
+    const optionItems = this.element.querySelectorAll('.option-item')
+    optionItems.forEach(option => {
+      // Restore delete buttons
+      const deleteButton = option.querySelector('button[data-action="nested-form#remove"]')
+      if (deleteButton) {
+        deleteButton.style.display = ''
+      }
+    })
+  }
+
+  hideCorrectCheckboxes() {
+    // Hide correct checkboxes for all options
+    const optionItems = this.element.querySelectorAll('.option-item')
+    optionItems.forEach(option => {
+      const correctCheckboxContainer = option.querySelector('.form-check')
+      if (correctCheckboxContainer) {
+        correctCheckboxContainer.style.display = 'none'
+      }
+    })
+    
+    // Also hide correct checkboxes in the template for any new options
+    const template = this.element.querySelector('[data-nested-form-target="template"]')
+    if (template) {
+      const templateCorrectCheckbox = template.querySelector('.form-check')
+      if (templateCorrectCheckbox) {
+        templateCorrectCheckbox.style.display = 'none'
+      }
+    }
   }
 } 

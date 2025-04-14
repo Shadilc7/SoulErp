@@ -26,7 +26,8 @@ class Question < ApplicationRecord
     date: 5,            # Date picker
     time: 6,            # Time picker
     rating: 7,          # Star rating
-    number: 8           # Number input
+    number: 8,          # Number input
+    yes_or_no: 9        # Yes/No radio buttons
   }
 
   # Add scope for active questions
@@ -35,7 +36,7 @@ class Question < ApplicationRecord
   before_destroy :check_assignment_associations
 
   def requires_options?
-    multiple_choice? || checkboxes? || dropdown?
+    multiple_choice? || checkboxes? || dropdown? || yes_or_no?
   end
 
   def formatted_options

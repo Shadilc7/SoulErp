@@ -126,6 +126,33 @@
                     action: "input->assignment-form#validateField",
                     question_id: question.id
                   } %>
+            <% when "yes_or_no" %>
+              <div class="yes-no-container">
+                <div class="form-check form-check-inline">
+                  <%= radio_button_tag "responses[#{question.id}][answer]",
+                      "Yes",
+                      false,
+                      class: "form-check-input",
+                      required: question.required?,
+                      data: { 
+                        action: "input->assignment-form#validateField",
+                        question_id: question.id
+                      } %>
+                  <%= label_tag nil, "Yes", class: "form-check-label" %>
+                </div>
+                <div class="form-check form-check-inline">
+                  <%= radio_button_tag "responses[#{question.id}][answer]",
+                      "No",
+                      false,
+                      class: "form-check-input",
+                      required: question.required?,
+                      data: { 
+                        action: "input->assignment-form#validateField",
+                        question_id: question.id
+                      } %>
+                  <%= label_tag nil, "No", class: "form-check-label" %>
+                </div>
+              </div>
             <% when "rating" %>
               <div class="rating-container">
                 <%= render 'rating_question', question: question %>
@@ -235,6 +262,24 @@
     .form-select.is-invalid + .invalid-feedback,
     .form-check-input.is-invalid ~ .invalid-feedback {
       display: block;
+    }
+
+    .radio-button-container {
+      padding: 8px 0;
+    }
+    
+    .form-check-inline {
+      margin-right: 1rem;
+    }
+    
+    .yes-no-container {
+      padding: 8px 0;
+      display: flex;
+      gap: 2rem;
+    }
+    
+    .yes-no-container .form-check-inline {
+      margin-right: 0;
     }
   </style>
 <% end %> 

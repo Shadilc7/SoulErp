@@ -7,159 +7,177 @@
   </div>
 
   <div class="card-body">
-    <!-- Date Selection -->
     <div class="row mb-4">
-      <div class="col-md-4">
+      <div class="col-md-12">
         <div class="card">
           <div class="card-header bg-light">
-            <h6 class="mb-0">1. Select Date</h6>
+            <h6 class="mb-0">Filter Responses</h6>
           </div>
           <div class="card-body">
-            <%= form_tag institute_admin_responses_path, method: :get, class: "d-flex" do %>
-              <%= date_field_tag :date, @selected_date, class: "form-control" %>
-              <%= submit_tag "Select", class: "btn btn-primary ms-2" %>
+            <%= form_tag institute_admin_responses_path, method: :get, class: "row g-3", data: { controller: "participant-select" } do %>
+              
+              <!-- Date Selection -->
+              <div class="col-md-4">
+                <label for="date" class="form-label">Select Date</label>
+                <%= date_field_tag :date, @selected_date, class: "form-control", required: true %>
+              </div>
+              
+              <!-- Section Selection -->
+              <div class="col-md-4">
+                <label for="section_id" class="form-label">Select Section</label>
+                <%= select_tag :section_id, 
+                    options_from_collection_for_select(current_institute.sections.active, :id, :name, params[:section_id]),
+                    prompt: "Choose a section",
+                    class: "form-select",
+                    data: { 
+                      participant_select_target: "section",
+                      action: "change->participant-select#sectionChanged"
+                    },
+                    required: true %>
+              </div>
+              
+              <!-- Participant Selection -->
+              <div class="col-md-4">
+                <label for="participant_id" class="form-label">Select Participant</label>
+                <% if @participants&.any? %>
+                  <%= select_tag :participant_id,
+                      options_from_collection_for_select(@participants, :id, :full_name, params[:participant_id]),
+                      prompt: "Choose a participant",
+                      class: "form-select", 
+                      data: { participant_select_target: "participant" },
+                      required: true %>
+                <% else %>
+                  <%= select_tag :participant_id,
+                      options_for_select([]),
+                      prompt: "First select a section",
+                      class: "form-select",
+                      data: { participant_select_target: "participant" },
+                      disabled: params[:section_id].blank?,
+                      required: true %>
+                  <% if params[:section_id].present? && @participants.nil? %>
+                    <small class="text-muted">Loading participants for this section...</small>
+                  <% end %>
+                <% end %>
+              </div>
+              
+              <!-- Submit Button -->
+              <div class="col-12 mt-4">
+                <%= submit_tag "View Responses", class: "btn btn-primary" %>
+              </div>
             <% end %>
           </div>
         </div>
       </div>
-
-      <!-- Section Selection -->
-      <% if @sections.present? %>
-        <div class="col-md-4">
-          <div class="card">
-            <div class="card-header bg-light">
-              <h6 class="mb-0">2. Select Section</h6>
-            </div>
-            <div class="card-body">
-              <%= form_tag institute_admin_responses_path, method: :get do %>
-                <%= hidden_field_tag :date, @selected_date %>
-                <%= select_tag :section_id, 
-                    options_from_collection_for_select(@sections, :id, :name, params[:section_id]),
-                    prompt: "Choose a section",
-                    class: "form-select",
-                    data: { controller: "autosubmit" } %>
-              <% end %>
-            </div>
-          </div>
-        </div>
-      <% end %>
-
-      <!-- Participant Selection -->
-      <% if @participants.present? %>
-        <div class="col-md-4">
-          <div class="card">
-            <div class="card-header bg-light">
-              <h6 class="mb-0">3. Select Participant</h6>
-            </div>
-            <div class="card-body">
-              <%= form_tag institute_admin_responses_path, method: :get do %>
-                <%= hidden_field_tag :date, @selected_date %>
-                <%= hidden_field_tag :section_id, @section.id %>
-                <%= select_tag :participant_id,
-                    options_from_collection_for_select(@participants, :id, :full_name, params[:participant_id]),
-                    prompt: "Choose a participant",
-                    class: "form-select",
-                    data: { controller: "autosubmit" } %>
-              <% end %>
-            </div>
-          </div>
-        </div>
-      <% end %>
     </div>
 
-    <!-- Assignment Selection -->
-    <% if @assignments.present? %>
-      <div class="row mb-4">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header bg-light">
-              <h6 class="mb-0">4. Select Assignment</h6>
-            </div>
-            <div class="card-body">
-              <div class="list-group">
-                <% @assignments.each do |assignment| %>
-                  <%= link_to institute_admin_responses_path(
-                        date: @selected_date,
-                        section_id: @section.id,
-                        participant_id: @participant.id,
-                        assignment_id: assignment.id
-                      ),
-                      class: "list-group-item list-group-item-action #{'active' if @assignment == assignment}" do %>
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h6 class="mb-1"><%= assignment.title %></h6>
-                        <small><%= pluralize(assignment.questions.count, 'question') %></small>
+    <!-- Responses Display - Only show after form submission -->
+    <% if params[:commit].present? && params[:participant_id].present? %>
+      <% if @assignments.present? %>
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">Select Assignment</h6>
+              </div>
+              <div class="card-body">
+                <div class="list-group">
+                  <% @assignments.each do |assignment| %>
+                    <%= link_to institute_admin_responses_path(
+                          date: @selected_date,
+                          section_id: @section.id,
+                          participant_id: @participant.id,
+                          assignment_id: assignment.id,
+                          commit: "View Responses"
+                        ),
+                        class: "list-group-item list-group-item-action #{'active' if @assignment == assignment}" do %>
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <h6 class="mb-1"><%= assignment.title %></h6>
+                          <small><%= pluralize(assignment.questions.count, 'question') %></small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">
+                          <%= assignment.assignment_responses.where(participant: @participant).count %> responses
+                        </span>
                       </div>
-                      <span class="badge bg-primary rounded-pill">
-                        <%= assignment.assignment_responses.where(participant: @participant).count %> responses
-                      </span>
-                    </div>
+                    <% end %>
                   <% end %>
-                <% end %>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    <% end %>
-
-    <!-- Responses Display -->
-    <% if @responses&.any? %>
-      <div class="card">
-        <div class="card-header bg-light">
-          <h6 class="mb-0">
-            Responses for <%= @assignment.title %> by <%= @participant.full_name %>
-          </h6>
+      <% elsif @participant.present? && @selected_date.present? %>
+        <div class="alert alert-info">
+          No assignments found for this participant on the selected date.
         </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle">
-              <thead>
-                <tr>
-                  <th>Question</th>
-                  <th>Response</th>
-                  <th>Submitted At</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% @responses.each do |response| %>
+      <% end %>
+      
+      <!-- Responses Data Display -->
+      <% if @responses&.any? %>
+        <div class="card">
+          <div class="card-header bg-light">
+            <h6 class="mb-0">
+              Responses for <%= @assignment.title %> by <%= @participant.full_name %>
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
                   <tr>
-                    <td>
-                      <div class="fw-medium"><%= response.question.title %></div>
-                    </td>
-                    <td>
-                      <% if response.answer.present? %>
-                        <%= truncate(response.answer, length: 100) %>
-                      <% elsif response.selected_options.present? %>
-                        <%= response.selected_options.join(", ") %>
-                      <% else %>
-                        <span class="text-muted">No response</span>
-                      <% end %>
-                    </td>
-                    <td><%= response.submitted_at&.strftime("%I:%M %p") || "Not submitted" %></td>
-                    <td>
-                      <span class="badge bg-<%= response.submitted_at? ? 'success' : 'warning' %>">
-                        <%= response.submitted_at? ? 'Submitted' : 'Pending' %>
-                      </span>
-                    </td>
-                    <td>
-                      <%= link_to institute_admin_response_path(response), 
-                          class: "btn btn-sm btn-outline-primary" do %>
-                        <i class="bi bi-eye"></i>
-                      <% end %>
-                    </td>
+                    <th>Question</th>
+                    <th>Response</th>
+                    <th>Submitted At</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                <% end %>
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  <% @responses.each do |response| %>
+                    <tr>
+                      <td>
+                        <div class="fw-medium"><%= response.question.title %></div>
+                      </td>
+                      <td>
+                        <% if response.answer.present? %>
+                          <%= truncate(response.answer, length: 100) %>
+                        <% elsif response.selected_options.present? %>
+                          <%= response.selected_options.join(", ") %>
+                        <% else %>
+                          <span class="text-muted">No response</span>
+                        <% end %>
+                      </td>
+                      <td><%= response.submitted_at&.strftime("%I:%M %p") || "Not submitted" %></td>
+                      <td>
+                        <span class="badge bg-<%= response.submitted_at? ? 'success' : 'warning' %>">
+                          <%= response.submitted_at? ? 'Submitted' : 'Pending' %>
+                        </span>
+                      </td>
+                      <td>
+                        <%= link_to institute_admin_response_path(response), 
+                            class: "btn btn-sm btn-outline-primary" do %>
+                          <i class="bi bi-eye"></i>
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
+      <% elsif @assignment.present? %>
+        <div class="alert alert-warning">
+          No responses found for this assignment and participant on the selected date.
+        </div>
+      <% end %>
     <% end %>
   </div>
 </div>
+
+<% content_for :scripts do %>
+  <!-- No longer needed -->
+<% end %>
 
 <% content_for :styles do %>
   <style>

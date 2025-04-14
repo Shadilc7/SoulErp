@@ -108,20 +108,39 @@ module InstituteAdmin
     end
 
     def participants
-      @section = current_institute.sections.find(params[:id])
-      @participants = @section.participants.includes(:user).where(participant_type: 'student')
+      begin
+        @section = current_institute.sections.find(params[:id])
+        
+        # Filter to include only active student participants using association
+        @participants = @section.participants
+                                .includes(:user)
+                                .where(status: :active)
+                                .where(participant_type: 'student')
+        
+        # If no participants found via association, try direct SQL query
+        if @participants.empty?
+          # Direct query to find participants through user's section_id
+          @participants = Participant.joins(:user)
+                                    .where(users: { section_id: @section.id })
+                                    .where(participants: { status: :active })
+                                    .where(participants: { participant_type: 'student' })
+        end
 
-      render json: @participants.map { |p|
-        {
-          id: p.id,
-          full_name: p.user&.full_name || "Participant #{p.id}",
-          user: {
-            id: p.user&.id,
-            full_name: p.user&.full_name,
+        # Map participant data for the response
+        result = @participants.map { |p|
+          {
+            id: p.id,
+            full_name: p.user&.full_name || "Participant #{p.id}",
+            user_id: p.user&.id,
             email: p.user&.email
           }
         }
-      }
+        
+        render json: result
+      rescue => e
+        Rails.logger.error "Error loading participants: #{e.message}"
+        render json: { error: e.message }, status: :internal_server_error
+      end
     end
 
     private

@@ -38,7 +38,7 @@
 
     <style>
       :root {
-        --sidebar-width: 280px;
+        --sidebar-width: 290px;
         --topbar-height: 60px;
         --primary-color: #6366f1;
         --primary-dark: #4f46e5;
@@ -73,6 +73,7 @@
         transition: all 0.3s ease-in-out;
         z-index: 1045;
         overflow-y: auto;
+        overflow-x: hidden;
       }
 
       #sidebar.collapsed {
@@ -108,6 +109,23 @@
         transition: all 0.2s;
         border-radius: 0.5rem;
         margin: 0.25rem 0.75rem;
+      }
+      
+      .nav-link.d-flex {
+        justify-content: space-between;
+      }
+      
+      .nav-link.d-flex > div {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        overflow: hidden;
+      }
+      
+      .nav-link.d-flex > div span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .nav-link:hover {
@@ -422,6 +440,62 @@
         margin-bottom: 0.5rem;
         color: var(--sidebar-bg);
       }
+
+      /* Sidebar Submenu Styles */
+      .sidebar-submenu-container {
+        margin: 0.25rem 0;
+        width: 100%;
+      }
+      
+      .submenu {
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 0.5rem;
+        margin: 0 0.75rem;
+        width: calc(100% - 1.5rem);
+      }
+      
+      .submenu-link {
+        padding-left: 2.5rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        padding-right: 0.75rem !important;
+      }
+      
+      .submenu-link i {
+        flex-shrink: 0;
+        margin-right: 0.75rem;
+      }
+      
+      .submenu-link span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      /* Remove the special styling for Training Programs */
+      
+      .submenu-toggle-icon {
+        transition: transform 0.3s ease;
+      }
+      
+      [aria-expanded="true"] .submenu-toggle-icon {
+        transform: rotate(180deg);
+      }
+      
+      /* Active parent style */
+      .nav-link.active-parent {
+        color: var(--text-primary);
+        background: rgba(255,255,255,0.15);
+      }
+      
+      /* Make the Training section active when a submenu item is active */
+      .submenu .nav-link.active + a[data-bs-toggle="collapse"] {
+        color: var(--text-primary);
+        background: rgba(255,255,255,0.1);
+      }
     </style>
     
     <%= yield :styles %>
@@ -452,59 +526,110 @@
               <span>Sections</span>
             <% end %>
 
-            <%= link_to institute_admin_trainers_path,
-                class: "nav-link #{'active' if active_link?('trainers')}" do %>
-              <i class="bi bi-person-workspace"></i>
-              <span>Trainers</span>
-            <% end %>
-
-            <%= link_to institute_admin_training_programs_path,
-                class: "nav-link #{'active' if controller.controller_name == 'training_programs' && params[:view] != 'feedbacks'}" do %>
-              <i class="bi bi-mortarboard"></i>
-              <span>Training Programs</span>
-            <% end %>
-            
-            <%= link_to institute_admin_training_programs_path(view: 'feedbacks'),
-                class: "nav-link ps-4 #{'active' if (controller.controller_name == 'training_programs' && params[:view] == 'feedbacks') || controller.controller_name == 'training_program_feedbacks'}" do %>
-              <i class="bi bi-chat-square-text"></i>
-              <span>Feedbacks</span>
-            <% end %>
-
-            <%= link_to institute_admin_attendances_path,
-                class: "nav-link #{'active' if active_link?('attendances')}" do %>
-              <i class="bi bi-calendar-check"></i>
-              <span>Attendance</span>
-            <% end %>
-
             <%= link_to institute_admin_participants_path,
                 class: "nav-link #{'active' if active_link?('participants')}" do %>
               <i class="bi bi-people"></i>
               <span>Participants</span>
             <% end %>
 
-            <%= link_to institute_admin_questions_path,
-                class: "nav-link #{'active' if active_link?('questions')}" do %>
-              <i class="bi bi-question-circle"></i>
-              <span>Questions</span>
-            <% end %>
+            <!-- Training Section (Collapsible) -->
+            <div class="sidebar-submenu-container">
+              <a href="#trainingSubmenu" 
+                 class="nav-link d-flex justify-content-between align-items-center <%= 'active-parent' if active_link?('trainers') || 
+                                                                                         controller.controller_name == 'training_programs' || 
+                                                                                         controller.controller_name == 'training_program_feedbacks' ||
+                                                                                         active_link?('attendances') %>" 
+                 data-bs-toggle="collapse"
+                 data-custom-toggle="true"
+                 data-action="click->sidebar#toggleSubmenu"
+                 aria-expanded="<%= (active_link?('trainers') || 
+                                   controller.controller_name == 'training_programs' || 
+                                   controller.controller_name == 'training_program_feedbacks' ||
+                                   active_link?('attendances')).to_s %>">
+                <div>
+                  <i class="bi bi-book"></i>
+                  <span>Training</span>
+                </div>
+                <i class="bi bi-chevron-down submenu-toggle-icon"></i>
+              </a>
+              
+              <div class="collapse <%= 'show' if active_link?('trainers') || 
+                                               controller.controller_name == 'training_programs' || 
+                                               controller.controller_name == 'training_program_feedbacks' ||
+                                               active_link?('attendances') %>" 
+                   id="trainingSubmenu">
+                <div class="submenu py-1">
+                  <%= link_to institute_admin_trainers_path,
+                      class: "nav-link submenu-link ps-4 #{'active' if active_link?('trainers')}" do %>
+                    <i class="bi bi-person-workspace"></i>
+                    <span>Trainers</span>
+                  <% end %>
 
-            <%= link_to institute_admin_question_sets_path,
-                class: "nav-link #{'active' if controller.controller_name == 'question_sets'}" do %>
-              <i class="bi bi-collection"></i>
-              <span>Question Sets</span>
-            <% end %>
+                  <%= link_to institute_admin_training_programs_path,
+                      class: "nav-link submenu-link ps-4 #{'active' if controller.controller_name == 'training_programs' && params[:view] != 'feedbacks'}" do %>
+                    <i class="bi bi-mortarboard"></i>
+                    <span>Training Programs</span>
+                  <% end %>
+                  
+                  <%= link_to institute_admin_training_programs_path(view: 'feedbacks'),
+                      class: "nav-link submenu-link ps-4 #{'active' if (controller.controller_name == 'training_programs' && params[:view] == 'feedbacks') || controller.controller_name == 'training_program_feedbacks'}" do %>
+                    <i class="bi bi-chat-square-text"></i>
+                    <span>Feedbacks</span>
+                  <% end %>
+                  
+                  <%= link_to institute_admin_attendances_path,
+                      class: "nav-link submenu-link ps-4 #{'active' if active_link?('attendances')}" do %>
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Attendance</span>
+                  <% end %>
+                </div>
+              </div>
+            </div>
 
-            <%= link_to institute_admin_assignments_path,
-                class: "nav-link #{'active' if controller.controller_name == 'assignments'}" do %>
-              <i class="bi bi-journal-check"></i>
-              <span>Assignments</span>
-            <% end %>
+            <!-- Assessments Section (Collapsible) -->
+            <div class="sidebar-submenu-container">
+              <a href="#assessmentsSubmenu" 
+                 class="nav-link d-flex justify-content-between align-items-center <%= 'active-parent' if active_link?('questions') || 
+                                                                                         controller.controller_name == 'assignments' || 
+                                                                                         controller.controller_name == 'responses' %>" 
+                 data-bs-toggle="collapse"
+                 data-custom-toggle="true"
+                 data-action="click->sidebar#toggleSubmenu"
+                 aria-expanded="<%= (active_link?('questions') || 
+                                   controller.controller_name == 'assignments' || 
+                                   controller.controller_name == 'responses').to_s %>">
+                <div>
+                  <i class="bi bi-clipboard-check"></i>
+                  <span>Assessments</span>
+                </div>
+                <i class="bi bi-chevron-down submenu-toggle-icon"></i>
+              </a>
+              
+              <div class="collapse <%= 'show' if active_link?('questions') || 
+                                               controller.controller_name == 'assignments' || 
+                                               controller.controller_name == 'responses' %>" 
+                   id="assessmentsSubmenu">
+                <div class="submenu py-1">
+                  <%= link_to institute_admin_questions_path,
+                      class: "nav-link submenu-link ps-4 #{'active' if active_link?('questions')}" do %>
+                    <i class="bi bi-question-circle"></i>
+                    <span>Questions</span>
+                  <% end %>
 
-            <%= link_to institute_admin_responses_path,
-                class: "nav-link #{'active' if controller.controller_name == 'responses'}" do %>
-              <i class="bi bi-clipboard2-check"></i>
-              <span>Responses</span>
-            <% end %>
+                  <%= link_to institute_admin_assignments_path,
+                      class: "nav-link submenu-link ps-4 #{'active' if controller.controller_name == 'assignments'}" do %>
+                    <i class="bi bi-journal-check"></i>
+                    <span>Assignments</span>
+                  <% end %>
+                  
+                  <%= link_to institute_admin_responses_path,
+                      class: "nav-link submenu-link ps-4 #{'active' if controller.controller_name == 'responses'}" do %>
+                    <i class="bi bi-clipboard2-check"></i>
+                    <span>Responses</span>
+                  <% end %>
+                </div>
+              </div>
+            </div>
 
             <%= link_to institute_admin_reports_path,
                 class: "nav-link #{'active' if controller.controller_name == 'reports'}" do %>
@@ -560,7 +685,31 @@
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ApexCharts for dashboard visualizations -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    
+    <script>
+      // Prevent Bootstrap from handling custom toggle elements
+      document.addEventListener('DOMContentLoaded', function() {
+        // Ensure our custom toggles override Bootstrap's default behavior
+        document.addEventListener('click', function(event) {
+          if (event.target.closest('[data-custom-toggle="true"]')) {
+            event.stopPropagation();
+          }
+        }, true);
+        
+        // Set active-parent class on parent menu items when a submenu item is active
+        const activeSubmenuItems = document.querySelectorAll('.submenu .nav-link.active');
+        activeSubmenuItems.forEach(item => {
+          const parentCollapse = item.closest('.collapse');
+          if (parentCollapse) {
+            const parentToggle = document.querySelector(`a[href="#${parentCollapse.id}"]`);
+            if (parentToggle) {
+              parentToggle.classList.add('active-parent');
+            }
+          }
+        });
+      });
+    </script>
   </body>
 </html> 

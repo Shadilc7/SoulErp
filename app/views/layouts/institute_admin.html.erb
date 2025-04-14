@@ -74,6 +74,8 @@
         z-index: 1045;
         overflow-y: auto;
         overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
       }
 
       #sidebar.collapsed {
@@ -496,6 +498,20 @@
         color: var(--text-primary);
         background: rgba(255,255,255,0.1);
       }
+      
+      /* Sidebar Sign Out Button */
+      #sidebar .btn-outline-danger {
+        color: #f87171;
+        border-color: #f87171;
+        background: transparent;
+        transition: all 0.2s ease;
+      }
+      
+      #sidebar .btn-outline-danger:hover {
+        background: rgba(248, 113, 113, 0.1);
+        color: #fca5a5;
+        border-color: #fca5a5;
+      }
     </style>
     
     <%= yield :styles %>
@@ -638,6 +654,17 @@
             <% end %>
           </nav>
         </div>
+        
+        <!-- Signout button at bottom of sidebar -->
+        <div class="mt-auto p-3 border-top border-secondary border-opacity-25">
+          <%= button_to destroy_user_session_path,
+              method: :delete,
+              class: "btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2",
+              form: { data: { turbo: true } } do %>
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Sign Out</span>
+          <% end %>
+        </div>
       </div>
 
       <!-- Backdrop with data-sidebar-target -->
@@ -646,34 +673,7 @@
       <!-- Main Content -->
       <div id="main-content" data-sidebar-target="content">
         <div class="topbar d-flex justify-content-between align-items-center">
-          <button class="btn btn-link text-secondary d-lg-none" data-action="click->sidebar#toggle">
-            <i class="bi bi-list fs-4"></i>
-          </button>
-
-          <%= render "layouts/institute_admin/navigation" %>
-
-          <div class="dropdown">
-            <button class="btn btn-link dropdown-toggle text-decoration-none d-flex align-items-center gap-2 text-primary" 
-                    type="button" 
-                    id="userDropdown" 
-                    data-bs-toggle="dropdown" 
-                    data-bs-auto-close="true"
-                    aria-expanded="false"
-                    style="background-color: rgba(99, 102, 241, 0.1); padding: 0.5rem 1rem; border-radius: 0.5rem;">
-              <i class="bi bi-person-circle fs-5"></i>
-              <span><%= current_user.full_name %></span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-              <li>
-                <%= button_to destroy_user_session_path, 
-                    method: :delete,
-                    class: "dropdown-item text-danger",
-                    form: { data: { turbo: true } } do %>
-                  <i class="bi bi-box-arrow-right me-2"></i> Logout
-                <% end %>
-              </li>
-            </ul>
-          </div>
+          
         </div>
 
         <div class="content-wrapper">

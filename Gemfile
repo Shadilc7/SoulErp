@@ -69,6 +69,8 @@ gem "pry-byebug"
 gem "prawn"
 gem "prawn-table"
 
+gem "combine_pdf"
+
 gem "simple_calendar", "~> 2.4"
 
 gem "kaminari"

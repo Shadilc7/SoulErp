@@ -1,0 +1,441 @@
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center py-3">
+    <div class="d-flex align-items-center">
+      <h5 class="mb-0">Feedback Reports</h5>
+    </div>
+    <%= link_to institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left"></i> Back
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <!-- Filters -->
+    <%= form_tag feedback_reports_institute_admin_reports_path, method: :get, class: 'mb-4', data: { turbo: false } do %>
+      <div class="row g-3">
+        <!-- Feedback Type -->
+        <div class="col-md-3">
+          <%= select_tag :feedback_type,
+              options_for_select([
+                ['Select Feedback Type', ''],
+                ['Trainer Feedback', 'trainer'],
+                ['Program Feedback', 'program']
+              ], params[:feedback_type]),
+              class: 'form-select',
+              required: true %>
+        </div>
+
+        <!-- Date Range Selection -->
+        <div class="col-md-3">
+          <%= select_tag :date_range,
+              options_for_select([
+                ['Select Date Range', ''],
+                ['Today', 'today'],
+                ['Yesterday', 'yesterday'],
+                ['Last 7 Days', 'last_7_days'],
+                ['This Month', 'this_month'],
+                ['Custom Range', 'custom']
+              ], @date_range),
+              class: 'form-select',
+              required: true,
+              data: { action: 'change->custom-range#toggle' } %>
+        </div>
+
+        <!-- Custom Date Range -->
+        <div class="col-md-4" id="custom-range-fields" style="<%= @date_range == 'custom' ? '' : 'display: none;' %>">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <div class="input-group">
+                <span class="input-group-text">From</span>
+                <%= date_field_tag :start_date, @start_date, class: 'form-control' %>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="input-group">
+                <span class="input-group-text">To</span>
+                <%= date_field_tag :end_date, @end_date, class: 'form-control' %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Filter (for Program Feedback) -->
+        <div class="col-md-2" id="section-filter" style="<%= params[:feedback_type] == 'program' ? '' : 'display: none;' %>">
+          <%= select_tag :section_id,
+              options_for_select([
+                ['Select Section', ''],
+                ['All Sections', 'all']
+              ] + current_institute.sections.map { |s| [s.name, s.id] }, @section_id),
+              class: 'form-select' %>
+        </div>
+
+        <!-- Trainer Filter (for Trainer Feedback) -->
+        <div class="col-md-2" id="trainer-filter" style="<%= params[:feedback_type] == 'trainer' ? '' : 'display: none;' %>">
+          <%= select_tag :trainer_id,
+              options_for_select([
+                ['Select Trainer', ''],
+                ['All Trainers', 'all']
+              ] + current_institute.trainers.includes(:user).map { |t| [t.user.full_name, t.id] }, params[:trainer_id]),
+              class: 'form-select' %>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="col-md-12 text-end">
+          <%= submit_tag "Generate Report", class: "btn btn-primary px-4" %>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Report Content -->
+    <% if params[:commit].present? && params[:feedback_type].present? %>
+      <% if params[:feedback_type] == 'trainer' %>
+        <!-- Trainer Feedback Summary -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <h6 class="mb-0">Trainer Feedback Summary</h6>
+            <%= link_to feedback_reports_institute_admin_reports_path(format: :csv, feedback_type: 'trainer', date_range: @date_range, start_date: @start_date, end_date: @end_date, trainer_id: params[:trainer_id]), class: "btn btn-sm btn-outline-primary" do %>
+              <i class="bi bi-download"></i> Export CSV
+            <% end %>
+          </div>
+          <div class="card-body">
+            <% if @trainer_feedbacks&.any? %>
+              <!-- Aggregate Ratings Chart -->
+              <div class="row mb-4">
+                <div class="col-lg-6">
+                  <canvas id="trainerRatingsChart" width="400" height="300"></canvas>
+                </div>
+                <div class="col-lg-6">
+                  <div class="row mt-4">
+                    <% @trainer_metrics&.each do |metric, value| %>
+                      <div class="col-6 mb-3">
+                        <div class="card border-0 bg-light h-100">
+                          <div class="card-body text-center">
+                            <div class="display-6 fw-bold text-primary"><%= value.is_a?(Float) ? number_with_precision(value, precision: 1) : value %></div>
+                            <div class="text-muted small"><%= metric.to_s.titleize %></div>
+                          </div>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Feedback Responses Table -->
+              <h6 class="mb-3">Individual Feedback Responses</h6>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Trainer</th>
+                      <th>Participant</th>
+                      <th>Overall Rating</th>
+                      <th>Knowledge</th>
+                      <th>Communication</th>
+                      <th>Engagement</th>
+                      <th>Comments</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% @trainer_feedbacks.each do |feedback| %>
+                      <tr>
+                        <td><%= feedback.created_at.strftime("%b %d, %Y") %></td>
+                        <td><%= feedback.trainer.full_name %></td>
+                        <td><%= feedback.participant.full_name %></td>
+                        <td>
+                          <div class="stars">
+                            <% feedback.overall_rating.times do %>
+                              <i class="bi bi-star-fill text-warning"></i>
+                            <% end %>
+                            <% (5 - feedback.overall_rating).times do %>
+                              <i class="bi bi-star text-muted"></i>
+                            <% end %>
+                          </div>
+                        </td>
+                        <td><%= feedback.knowledge_rating %>/5</td>
+                        <td><%= feedback.communication_rating %>/5</td>
+                        <td><%= feedback.engagement_rating %>/5</td>
+                        <td>
+                          <% if feedback.comments.present? %>
+                            <span class="d-inline-block text-truncate" style="max-width: 150px;">
+                              <%= feedback.comments %>
+                            </span>
+                            <button type="button" class="btn btn-sm btn-link p-0 ms-1" data-bs-toggle="modal" data-bs-target="#commentModal<%= feedback.id %>">
+                              <i class="bi bi-eye-fill"></i>
+                            </button>
+                            
+                            <!-- Comment Modal -->
+                            <div class="modal fade" id="commentModal<%= feedback.id %>" tabindex="-1" aria-labelledby="commentModalLabel<%= feedback.id %>" aria-hidden="true">
+                              <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title" id="commentModalLabel<%= feedback.id %>">Feedback Comments</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    <%= feedback.comments %>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          <% else %>
+                            <span class="text-muted">No comments</span>
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% else %>
+              <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+                <p class="text-muted">No trainer feedback found for the selected criteria.</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% else %>
+        <!-- Program Feedback Summary -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <h6 class="mb-0">Program Feedback Summary</h6>
+            <%= link_to feedback_reports_institute_admin_reports_path(format: :csv, feedback_type: 'program', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id), class: "btn btn-sm btn-outline-primary" do %>
+              <i class="bi bi-download"></i> Export CSV
+            <% end %>
+          </div>
+          <div class="card-body">
+            <% if @program_feedbacks&.any? %>
+              <!-- Aggregate Ratings Chart -->
+              <div class="row mb-4">
+                <div class="col-lg-6">
+                  <canvas id="programRatingsChart" width="400" height="300"></canvas>
+                </div>
+                <div class="col-lg-6">
+                  <div class="row mt-4">
+                    <% @program_metrics&.each do |metric, value| %>
+                      <div class="col-6 mb-3">
+                        <div class="card border-0 bg-light h-100">
+                          <div class="card-body text-center">
+                            <div class="display-6 fw-bold text-primary"><%= value.is_a?(Float) ? number_with_precision(value, precision: 1) : value %></div>
+                            <div class="text-muted small"><%= metric.to_s.titleize %></div>
+                          </div>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Feedback Responses Table -->
+              <h6 class="mb-3">Individual Program Feedback Responses</h6>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Program</th>
+                      <th>Section</th>
+                      <th>Participant</th>
+                      <th>Overall Rating</th>
+                      <th>Content</th>
+                      <th>Relevance</th>
+                      <th>Organization</th>
+                      <th>Comments</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% @program_feedbacks.each do |feedback| %>
+                      <tr>
+                        <td><%= feedback.created_at.strftime("%b %d, %Y") %></td>
+                        <td><%= feedback.training_program.title %></td>
+                        <td><%= feedback.participant.section.name %></td>
+                        <td><%= feedback.participant.full_name %></td>
+                        <td>
+                          <div class="stars">
+                            <% feedback.overall_rating.times do %>
+                              <i class="bi bi-star-fill text-warning"></i>
+                            <% end %>
+                            <% (5 - feedback.overall_rating).times do %>
+                              <i class="bi bi-star text-muted"></i>
+                            <% end %>
+                          </div>
+                        </td>
+                        <td><%= feedback.content_rating %>/5</td>
+                        <td><%= feedback.relevance_rating %>/5</td>
+                        <td><%= feedback.organization_rating %>/5</td>
+                        <td>
+                          <% if feedback.comments.present? %>
+                            <span class="d-inline-block text-truncate" style="max-width: 150px;">
+                              <%= feedback.comments %>
+                            </span>
+                            <button type="button" class="btn btn-sm btn-link p-0 ms-1" data-bs-toggle="modal" data-bs-target="#commentModal<%= feedback.id %>">
+                              <i class="bi bi-eye-fill"></i>
+                            </button>
+                            
+                            <!-- Comment Modal -->
+                            <div class="modal fade" id="commentModal<%= feedback.id %>" tabindex="-1" aria-labelledby="commentModalLabel<%= feedback.id %>" aria-hidden="true">
+                              <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title" id="commentModalLabel<%= feedback.id %>">Feedback Comments</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    <%= feedback.comments %>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          <% else %>
+                            <span class="text-muted">No comments</span>
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% else %>
+              <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+                <p class="text-muted">No program feedback found for the selected criteria.</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('turbo:load', function() {
+    // Handle date range selection
+    const dateRangeSelect = document.querySelector('select[name="date_range"]');
+    const customRangeFields = document.getElementById('custom-range-fields');
+    
+    if (dateRangeSelect) {
+      dateRangeSelect.addEventListener('change', function() {
+        if (this.value === 'custom') {
+          customRangeFields.style.display = 'block';
+        } else {
+          customRangeFields.style.display = 'none';
+        }
+      });
+    }
+
+    // Handle feedback type selection
+    const feedbackTypeSelect = document.querySelector('select[name="feedback_type"]');
+    const sectionFilter = document.getElementById('section-filter');
+    const trainerFilter = document.getElementById('trainer-filter');
+    
+    if (feedbackTypeSelect) {
+      feedbackTypeSelect.addEventListener('change', function() {
+        if (this.value === 'program') {
+          sectionFilter.style.display = 'block';
+          trainerFilter.style.display = 'none';
+        } else if (this.value === 'trainer') {
+          sectionFilter.style.display = 'none';
+          trainerFilter.style.display = 'block';
+        } else {
+          sectionFilter.style.display = 'none';
+          trainerFilter.style.display = 'none';
+        }
+      });
+    }
+
+    // Validate custom date range on form submit
+    const form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', function(event) {
+        const dateRange = dateRangeSelect.value;
+        if (dateRange === 'custom') {
+          const startDate = document.querySelector('input[name="start_date"]').value;
+          const endDate = document.querySelector('input[name="end_date"]').value;
+          
+          if (!startDate || !endDate) {
+            event.preventDefault();
+            alert('Please select both start and end dates for custom range');
+          }
+        }
+      });
+    }
+
+    // Initialize charts if data exists
+    if (document.getElementById('trainerRatingsChart') && typeof Chart !== 'undefined') {
+      // The actual chart data should come from the controller
+      // This is just a placeholder
+      new Chart(document.getElementById('trainerRatingsChart'), {
+        type: 'radar',
+        data: {
+          labels: ['Overall', 'Knowledge', 'Communication', 'Engagement'],
+          datasets: [{
+            label: 'Average Ratings',
+            data: <%= @trainer_chart_data&.to_json&.html_safe || '[0, 0, 0, 0]' %>,
+            fill: true,
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgb(54, 162, 235)',
+            pointBackgroundColor: 'rgb(54, 162, 235)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(54, 162, 235)'
+          }]
+        },
+        options: {
+          elements: {
+            line: {
+              borderWidth: 3
+            }
+          },
+          scales: {
+            r: {
+              angleLines: {
+                display: true
+              },
+              suggestedMin: 0,
+              suggestedMax: 5
+            }
+          }
+        }
+      });
+    }
+
+    if (document.getElementById('programRatingsChart') && typeof Chart !== 'undefined') {
+      // The actual chart data should come from the controller
+      // This is just a placeholder
+      new Chart(document.getElementById('programRatingsChart'), {
+        type: 'radar',
+        data: {
+          labels: ['Overall', 'Content', 'Relevance', 'Organization'],
+          datasets: [{
+            label: 'Average Ratings',
+            data: <%= @program_chart_data&.to_json&.html_safe || '[0, 0, 0, 0]' %>,
+            fill: true,
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgb(75, 192, 192)',
+            pointBackgroundColor: 'rgb(75, 192, 192)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(75, 192, 192)'
+          }]
+        },
+        options: {
+          elements: {
+            line: {
+              borderWidth: 3
+            }
+          },
+          scales: {
+            r: {
+              angleLines: {
+                display: true
+              },
+              suggestedMin: 0,
+              suggestedMax: 5
+            }
+          }
+        }
+      });
+    }
+  });
+</script> 

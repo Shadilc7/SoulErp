@@ -34,6 +34,12 @@
               </label>
             </div>
 
+            <% if question.description.present? %>
+              <div class="mb-2">
+                <small class="form-text text-muted"><%= question.description %></small>
+              </div>
+            <% end %>
+
             <% case question.question_type %>
             <% when "short_answer" %>
               <%= text_field_tag "responses[#{question.id}][answer]",
@@ -157,10 +163,6 @@
               <div class="rating-container">
                 <%= render 'rating_question', question: question %>
               </div>
-            <% end %>
-
-            <% if question.description.present? %>
-              <small class="form-text text-muted mt-1"><%= question.description %></small>
             <% end %>
           </div>
         <% end %>

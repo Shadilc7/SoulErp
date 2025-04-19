@@ -115,7 +115,6 @@ module InstituteAdmin
         @participants = @section.participants
                                 .includes(:user)
                                 .where(status: :active)
-                                .where(participant_type: 'student')
         
         # If no participants found via association, try direct SQL query
         if @participants.empty?

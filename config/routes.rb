@@ -111,7 +111,9 @@ Rails.application.routes.draw do
       end
       resources :reports, only: [:index] do
         collection do
+          get 'assignment_reports_menu'
           get 'assignment_reports'
+          get 'individual_assignment_reports'
           get 'feedback_reports'
           get 'certificates'
         end

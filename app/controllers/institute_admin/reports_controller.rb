@@ -4,6 +4,10 @@ module InstituteAdmin
       # Just show the main reports navigation page
     end
 
+    def assignment_reports_menu
+      # Show menu for assignment reports types
+    end
+
     def assignment_reports
       @date_range = params[:date_range]
       @start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : Date.current
@@ -65,6 +69,49 @@ module InstituteAdmin
 
     def certificates
       # Handle certificate options page
+    end
+
+    def individual_assignment_reports
+      @date_range = params[:date_range]
+      @start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : Date.current
+      @end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : Date.current
+      @section_id = params[:section_id]
+      @participant_id = params[:participant_id]
+      @assignment_id = params[:assignment_id]
+
+      # Load participants for the selected section
+      @participants = if @section_id.present?
+                       current_institute.participants.includes(:user).where(section_id: @section_id)
+                     else
+                       []
+                     end
+
+      # Always fetch reports for CSV/PDF format, or when filter is applied in HTML format
+      if params[:format].in?(['csv', 'pdf']) || (params[:commit].present? && params[:submission_status].present?)
+        fetch_individual_assignment_reports
+      end
+
+      respond_to do |format|
+        format.html
+        format.csv { 
+          if @submitted_logs.nil? && @not_submitted_assignments.nil?
+            # Initialize empty collections to prevent nil errors
+            @submitted_logs = []
+            @not_submitted_assignments = []
+          end
+          send_data generate_individual_assignment_csv, filename: "individual_assignment_report_#{Date.current}.csv" 
+        }
+        format.pdf {
+          if @submitted_logs.nil? && @not_submitted_assignments.nil?
+            # Initialize empty collections to prevent nil errors
+            @submitted_logs = []
+            @not_submitted_assignments = []
+          end
+          
+          # Render PDF using Prawn or WickedPDF
+          render_individual_assignment_report_pdf
+        }
+      end
     end
 
     private
@@ -177,6 +224,73 @@ module InstituteAdmin
       end
     end
 
+    def fetch_individual_assignment_reports
+      # Only proceed if a participant is selected
+      return if @participant_id.blank?
+
+      participant = current_institute.participants.find(@participant_id)
+
+      if params[:submission_status] == 'submitted'
+        # Get submitted assignments for the participant
+        base_query = AssignmentResponseLog.includes(:participant, :assignment)
+                                        .where(institute: current_institute)
+                                        .where(participant_id: @participant_id)
+        
+        # Apply date filters
+        base_query = case @date_range
+                    when 'today'
+                      base_query.where(response_date: Date.current)
+                    when 'yesterday'
+                      base_query.where(response_date: Date.yesterday)
+                    when 'last_7_days'
+                      base_query.where(response_date: 7.days.ago.beginning_of_day..Time.current)
+                    when 'this_month'
+                      base_query.where(response_date: Time.current.beginning_of_month..Time.current)
+                    when 'custom'
+                      base_query.where(response_date: @start_date.beginning_of_day..@end_date.end_of_day)
+                    else
+                      base_query.where(response_date: Date.current)
+                    end
+        
+        # Apply assignment filter if selected
+        if @assignment_id.present? && @assignment_id != 'all'
+          base_query = base_query.where(assignment_id: @assignment_id)
+        end
+
+        @submitted_logs = base_query.order(response_date: :desc)
+        @not_submitted_assignments = []
+      else
+        # Get all assignments the participant should have completed
+        available_assignments = Assignment.where(institute: current_institute)
+                                       .active
+                                       .where("end_date >= ?", @start_date)
+                                       .where("start_date <= ?", @end_date)
+                                       
+        # Filter by specific assignment if selected
+        if @assignment_id.present? && @assignment_id != 'all'
+          available_assignments = available_assignments.where(id: @assignment_id)
+        end
+        
+        # Find assignments applicable to this participant
+        participant_assignments = available_assignments.select do |assignment|
+          if assignment.assignment_type == "individual"
+            assignment.participants.include?(participant)
+          else
+            assignment.sections.include?(participant.section)
+          end
+        end
+        
+        # Find which assignments haven't been submitted
+        submitted_assignment_ids = AssignmentResponseLog.where(participant_id: @participant_id)
+                                                     .where(response_date: @start_date.beginning_of_day..@end_date.end_of_day)
+                                                     .pluck(:assignment_id)
+                                                     .uniq
+        
+        @not_submitted_assignments = participant_assignments.reject { |a| submitted_assignment_ids.include?(a.id) }
+        @submitted_logs = []
+      end
+    end
+
     def generate_assignment_csv
       require 'csv'
 
@@ -254,6 +368,37 @@ module InstituteAdmin
               participant.full_name,
               participant.section.name,
               participant.email
+            ]
+          end
+        end
+      end
+    end
+
+    def generate_individual_assignment_csv
+      require 'csv'
+
+      CSV.generate(headers: true) do |csv|
+        if params[:submission_status] == 'submitted'
+          # Generate submitted assignments CSV
+          csv << ['Date', 'Assignment', 'Questions']
+          
+          @submitted_logs.each do |log|
+            csv << [
+              log.response_date.strftime("%B %d, %Y"),
+              log.assignment.title,
+              log.assignment_response_ids.size
+            ]
+          end
+        else
+          # Generate not submitted assignments CSV
+          csv << ['Assignment', 'Start Date', 'End Date', 'Status']
+          
+          @not_submitted_assignments.each do |assignment|
+            csv << [
+              assignment.title,
+              assignment.start_date.strftime("%B %d, %Y"),
+              assignment.end_date.strftime("%B %d, %Y"),
+              assignment.status
             ]
           end
         end
@@ -451,6 +596,204 @@ module InstituteAdmin
           end
         else
           pdf.text "No pending submissions found for the selected criteria.", align: :center, style: :italic, color: '666666'
+          pdf.stroke do
+            pdf.rectangle [0, pdf.cursor], pdf.bounds.width, 50
+          end
+        end
+      end
+      
+      # Footer
+      pdf.number_pages "Page <page> of <total>", 
+                       at: [pdf.bounds.right - 150, 0],
+                       width: 150,
+                       align: :right,
+                       size: 9
+      
+      # Add footer note
+      pdf.go_to_page(pdf.page_count)
+      pdf.move_down 10
+      pdf.horizontal_rule
+      pdf.move_down 5
+      pdf.text "This is a system generated report.", align: :center, size: 9, color: '666666'
+      
+      pdf
+    end
+
+    def render_individual_assignment_report_pdf
+      submission_status = params[:submission_status] || 'submitted'
+      report_title = submission_status == 'submitted' ? "Submitted Assignments Report" : "Not Submitted Assignments Report"
+      
+      participant = current_institute.participants.find(@participant_id)
+      
+      # Get filter information for the report header
+      date_range_text = case @date_range
+                        when 'today'
+                          "Today (#{Date.current.strftime('%b %d, %Y')})"
+                        when 'yesterday'
+                          "Yesterday (#{Date.yesterday.strftime('%b %d, %Y')})"
+                        when 'last_7_days'
+                          "Last 7 Days"
+                        when 'this_month'
+                          "This Month (#{Date.current.strftime('%B %Y')})"
+                        when 'custom'
+                          "#{@start_date.strftime('%b %d, %Y')} to #{@end_date.strftime('%b %d, %Y')}"
+                        else
+                          "All Dates"
+                        end
+                        
+      assignment_text = if @assignment_id.present? && @assignment_id != 'all'
+                        assignment = current_institute.assignments.find(@assignment_id)
+                        "Assignment: #{assignment.title}"
+                      else
+                        "All Assignments"
+                      end
+
+      # Generate PDF using Prawn directly
+      pdf = generate_individual_assignment_pdf(
+        report_title: "Individual #{report_title} for #{participant.full_name}",
+        date_range: date_range_text,
+        participant: participant.full_name,
+        section: participant.section.name,
+        assignment: assignment_text,
+        institute_name: current_institute.name,
+        submission_status: submission_status
+      )
+      
+      # Check if the user wants to download or preview
+      disposition = params[:download] == 'true' ? 'attachment' : 'inline'
+      
+      send_data pdf.render, 
+        filename: "individual_assignment_report_#{Date.current.strftime('%Y%m%d')}.pdf",
+        type: 'application/pdf',
+        disposition: disposition
+    end
+
+    def generate_individual_assignment_pdf(options = {})
+      require 'prawn'
+      require 'prawn/table'
+      
+      pdf = Prawn::Document.new(
+        page_size: 'A4',
+        margin: [30, 30, 30, 30],
+        info: {
+          Title: options[:report_title],
+          Author: current_institute.name,
+          Subject: 'Individual Assignment Report',
+          Creator: 'Soul ERP',
+          CreationDate: Time.now
+        }
+      )
+      
+      # Add logo if present
+      if current_institute.respond_to?(:logo) && 
+         current_institute.logo.present? && 
+         current_institute.logo.respond_to?(:attached?) && 
+         current_institute.logo.attached?
+        begin
+          logo_path = ActiveStorage::Blob.service.path_for(current_institute.logo.key)
+          pdf.image logo_path, position: :center, width: 120
+        rescue => e
+          # Skip logo if it can't be processed
+          Rails.logger.warn "Failed to add logo to PDF: #{e.message}"
+        end
+      end
+      
+      # Report header
+      pdf.font_size(18) { pdf.text options[:report_title], align: :center, style: :bold }
+      pdf.move_down 10
+      
+      # Institute info
+      pdf.font_size(14) { pdf.text options[:institute_name], align: :center, style: :bold }
+      pdf.font_size(10) { pdf.text "Generated on #{Date.current.strftime('%B %d, %Y')}", align: :center, color: '666666' }
+      pdf.move_down 20
+      
+      # Filter info
+      filter_data = [
+        ["Date Range:", options[:date_range]],
+        ["Participant:", options[:participant]],
+        ["Section:", options[:section]],
+        ["Assignment:", options[:assignment]]
+      ]
+      
+      pdf.table(filter_data, width: pdf.bounds.width * 0.7, position: :center) do
+        cells.borders = []
+        column(0).font_style = :bold
+        column(0).width = 100
+        column(0).align = :right
+        column(1).align = :left
+        cells.padding = [5, 10]
+      end
+      
+      pdf.move_down 20
+      
+      # Report data
+      if options[:submission_status] == 'submitted'
+        if @submitted_logs.any?
+          # Table header
+          header = ['Date', 'Assignment', 'Questions']
+          
+          # Table data
+          data = []
+          @submitted_logs.each do |log|
+            row = [
+              log.response_date.strftime("%b %d, %Y"),
+              log.assignment.title,
+              log.assignment_response_ids.size.to_s
+            ]
+            
+            data << row
+          end
+          
+          # Generate table
+          pdf.table([header] + data, header: true, width: pdf.bounds.width) do
+            cells.padding = [8, 10]
+            
+            row(0).font_style = :bold
+            row(0).background_color = 'EEEEEE'
+            
+            # Zebra striping
+            rows(1..data.length).each_with_index do |row, i|
+              row.background_color = 'F5F5F5' if i.even?
+            end
+          end
+        else
+          pdf.text "No submitted assignments found for the selected criteria.", align: :center, style: :italic, color: '666666'
+          pdf.stroke do
+            pdf.rectangle [0, pdf.cursor], pdf.bounds.width, 50
+          end
+        end
+      else
+        if @not_submitted_assignments.any?
+          # Table header
+          header = ['Assignment', 'Start Date', 'End Date', 'Status']
+          
+          # Table data
+          data = []
+          @not_submitted_assignments.each do |assignment|
+            row = [
+              assignment.title,
+              assignment.start_date.strftime("%b %d, %Y"),
+              assignment.end_date.strftime("%b %d, %Y"),
+              assignment.status.titleize
+            ]
+            
+            data << row
+          end
+          
+          # Generate table
+          pdf.table([header] + data, header: true, width: pdf.bounds.width) do
+            cells.padding = [8, 10]
+            
+            row(0).font_style = :bold
+            row(0).background_color = 'EEEEEE'
+            
+            # Zebra striping
+            rows(1..data.length).each_with_index do |row, i|
+              row.background_color = 'F5F5F5' if i.even?
+            end
+          end
+        else
+          pdf.text "No pending assignments found for the selected criteria.", align: :center, style: :italic, color: '666666'
           pdf.stroke do
             pdf.rectangle [0, pdf.cursor], pdf.bounds.width, 50
           end

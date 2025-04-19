@@ -45,7 +45,7 @@
               <%= link_to "Back to Dashboard", admin_root_path, 
                   class: "btn btn-outline-secondary" %>
             </div>
-          <% end %>
+          <% end if @registration_setting.present? %>
         </div>
       </div>
     </div>

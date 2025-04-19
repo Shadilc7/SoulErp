@@ -9,7 +9,7 @@ class RegistrationSetting < ApplicationRecord
     first || begin
       # Get all active institute IDs for default value
       default_institutes = Institute.active.pluck(:id)
-      create!(enabled_institutes: default_institutes)
+      create!(enabled_institutes: default_institutes) if default_institutes.any?
     end
   end
 

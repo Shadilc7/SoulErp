@@ -1,126 +1,143 @@
-<div class="card mb-4">
-  <div class="card-header d-flex justify-content-between align-items-center py-3">
-    <div class="d-flex align-items-center">
-      <h5 class="mb-0">Section-wise Feedback Reports</h5>
-    </div>
+<div class="container-fluid py-4">
+  <!-- Modern Breadcrumb -->
+  <div class="breadcrumb-wrapper mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb breadcrumb-custom">
+        <li class="breadcrumb-item"><%= link_to institute_admin_root_path do %><i class="bi bi-house-door"></i><% end %></li>
+        <li class="breadcrumb-item"><%= link_to "Reports", institute_admin_reports_path %></li>
+        <li class="breadcrumb-item"><%= link_to "Feedback Reports", feedback_reports_menu_institute_admin_reports_path %></li>
+        <li class="breadcrumb-item active" aria-current="page">Section-wise Feedback</li>
+      </ol>
+    </nav>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold mb-0">Section-wise Feedback Reports</h1>
     <%= link_to feedback_reports_menu_institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
       <i class="bi bi-arrow-left"></i> Back
     <% end %>
   </div>
 
-  <div class="card-body">
-    <!-- Filters -->
-    <%= form_with url: section_feedback_reports_institute_admin_reports_path, method: :get, local: true, class: "mb-4" do |f| %>
-      <div class="filter-container p-3 mb-4 bg-light rounded-3">
-        <h6 class="text-muted mb-3">
-          <i class="bi bi-funnel-fill me-2"></i>Filter Options
-        </h6>
-        
-        <!-- Date Range Filter -->
-        <div class="row mb-3 align-items-center">
-          <label for="date_range" class="col-md-3 col-form-label">
-            <div class="d-flex align-items-center">
-              <div class="icon-circle bg-primary bg-opacity-10 me-2">
-                <i class="bi bi-calendar-range text-primary"></i>
-              </div>
-              <span>Date Range</span>
-            </div>
-          </label>
-          <div class="col-md-9">
-            <%= select_tag :date_range,
-                options_for_select([
-                  ['Select Date Range', ''],
-                  ['Today', 'today'],
-                  ['Yesterday', 'yesterday'],
-                  ['Last 7 Days', 'last_7_days'],
-                  ['This Month', 'this_month'],
-                  ['Custom Range', 'custom']
-                ], @date_range),
-                class: 'form-select',
-                required: true,
-                data: { action: 'change->custom-range#toggle' } %>
-          </div>
-        </div>
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center py-3">
+      <div class="d-flex align-items-center">
+        <h5 class="mb-0">Section-wise Feedback Reports</h5>
+      </div>
+    </div>
 
-        <!-- Custom Date Range -->
-        <div class="row mb-3 align-items-center custom-date-container" id="custom-range-fields" style="<%= @date_range == 'custom' ? '' : 'display: none;' %>">
-          <div class="col-md-3">
-            <div class="spacer" style="height: 38px;"></div>
+    <div class="card-body">
+      <!-- Filters -->
+      <%= form_with url: section_feedback_reports_institute_admin_reports_path, method: :get, local: true, class: "mb-4" do |f| %>
+        <div class="filter-container p-3 mb-4 bg-light rounded-3">
+          <h6 class="text-muted mb-3">
+            <i class="bi bi-funnel-fill me-2"></i>Filter Options
+          </h6>
+          
+          <!-- Date Range Filter -->
+          <div class="row mb-3 align-items-center">
+            <label for="date_range" class="col-md-3 col-form-label">
+              <div class="d-flex align-items-center">
+                <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                  <i class="bi bi-calendar-range text-primary"></i>
+                </div>
+                <span>Date Range</span>
+              </div>
+            </label>
+            <div class="col-md-9">
+              <%= select_tag :date_range,
+                  options_for_select([
+                    ['Select Date Range', ''],
+                    ['Today', 'today'],
+                    ['Yesterday', 'yesterday'],
+                    ['Last 7 Days', 'last_7_days'],
+                    ['This Month', 'this_month'],
+                    ['Custom Range', 'custom']
+                  ], @date_range),
+                  class: 'form-select',
+                  required: true,
+                  data: { action: 'change->custom-range#toggle' } %>
+            </div>
           </div>
-          <div class="col-md-9">
-            <div class="row g-2">
-              <div class="col-md-6">
-                <div class="input-group">
-                  <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-calendar-date text-primary"></i>
-                  </span>
-                  <%= date_field_tag :start_date, @start_date, class: 'form-control border-start-0', placeholder: 'From' %>
+
+          <!-- Custom Date Range -->
+          <div class="row mb-3 align-items-center custom-date-container" id="custom-range-fields" style="<%= @date_range == 'custom' ? '' : 'display: none;' %>">
+            <div class="col-md-3">
+              <div class="spacer" style="height: 38px;"></div>
+            </div>
+            <div class="col-md-9">
+              <div class="row g-2">
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                      <i class="bi bi-calendar-date text-primary"></i>
+                    </span>
+                    <%= date_field_tag :start_date, @start_date, class: 'form-control border-start-0', placeholder: 'From' %>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                      <i class="bi bi-calendar-date text-primary"></i>
+                    </span>
+                    <%= date_field_tag :end_date, @end_date, class: 'form-control border-start-0', placeholder: 'To' %>
+                  </div>
                 </div>
               </div>
-              <div class="col-md-6">
-                <div class="input-group">
-                  <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-calendar-date text-primary"></i>
-                  </span>
-                  <%= date_field_tag :end_date, @end_date, class: 'form-control border-start-0', placeholder: 'To' %>
+            </div>
+          </div>
+
+          <!-- Section Filter -->
+          <div class="row mb-3 align-items-center">
+            <label for="section_id" class="col-md-3 col-form-label">
+              <div class="d-flex align-items-center">
+                <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                  <i class="bi bi-people-fill text-primary"></i>
                 </div>
+                <span>Section</span>
               </div>
+            </label>
+            <div class="col-md-9">
+              <%= select_tag :section_id,
+                  options_for_select([
+                    ['Select Section', '']
+                  ] + current_institute.sections.map { |s| [s.name, s.id] }, @section_id),
+                  class: 'form-select',
+                  required: true %>
             </div>
           </div>
-        </div>
 
-        <!-- Section Filter -->
-        <div class="row mb-3 align-items-center">
-          <label for="section_id" class="col-md-3 col-form-label">
-            <div class="d-flex align-items-center">
-              <div class="icon-circle bg-primary bg-opacity-10 me-2">
-                <i class="bi bi-people-fill text-primary"></i>
+          <!-- Training Program Filter -->
+          <div class="row mb-3 align-items-center">
+            <label for="training_program_id" class="col-md-3 col-form-label">
+              <div class="d-flex align-items-center">
+                <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                  <i class="bi bi-journal-richtext text-primary"></i>
+                </div>
+                <span>Training Program</span>
               </div>
-              <span>Section</span>
+            </label>
+            <div class="col-md-9">
+              <%= select_tag :training_program_id,
+                  options_for_select([
+                    ['Select Training Program', ''],
+                    ['All Training Programs', 'all']
+                  ] + current_institute.training_programs.map { |tp| [tp.title, tp.id] }, @training_program_id),
+                  class: 'form-select' %>
             </div>
-          </label>
-          <div class="col-md-9">
-            <%= select_tag :section_id,
-                options_for_select([
-                  ['Select Section', '']
-                ] + current_institute.sections.map { |s| [s.name, s.id] }, @section_id),
-                class: 'form-select',
-                required: true %>
           </div>
-        </div>
 
-        <!-- Training Program Filter -->
-        <div class="row mb-3 align-items-center">
-          <label for="training_program_id" class="col-md-3 col-form-label">
-            <div class="d-flex align-items-center">
-              <div class="icon-circle bg-primary bg-opacity-10 me-2">
-                <i class="bi bi-journal-richtext text-primary"></i>
+          <!-- Submission Status -->
+          <div class="row mb-3 align-items-center">
+            <label for="submission_status" class="col-md-3 col-form-label">
+              <div class="d-flex align-items-center">
+                <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                  <i class="bi bi-check-circle-fill text-primary"></i>
+                </div>
+                <span>Submission Status</span>
               </div>
-              <span>Training Program</span>
-            </div>
-          </label>
-          <div class="col-md-9">
-            <%= select_tag :training_program_id,
-                options_for_select([
-                  ['Select Training Program', ''],
-                  ['All Training Programs', 'all']
-                ] + current_institute.training_programs.map { |tp| [tp.title, tp.id] }, @training_program_id),
-                class: 'form-select' %>
-          </div>
-        </div>
-
-        <!-- Submission Status -->
-        <div class="row mb-3 align-items-center">
-          <label for="submission_status" class="col-md-3 col-form-label">
-            <div class="d-flex align-items-center">
-              <div class="icon-circle bg-primary bg-opacity-10 me-2">
-                <i class="bi bi-check-circle-fill text-primary"></i>
-              </div>
-              <span>Submission Status</span>
-            </div>
-          </label>
-          <div class="col-md-9">
-            <%= select_tag :submission_status,
+            </label>
+            <div class="col-md-9">
+              <%= select_tag :submission_status,
                 options_for_select([
                   ['Select Status', ''],
                   ['Submitted', 'submitted'],
@@ -128,140 +145,141 @@
                 ], params[:submission_status]),
                 class: 'form-select',
                 required: true %>
+            </div>
           </div>
-        </div>
 
-        <!-- Submit Button -->
-        <div class="row">
-          <div class="col-md-3"></div>
-          <div class="col-md-9">
-            <div class="d-flex">
-              <%= submit_tag "Generate Report", class: "btn btn-primary px-4 me-2" %>
-              <% if params[:commit].present? %>
-                <%= link_to section_feedback_reports_institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
-                  <i class="bi bi-arrow-clockwise me-1"></i>Reset Filters
+          <!-- Submit Button -->
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-9">
+              <div class="d-flex">
+                <%= submit_tag "Generate Report", class: "btn btn-primary px-4 me-2" %>
+                <% if params[:commit].present? %>
+                  <%= link_to section_feedback_reports_institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
+                    <i class="bi bi-arrow-clockwise me-1"></i>Reset Filters
+                  <% end %>
                 <% end %>
-              <% end %>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-    <% end %>
-
-    <!-- Report Content -->
-    <% if params[:commit].present? && params[:submission_status].present? %>
-      <% if params[:submission_status] == 'submitted' %>
-        <!-- Submitted Feedbacks -->
-        <div class="card border-0 shadow-sm mb-4">
-          <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-            <h6 class="mb-0">Submitted Feedbacks</h6>
-            <% if @submitted_feedbacks&.any? %>
-            <div>
-              <%= link_to section_feedback_reports_institute_admin_reports_path(format: :csv, submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-primary me-2" do %>
-                <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
-              <% end %>
-              <%= link_to section_feedback_reports_institute_admin_reports_path(format: :pdf, submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-danger me-2", target: "_blank" do %>
-                <i class="bi bi-file-earmark-pdf"></i> Preview PDF
-              <% end %>
-              <%= link_to section_feedback_reports_institute_admin_reports_path(format: :pdf, download: true, submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-danger" do %>
-                <i class="bi bi-download"></i> Download PDF
-              <% end %>
-            </div>
-            <% end %>
-          </div>
-          <div class="card-body">
-            <% if @submitted_feedbacks&.any? %>
-              <div class="table-responsive">
-                <table class="table table-hover">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Participant</th>
-                      <th>Section</th>
-                      <th>Training Program</th>
-                      <th>Rating</th>
-                      <th>Feedback</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <% @submitted_feedbacks.each do |feedback| %>
-                      <tr>
-                        <td><%= feedback.created_at.strftime("%b %d, %Y") %></td>
-                        <td><%= feedback.participant.full_name %></td>
-                        <td><%= feedback.participant.section.name %></td>
-                        <td><%= feedback.training_program.title %></td>
-                        <td><%= "★" * feedback.rating %></td>
-                        <td><%= truncate(feedback.content, length: 100) %></td>
-                      </tr>
-                    <% end %>
-                  </tbody>
-                </table>
-              </div>
-            <% else %>
-              <div class="text-center py-5">
-                <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
-                <p class="text-muted">No submitted feedbacks found for the selected criteria.</p>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      <% else %>
-        <!-- Not Submitted Feedbacks -->
-        <div class="card border-0 shadow-sm mb-4">
-          <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-            <h6 class="mb-0">Not Submitted Feedbacks</h6>
-            <% if @not_submitted_participants&.any? %>
-            <div>
-              <%= link_to section_feedback_reports_institute_admin_reports_path(format: :csv, submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-primary me-2" do %>
-                <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
-              <% end %>
-              <%= link_to section_feedback_reports_institute_admin_reports_path(format: :pdf, submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-danger me-2", target: "_blank" do %>
-                <i class="bi bi-file-earmark-pdf"></i> Preview PDF
-              <% end %>
-              <%= link_to section_feedback_reports_institute_admin_reports_path(format: :pdf, download: true, submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-danger" do %>
-                <i class="bi bi-download"></i> Download PDF
-              <% end %>
-            </div>
-            <% end %>
-          </div>
-          <div class="card-body">
-            <% if @not_submitted_participants&.any? %>
-              <div class="table-responsive">
-                <table class="table table-hover">
-                  <thead>
-                    <tr>
-                      <th>Participant</th>
-                      <th>Email</th>
-                      <th>Section</th>
-                      <% if @training_program_id.present? && @training_program_id != 'all' %>
-                        <th>Training Program</th>
-                      <% end %>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <% @not_submitted_participants.each do |participant| %>
-                      <tr>
-                        <td><%= participant.full_name %></td>
-                        <td><%= participant.email %></td>
-                        <td><%= participant.section.name %></td>
-                        <% if @training_program_id.present? && @training_program_id != 'all' %>
-                          <td><%= @training_program_title %></td>
-                        <% end %>
-                      </tr>
-                    <% end %>
-                  </tbody>
-                </table>
-              </div>
-            <% else %>
-              <div class="text-center py-5">
-                <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
-                <p class="text-muted">No pending feedbacks found for the selected criteria.</p>
-              </div>
-            <% end %>
           </div>
         </div>
       <% end %>
-    <% end %>
+
+      <!-- Report Content -->
+      <% if params[:commit].present? && params[:submission_status].present? %>
+        <% if params[:submission_status] == 'submitted' %>
+          <!-- Submitted Feedbacks -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+              <h6 class="mb-0">Submitted Feedbacks</h6>
+              <% if @submitted_feedbacks&.any? %>
+              <div>
+                <%= link_to section_feedback_reports_institute_admin_reports_path(format: :csv, submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-primary me-2" do %>
+                  <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+                <% end %>
+                <%= link_to section_feedback_reports_institute_admin_reports_path(format: :pdf, submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-danger me-2", target: "_blank" do %>
+                  <i class="bi bi-file-earmark-pdf"></i> Preview PDF
+                <% end %>
+                <%= link_to section_feedback_reports_institute_admin_reports_path(format: :pdf, download: true, submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-danger" do %>
+                  <i class="bi bi-download"></i> Download PDF
+                <% end %>
+              </div>
+              <% end %>
+            </div>
+            <div class="card-body">
+              <% if @submitted_feedbacks&.any? %>
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Participant</th>
+                        <th>Section</th>
+                        <th>Training Program</th>
+                        <th>Rating</th>
+                        <th>Feedback</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% @submitted_feedbacks.each do |feedback| %>
+                        <tr>
+                          <td><%= feedback.created_at.strftime("%b %d, %Y") %></td>
+                          <td><%= feedback.participant.full_name %></td>
+                          <td><%= feedback.participant.section.name %></td>
+                          <td><%= feedback.training_program.title %></td>
+                          <td><%= "★" * feedback.rating %></td>
+                          <td><%= truncate(feedback.content, length: 100) %></td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              <% else %>
+                <div class="text-center py-5">
+                  <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+                  <p class="text-muted">No submitted feedbacks found for the selected criteria.</p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% else %>
+          <!-- Not Submitted Feedbacks -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+              <h6 class="mb-0">Not Submitted Feedbacks</h6>
+              <% if @not_submitted_participants&.any? %>
+              <div>
+                <%= link_to section_feedback_reports_institute_admin_reports_path(format: :csv, submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-primary me-2" do %>
+                  <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+                <% end %>
+                <%= link_to section_feedback_reports_institute_admin_reports_path(format: :pdf, submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-danger me-2", target: "_blank" do %>
+                  <i class="bi bi-file-earmark-pdf"></i> Preview PDF
+                <% end %>
+                <%= link_to section_feedback_reports_institute_admin_reports_path(format: :pdf, download: true, submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-danger" do %>
+                  <i class="bi bi-download"></i> Download PDF
+                <% end %>
+              </div>
+              <% end %>
+            </div>
+            <div class="card-body">
+              <% if @not_submitted_participants&.any? %>
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Participant</th>
+                        <th>Email</th>
+                        <th>Section</th>
+                        <% if @training_program_id.present? && @training_program_id != 'all' %>
+                          <th>Training Program</th>
+                        <% end %>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% @not_submitted_participants.each do |participant| %>
+                        <tr>
+                          <td><%= participant.full_name %></td>
+                          <td><%= participant.email %></td>
+                          <td><%= participant.section.name %></td>
+                          <% if @training_program_id.present? && @training_program_id != 'all' %>
+                            <td><%= @training_program_title %></td>
+                          <% end %>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              <% else %>
+                <div class="text-center py-5">
+                  <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+                  <p class="text-muted">No pending feedbacks found for the selected criteria.</p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
   </div>
 </div>
 
@@ -269,6 +287,47 @@
   .filter-container {
     border-left: 4px solid var(--bs-primary);
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  }
+  
+  /* Modern Breadcrumb Styling */
+  .breadcrumb-wrapper {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+  }
+  
+  .breadcrumb-custom {
+    margin-bottom: 0;
+    padding: 0;
+    background: transparent;
+  }
+  
+  .breadcrumb-custom .breadcrumb-item {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .breadcrumb-custom .breadcrumb-item a {
+    color: #6c757d;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  
+  .breadcrumb-custom .breadcrumb-item a:hover {
+    color: var(--bs-primary);
+  }
+  
+  .breadcrumb-custom .breadcrumb-item.active {
+    color: var(--bs-primary);
+    font-weight: 600;
+  }
+  
+  .breadcrumb-custom .breadcrumb-item+.breadcrumb-item::before {
+    content: "›";
+    color: #adb5bd;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0 0.5rem;
   }
   
   .icon-circle {

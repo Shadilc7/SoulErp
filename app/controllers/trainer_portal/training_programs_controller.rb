@@ -1,6 +1,6 @@
 module TrainerPortal
   class TrainingProgramsController < TrainerPortal::BaseController
-    before_action :set_training_program, only: [:show, :edit, :update, :destroy, :update_progress, :mark_completed]
+    before_action :set_training_program, only: [:show, :edit, :update, :destroy, :mark_completed]
 
     def index
       @training_programs = current_trainer.training_programs
@@ -55,16 +55,6 @@ module TrainerPortal
         notice: 'Training program was successfully deleted.'
     end
 
-    def update_progress
-      if @training_program.update(progress_params)
-        redirect_to trainer_portal_training_program_path(@training_program),
-          notice: 'Progress was successfully updated.'
-      else
-        redirect_to trainer_portal_training_program_path(@training_program),
-          alert: 'Failed to update progress.'
-      end
-    end
-
     def mark_completed
       if @training_program.update(status: :completed)
         redirect_to trainer_portal_training_program_path(@training_program),
@@ -93,10 +83,6 @@ module TrainerPortal
         participant_ids: [],
         section_ids: []
       )
-    end
-
-    def progress_params
-      params.require(:training_program).permit(:progress)
     end
   end
 end

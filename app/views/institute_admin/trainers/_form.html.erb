@@ -11,20 +11,12 @@
   <% end %>
 
   <div class="row">
-    <div class="col-md-6 mb-3">
+    <div class="col-md-12 mb-3">
       <div class="form-group">
         <%= f.fields_for :user do |user_f| %>
-          <%= user_f.label :first_name, class: "form-label" %>
-          <%= user_f.text_field :first_name, class: "form-control", placeholder: "Enter first name" %>
-        <% end %>
-      </div>
-    </div>
-
-    <div class="col-md-6 mb-3">
-      <div class="form-group">
-        <%= f.fields_for :user do |user_f| %>
-          <%= user_f.label :last_name, class: "form-label" %>
-          <%= user_f.text_field :last_name, class: "form-control", placeholder: "Enter last name" %>
+          <%= user_f.label :first_name, "Name", class: "form-label" %>
+          <%= user_f.text_field :first_name, class: "form-control", placeholder: "Enter name" %>
+          <%= user_f.hidden_field :last_name, value: "" %>
         <% end %>
       </div>
     </div>

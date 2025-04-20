@@ -119,8 +119,6 @@ Rails.application.routes.draw do
       resources :training_programs do
         resources :attendances, only: [:index, :new, :create]
         member do
-          patch :update_status
-          patch :update_progress
           patch :mark_completed
         end
       end

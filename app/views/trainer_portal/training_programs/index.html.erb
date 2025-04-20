@@ -1,87 +1,98 @@
 <div class="container-fluid py-4">
-  <div class="card card-custom mb-4">
-    <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">Training Programs</h5>
-      <div class="btn-group">
-        <%= link_to trainer_portal_training_programs_path, 
-            class: "btn btn-outline-custom #{'active' unless params[:status]}" do %>
-          <i class="bi bi-grid"></i> All
-        <% end %>
-        <%= link_to trainer_portal_training_programs_path(status: :ongoing), 
-            class: "btn btn-outline-custom #{'active' if params[:status] == 'ongoing'}" do %>
-          <i class="bi bi-play-circle"></i> Ongoing
-        <% end %>
-        <%= link_to trainer_portal_training_programs_path(status: :completed), 
-            class: "btn btn-outline-custom #{'active' if params[:status] == 'completed'}" do %>
-          <i class="bi bi-check-circle"></i> Completed
-        <% end %>
+  <div class="card card-custom">
+    <div class="card-header card-header-custom py-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Training Programs</h5>
       </div>
     </div>
-  </div>
 
-  <div class="row">
-    <% if @training_programs.any? %>
-      <% @training_programs.each do |program| %>
-        <div class="col-md-6 col-lg-4 mb-4">
-          <div class="card card-custom h-100">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-start mb-3">
-                <h5 class="card-title mb-0"><%= program.title %></h5>
-                <span class="badge badge-<%= program.status == 'completed' ? 'success' : 'primary' %>">
-                  <%= program.status.titleize %>
-                </span>
-              </div>
-              
-              <p class="text-muted small mb-3">
-                <i class="bi bi-calendar me-2"></i>
-                <%= program.start_date&.strftime("%b %d") %> - <%= program.end_date&.strftime("%b %d, %Y") %>
-              </p>
-
-              <p class="card-text text-muted mb-3">
-                <%= program.description&.truncate(100) || "No description available" %>
-              </p>
-
-              <div class="mb-3">
-                <p class="mb-1 small">Progress</p>
-                <div class="progress" style="height: 10px;">
-                  <div class="progress-bar bg-success" 
-                       role="progressbar" 
-                       style="width: <%= program.progress || 0 %>%" 
-                       aria-valuenow="<%= program.progress || 0 %>" 
-                       aria-valuemin="0" 
-                       aria-valuemax="100">
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between mt-1">
-                  <small class="text-muted"><%= program.progress || 0 %>% Complete</small>
-                  <small class="text-muted">
-                    <i class="bi bi-person me-1"></i>
-                    <%= program.assignee_name %>
-                  </small>
-                </div>
-              </div>
-
-              <%= link_to trainer_portal_training_program_path(program), 
-                  class: "btn btn-outline-custom w-100" do %>
-                <i class="bi bi-eye me-1"></i> View Details
+    <div class="card-body">
+      <% if @training_programs.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Assigned To</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @training_programs.each do |program| %>
+                <tr>
+                  <td><%= program.title %></td>
+                  <td><%= program.program_type.titleize %></td>
+                  <td>
+                    <% if program.individual? %>
+                      <% if program.participants.any? %>
+                        <span class="badge bg-info">
+                          <%= pluralize(program.participants.count, "participant") %>
+                        </span>
+                      <% else %>
+                        <%= program.participant&.user&.full_name %>
+                      <% end %>
+                    <% else %>
+                      <% if program.sections.any? %>
+                        <span class="badge bg-success">
+                          <%= pluralize(program.sections.count, "section") %>
+                        </span>
+                      <% else %>
+                        <%= program.section&.name %>
+                      <% end %>
+                    <% end %>
+                  </td>
+                  <td>
+                    <%= program.start_date.strftime("%b %d") %> - 
+                    <%= program.end_date.strftime("%b %d, %Y") %>
+                  </td>
+                  <td>
+                    <span class="badge badge-<%= program.status == 'completed' ? 'success' : 
+                    program.status == 'cancelled' ? 'danger' : 'warning' %>">
+                      <%= program.status.titleize %>
+                    </span>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <%= link_to trainer_portal_training_program_path(program), 
+                          class: "btn btn-sm btn-custom-primary me-2" do %>
+                        <i class="bi bi-eye"></i>
+                      <% end %>
+                      <%= link_to edit_trainer_portal_training_program_path(program), 
+                          class: "btn btn-sm btn-outline-custom me-2" do %>
+                        <i class="bi bi-pencil"></i>
+                      <% end %>
+                      <% if program.completed? %>
+                        <span class="btn btn-sm btn-success me-2" title="Program Completed">
+                          <i class="bi bi-check-circle-fill"></i>
+                        </span>
+                      <% else %>
+                        <%= button_to mark_completed_trainer_portal_training_program_path(program),
+                            method: :patch,
+                            class: "btn btn-sm btn-success me-2",
+                            form: { style: 'display: inline-block' },
+                            data: { turbo_confirm: "Are you sure you want to mark this program as completed?" } do %>
+                          <i class="bi bi-check-circle"></i>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
               <% end %>
-            </div>
-          </div>
+            </tbody>
+          </table>
         </div>
-      <% end %>
-    <% else %>
-      <div class="col-12">
-        <div class="text-center py-5">
-          <i class="bi bi-journal-x display-4 text-muted"></i>
-          <p class="mt-3 text-muted">
+      <% else %>
+        <div class="text-center py-4">
+          <i class="bi bi-mortarboard fs-1 text-muted mb-3"></i>
+          <p class="text-muted mb-0">
             No training programs found
-            <% if params[:status] %>
-              with status "<%= params[:status] %>"
-            <% end %>
           </p>
         </div>
-      </div>
-    <% end %>
+      <% end %>
+    </div>
   </div>
 </div>
 
@@ -90,70 +101,70 @@
     .card-custom {
       border: none;
       border-radius: 0.5rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-      background-color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: all 0.2s;
     }
 
     .card-custom:hover {
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
 
     .card-header-custom {
-      background-color: #f8f9fa;
-      border-bottom: 1px solid var(--card-border);
-      padding: 1.25rem 1.5rem;
+      background-color: white;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      padding: 1rem 1.5rem;
     }
 
     .badge {
-      padding: 0.4em 0.65em;
+      padding: 0.35em 0.65em;
       font-size: 0.75em;
       font-weight: 500;
       border-radius: 0.375rem;
     }
 
     .badge-primary {
-      background-color: var(--primary-color);
-      color: #ffffff;
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--primary-color);
     }
 
     .badge-success {
-      background-color: var(--success-color);
-      color: #ffffff;
+      background: rgba(34, 197, 94, 0.1);
+      color: var(--success-color);
     }
 
-    .btn-outline-custom.active {
-      background-color: var(--primary-color);
-      border-color: var(--primary-color);
-      color: #ffffff;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    .badge-warning {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning-color);
     }
 
-    .progress {
-      border-radius: 0.5rem;
-      background-color: #e0e0e0;
-      height: 8px;
+    .badge-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger-color);
     }
 
-    .progress-bar {
-      border-radius: 0.5rem;
-      background-color: var(--success-color);
+    .table thead th {
+      background: var(--sidebar-bg);
+      color: white;
+      font-weight: 500;
+      border: none;
+      padding: 1rem 1.5rem;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    .text-muted {
-      color: var(--text-secondary) !important;
+    .table tbody td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      vertical-align: middle;
     }
 
-    .btn-group .btn {
-      border-radius: 0.375rem;
-      margin: 0 0.25rem;
+    .table tbody tr:last-child td {
+      border-bottom: none;
     }
 
-    .btn-group .btn:first-child {
-      margin-left: 0;
-    }
-
-    .btn-group .btn:last-child {
-      margin-right: 0;
+    .table tbody tr:hover {
+      background-color: rgba(99, 102, 241, 0.05);
     }
   </style>
 <% end %>

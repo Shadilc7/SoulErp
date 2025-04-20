@@ -94,6 +94,7 @@ module InstituteAdmin
             new_question = current_institute.questions.new(
               title: "Copy of #{original_question.title}",
               description: original_question.description,
+              display_name: original_question.display_name ? "Copy of #{original_question.display_name}" : nil,
               question_type: original_question.question_type,
               required: original_question.required,
               active: original_question.active,
@@ -138,6 +139,7 @@ module InstituteAdmin
             new_question = current_institute.questions.new(
               title: "Copy of #{original_question.title}",
               description: original_question.description,
+              display_name: original_question.display_name ? "Copy of #{original_question.display_name}" : nil,
               question_type: original_question.question_type,
               required: original_question.required,
               active: original_question.active,
@@ -174,6 +176,7 @@ module InstituteAdmin
       params.require(:question).permit(
         :title,
         :description,
+        :display_name,
         :question_type,
         :required,
         :max_rating,

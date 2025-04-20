@@ -60,23 +60,6 @@
             </div>
 
             <% unless @training_program.completed? %>
-              <%= form_with(model: @training_program, 
-                          url: update_progress_trainer_portal_training_program_path(@training_program), 
-                          method: :patch,
-                          class: "mt-3") do |f| %>
-                <div class="input-group">
-                  <%= f.number_field :progress, 
-                      class: "form-control", 
-                      min: 0, 
-                      max: 100, 
-                      step: 5, 
-                      required: true %>
-                  <button class="btn btn-primary" type="submit">
-                    Update Progress
-                  </button>
-                </div>
-              <% end %>
-
               <div class="mt-3">
                 <%= button_to mark_completed_trainer_portal_training_program_path(@training_program), 
                     method: :patch,

@@ -15,6 +15,7 @@
           <thead>
             <tr>
               <th>Title</th>
+              <th>Display Name</th>
               <th>Type</th>
               <th>Status</th>
               <th class="text-center">Actions</th>
@@ -24,6 +25,7 @@
             <% @questions.each do |question| %>
               <tr>
                 <td><%= question.title %></td>
+                <td><%= question.display_name.present? ? question.display_name : "<em class='text-muted'>Not set</em>".html_safe %></td>
                 <td>
                   <span class="badge bg-primary">
                     <%= question.question_type.titleize %>

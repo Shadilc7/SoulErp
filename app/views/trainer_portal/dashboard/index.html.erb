@@ -33,20 +33,6 @@
     <div class="card-header card-header-custom py-3">
       <div class="d-flex justify-content-between align-items-center">
         <h5 class="mb-0">My Training Programs</h5>
-        <div class="btn-group">
-          <%= link_to trainer_portal_training_programs_path, 
-              class: "btn btn-outline-custom #{'active' unless params[:status]}" do %>
-            <i class="bi bi-grid"></i> All
-          <% end %>
-          <%= link_to trainer_portal_training_programs_path(status: :ongoing), 
-              class: "btn btn-outline-custom #{'active' if params[:status] == 'ongoing'}" do %>
-            <i class="bi bi-play-circle"></i> Ongoing
-          <% end %>
-          <%= link_to trainer_portal_training_programs_path(status: :completed), 
-              class: "btn btn-outline-custom #{'active' if params[:status] == 'completed'}" do %>
-            <i class="bi bi-check-circle"></i> Completed
-          <% end %>
-        </div>
       </div>
     </div>
     <div class="card-body">
@@ -55,61 +41,72 @@
           <table class="table table-hover">
             <thead>
               <tr>
-                <th>Program</th>
+                <th>Title</th>
                 <th>Type</th>
+                <th>Assigned To</th>
                 <th>Duration</th>
                 <th>Status</th>
-                <th>Progress</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               <% @training_programs.each do |program| %>
                 <tr>
+                  <td><%= program.title %></td>
+                  <td><%= program.program_type.titleize %></td>
                   <td>
-                    <div>
-                      <h6 class="mb-0"><%= program.title %></h6>
-                      <small class="text-muted"><%= program.description&.truncate(50) %></small>
-                    </div>
+                    <% if program.individual? %>
+                      <% if program.participants.any? %>
+                        <span class="badge bg-info">
+                          <%= pluralize(program.participants.count, "participant") %>
+                        </span>
+                      <% else %>
+                        <%= program.participant&.user&.full_name %>
+                      <% end %>
+                    <% else %>
+                      <% if program.sections.any? %>
+                        <span class="badge bg-success">
+                          <%= pluralize(program.sections.count, "section") %>
+                        </span>
+                      <% else %>
+                        <%= program.section&.name %>
+                      <% end %>
+                    <% end %>
                   </td>
                   <td>
-                    <span class="badge bg-<%= program.program_type == 'section' ? 'info' : 'primary' %>">
-                      <%= program.program_type.titleize %>
-                    </span>
+                    <%= program.start_date.strftime("%b %d") %> - 
+                    <%= program.end_date.strftime("%b %d, %Y") %>
                   </td>
                   <td>
-                    <div class="small text-muted">
-                      <%= program.start_date.strftime("%b %d") %> - <%= program.end_date.strftime("%b %d, %Y") %>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="badge badge-<%= program.status == 'completed' ? 'success' : 'primary' %>">
+                    <span class="badge badge-<%= program.status == 'completed' ? 'success' : 
+                    program.status == 'cancelled' ? 'danger' : 'warning' %>">
                       <%= program.status.titleize %>
                     </span>
                   </td>
                   <td>
-                    <div class="progress" style="height: 10px;">
-                      <div class="progress-bar bg-success" 
-                           role="progressbar" 
-                           style="width: <%= program.progress || 0 %>%" 
-                           aria-valuenow="<%= program.progress || 0 %>" 
-                           aria-valuemin="0" 
-                           aria-valuemax="100">
-                      </div>
-                    </div>
-                    <small class="text-muted"><%= program.progress || 0 %>% Complete</small>
-                  </td>
-                  <td>
-                    <%= link_to trainer_portal_training_program_path(program), 
-                        class: "btn btn-sm btn-custom-primary me-2" do %>
-                      <i class="bi bi-eye"></i>
-                    <% end %>
-                    <% if program.ongoing? %>
+                    <div class="d-flex align-items-center">
+                      <%= link_to trainer_portal_training_program_path(program), 
+                          class: "btn btn-sm btn-custom-primary me-2" do %>
+                        <i class="bi bi-eye"></i>
+                      <% end %>
                       <%= link_to edit_trainer_portal_training_program_path(program), 
-                          class: "btn btn-sm btn-outline-custom" do %>
+                          class: "btn btn-sm btn-outline-custom me-2" do %>
                         <i class="bi bi-pencil"></i>
                       <% end %>
-                    <% end %>
+                      <% if program.completed? %>
+                        <span class="btn btn-sm btn-success me-2" title="Program Completed">
+                          <i class="bi bi-check-circle-fill"></i>
+                        </span>
+                      <% else %>
+                        <%= button_to mark_completed_trainer_portal_training_program_path(program),
+                            method: :patch,
+                            class: "btn btn-sm btn-success me-2",
+                            form: { style: 'display: inline-block' },
+                            data: { turbo_confirm: "Are you sure you want to mark this program as completed?" } do %>
+                          <i class="bi bi-check-circle"></i>
+                        <% end %>
+                      <% end %>
+                    </div>
                   </td>
                 </tr>
               <% end %>
@@ -118,8 +115,8 @@
         </div>
       <% else %>
         <div class="text-center py-4">
-          <i class="bi bi-journal-x fs-1 text-muted mb-3"></i>
-          <p class="text-muted mb-0">No training programs assigned yet.</p>
+          <i class="bi bi-mortarboard fs-1 text-muted mb-3"></i>
+          <p class="text-muted mb-0">No training programs found</p>
         </div>
       <% end %>
     </div>
@@ -202,6 +199,16 @@
       color: var(--success-color);
     }
 
+    .badge-warning {
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+    }
+
+    .badge-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+
     .bg-primary-subtle {
       background-color: rgba(99, 102, 241, 0.1);
     }
@@ -224,7 +231,7 @@
 
     .table thead th {
       background: var(--sidebar-bg);
-      color: var(--text-primary);
+      color: white;
       font-weight: 500;
       border: none;
       padding: 1rem 1.5rem;

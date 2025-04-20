@@ -156,6 +156,7 @@
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
             <h6 class="mb-0">Submitted Assignments</h6>
+            <% if @submitted_logs.any? %>
             <div>
               <%= link_to assignment_reports_institute_admin_reports_path(format: :csv, submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, assignment_id: params[:assignment_id]), class: "btn btn-sm btn-outline-primary me-2" do %>
                 <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
@@ -167,6 +168,7 @@
                 <i class="bi bi-download"></i> Download PDF
               <% end %>
             </div>
+            <% end %>
           </div>
           <div class="card-body">
             <% if @submitted_logs.any? %>
@@ -205,6 +207,7 @@
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
             <h6 class="mb-0">Not Submitted Assignments</h6>
+            <% if @not_submitted_participants.any? %>
             <div>
               <%= link_to assignment_reports_institute_admin_reports_path(format: :csv, submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, assignment_id: params[:assignment_id]), class: "btn btn-sm btn-outline-primary me-2" do %>
                 <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
@@ -216,6 +219,7 @@
                 <i class="bi bi-download"></i> Download PDF
               <% end %>
             </div>
+            <% end %>
           </div>
           <div class="card-body">
             <% if @not_submitted_participants.any? %>

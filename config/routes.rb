@@ -114,7 +114,10 @@ Rails.application.routes.draw do
           get 'assignment_reports_menu'
           get 'assignment_reports'
           get 'individual_assignment_reports'
+          get 'feedback_reports_menu'
           get 'feedback_reports'
+          get 'section_feedback_reports'
+          get 'individual_feedback_reports'
           get 'certificates'
         end
       end

@@ -44,14 +44,19 @@ module InstituteAdmin
     end
 
     def feedback_reports
+      # Just show the feedback reports menu page
+    end
+
+    def section_feedback_reports
       @date_range = params[:date_range]
       @start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : Date.current
       @end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : Date.current
       @section_id = params[:section_id]
+      @training_program_id = params[:training_program_id]
 
-      # Always fetch reports for CSV format, or when filter is applied in HTML format
-      if params[:format] == 'csv' || (params[:commit].present? && params[:submission_status].present?)
-        fetch_feedback_reports
+      # Always fetch reports for CSV/PDF format, or when filter is applied in HTML format
+      if params[:format].in?(['csv', 'pdf']) || (params[:commit].present? && params[:submission_status].present?)
+        fetch_section_feedback_reports
       end
 
       respond_to do |format|
@@ -62,7 +67,60 @@ module InstituteAdmin
             @submitted_feedbacks = []
             @not_submitted_participants = []
           end
-          send_data generate_feedback_csv, filename: "feedback_report_#{Date.current}.csv" 
+          send_data generate_section_feedback_csv, filename: "section_feedback_report_#{Date.current}.csv" 
+        }
+        format.pdf {
+          if @submitted_feedbacks.nil? && @not_submitted_participants.nil?
+            # Initialize empty collections to prevent nil errors
+            @submitted_feedbacks = []
+            @not_submitted_participants = []
+          end
+          
+          # Render PDF using Prawn or WickedPDF
+          render_section_feedback_report_pdf
+        }
+      end
+    end
+
+    def individual_feedback_reports
+      @date_range = params[:date_range]
+      @start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : Date.current
+      @end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : Date.current
+      @section_id = params[:section_id]
+      @participant_id = params[:participant_id]
+      @training_program_id = params[:training_program_id]
+
+      # Load participants for the selected section
+      @participants = if @section_id.present?
+                       current_institute.participants.includes(:user).where(section_id: @section_id)
+                     else
+                       []
+                     end
+
+      # Always fetch reports for CSV/PDF format, or when filter is applied in HTML format
+      if params[:format].in?(['csv', 'pdf']) || (params[:commit].present? && params[:submission_status].present?)
+        fetch_individual_feedback_reports
+      end
+
+      respond_to do |format|
+        format.html
+        format.csv { 
+          if @submitted_feedbacks.nil? && @not_submitted_training_programs.nil?
+            # Initialize empty collections to prevent nil errors
+            @submitted_feedbacks = []
+            @not_submitted_training_programs = []
+          end
+          send_data generate_individual_feedback_csv, filename: "individual_feedback_report_#{Date.current}.csv" 
+        }
+        format.pdf {
+          if @submitted_feedbacks.nil? && @not_submitted_training_programs.nil?
+            # Initialize empty collections to prevent nil errors
+            @submitted_feedbacks = []
+            @not_submitted_training_programs = []
+          end
+          
+          # Render PDF using Prawn or WickedPDF
+          render_individual_feedback_report_pdf
         }
       end
     end
@@ -177,7 +235,7 @@ module InstituteAdmin
       end
     end
 
-    def fetch_feedback_reports
+    def fetch_section_feedback_reports
       base_query = TrainingProgramFeedback.includes(:participant, :training_program, participant: :section)
                                         .where(training_programs: { institute_id: current_institute.id })
 
@@ -291,6 +349,63 @@ module InstituteAdmin
       end
     end
 
+    def fetch_individual_feedback_reports
+      # Only proceed if a participant is selected
+      return if @participant_id.blank?
+
+      participant = current_institute.participants.find(@participant_id)
+
+      if params[:submission_status] == 'submitted'
+        # Get submitted feedbacks for the participant
+        base_query = TrainingProgramFeedback.includes(:training_program)
+                                        .where(participant_id: @participant_id)
+        
+        # Apply date filters
+        base_query = case @date_range
+                    when 'today'
+                      base_query.where(created_at: Date.current.all_day)
+                    when 'yesterday'
+                      base_query.where(created_at: Date.yesterday.all_day)
+                    when 'last_7_days'
+                      base_query.where(created_at: 7.days.ago.beginning_of_day..Time.current)
+                    when 'this_month'
+                      base_query.where(created_at: Time.current.beginning_of_month..Time.current)
+                    when 'custom'
+                      base_query.where(created_at: @start_date.beginning_of_day..@end_date.end_of_day)
+                    else
+                      base_query.where(created_at: Date.current.all_day)
+                    end
+        
+        # Apply training program filter if selected
+        if @training_program_id.present? && @training_program_id != 'all'
+          base_query = base_query.where(training_program_id: @training_program_id)
+        end
+
+        @submitted_feedbacks = base_query.order(created_at: :desc)
+        @not_submitted_training_programs = []
+      else
+        # Get all training programs the participant should have given feedback for
+        available_programs = participant.all_training_programs
+                                    .where(institute: current_institute)
+                                    .where("end_date >= ?", @start_date)
+                                    .where("start_date <= ?", @end_date)
+                                       
+        # Filter by specific training program if selected
+        if @training_program_id.present? && @training_program_id != 'all'
+          available_programs = available_programs.where(id: @training_program_id)
+        end
+        
+        # Find which training programs haven't received feedback
+        submitted_program_ids = TrainingProgramFeedback.where(participant_id: @participant_id)
+                                                   .where(created_at: @start_date.beginning_of_day..@end_date.end_of_day)
+                                                   .pluck(:training_program_id)
+                                                   .uniq
+        
+        @not_submitted_training_programs = available_programs.reject { |tp| submitted_program_ids.include?(tp.id) }
+        @submitted_feedbacks = []
+      end
+    end
+
     def generate_assignment_csv
       require 'csv'
 
@@ -343,7 +458,7 @@ module InstituteAdmin
       end
     end
 
-    def generate_feedback_csv
+    def generate_section_feedback_csv
       require 'csv'
 
       CSV.generate(headers: true) do |csv|
@@ -399,6 +514,38 @@ module InstituteAdmin
               assignment.start_date.strftime("%B %d, %Y"),
               assignment.end_date.strftime("%B %d, %Y"),
               assignment.status
+            ]
+          end
+        end
+      end
+    end
+
+    def generate_individual_feedback_csv
+      require 'csv'
+
+      CSV.generate(headers: true) do |csv|
+        if params[:submission_status] == 'submitted'
+          # Generate submitted feedbacks CSV
+          csv << ['Date', 'Training Program', 'Rating', 'Feedback']
+          
+          @submitted_feedbacks.each do |feedback|
+            csv << [
+              feedback.created_at.strftime("%B %d, %Y"),
+              feedback.training_program.title,
+              feedback.rating,
+              feedback.content
+            ]
+          end
+        else
+          # Generate not submitted training programs CSV
+          csv << ['Training Program', 'Start Date', 'End Date', 'Status']
+          
+          @not_submitted_training_programs.each do |tp|
+            csv << [
+              tp.title,
+              tp.start_date.strftime("%B %d, %Y"),
+              tp.end_date.strftime("%B %d, %Y"),
+              tp.status
             ]
           end
         end
@@ -774,7 +921,7 @@ module InstituteAdmin
               assignment.title,
               assignment.start_date.strftime("%b %d, %Y"),
               assignment.end_date.strftime("%b %d, %Y"),
-              assignment.status.titleize
+              assignment.status
             ]
             
             data << row
@@ -794,6 +941,399 @@ module InstituteAdmin
           end
         else
           pdf.text "No pending assignments found for the selected criteria.", align: :center, style: :italic, color: '666666'
+          pdf.stroke do
+            pdf.rectangle [0, pdf.cursor], pdf.bounds.width, 50
+          end
+        end
+      end
+      
+      # Footer
+      pdf.number_pages "Page <page> of <total>", 
+                       at: [pdf.bounds.right - 150, 0],
+                       width: 150,
+                       align: :right,
+                       size: 9
+      
+      # Add footer note
+      pdf.go_to_page(pdf.page_count)
+      pdf.move_down 10
+      pdf.horizontal_rule
+      pdf.move_down 5
+      pdf.text "This is a system generated report.", align: :center, size: 9, color: '666666'
+      
+      pdf
+    end
+
+    def render_section_feedback_report_pdf
+      submission_status = params[:submission_status] || 'submitted'
+      report_title = submission_status == 'submitted' ? "Section Feedback Report" : "Not Submitted Section Feedback Report"
+      
+      # Get filter information for the report header
+      date_range_text = case @date_range
+                        when 'today'
+                          "Today (#{Date.current.strftime('%b %d, %Y')})"
+                        when 'yesterday'
+                          "Yesterday (#{Date.yesterday.strftime('%b %d, %Y')})"
+                        when 'last_7_days'
+                          "Last 7 Days"
+                        when 'this_month'
+                          "This Month (#{Date.current.strftime('%B %Y')})"
+                        when 'custom'
+                          "#{@start_date.strftime('%b %d, %Y')} to #{@end_date.strftime('%b %d, %Y')}"
+                        else
+                          "All Dates"
+                        end
+                        
+      section_text = if @section_id.present? && @section_id != 'all'
+                      section = current_institute.sections.find(@section_id)
+                      "Section: #{section.name}"
+                    else
+                      "All Sections"
+                    end
+
+      # Generate PDF using Prawn directly
+      pdf = generate_section_feedback_pdf(
+        report_title: report_title,
+        date_range: date_range_text,
+        section: section_text,
+        institute_name: current_institute.name,
+        submission_status: submission_status
+      )
+      
+      # Check if the user wants to download or preview
+      disposition = params[:download] == 'true' ? 'attachment' : 'inline'
+      
+      send_data pdf.render, 
+        filename: "section_feedback_report_#{Date.current.strftime('%Y%m%d')}.pdf",
+        type: 'application/pdf',
+        disposition: disposition
+    end
+
+    def generate_section_feedback_pdf(options = {})
+      require 'prawn'
+      require 'prawn/table'
+      
+      pdf = Prawn::Document.new(
+        page_size: 'A4',
+        margin: [30, 30, 30, 30],
+        info: {
+          Title: options[:report_title],
+          Author: current_institute.name,
+          Subject: 'Section Feedback Report',
+          Creator: 'Soul ERP',
+          CreationDate: Time.now
+        }
+      )
+      
+      # Add logo if present
+      if current_institute.respond_to?(:logo) && 
+         current_institute.logo.present? && 
+         current_institute.logo.respond_to?(:attached?) && 
+         current_institute.logo.attached?
+        begin
+          logo_path = ActiveStorage::Blob.service.path_for(current_institute.logo.key)
+          pdf.image logo_path, position: :center, width: 120
+        rescue => e
+          # Skip logo if it can't be processed
+          Rails.logger.warn "Failed to add logo to PDF: #{e.message}"
+        end
+      end
+      
+      # Report header
+      pdf.font_size(18) { pdf.text options[:report_title], align: :center, style: :bold }
+      pdf.move_down 10
+      
+      # Institute info
+      pdf.font_size(14) { pdf.text options[:institute_name], align: :center, style: :bold }
+      pdf.font_size(10) { pdf.text "Generated on #{Date.current.strftime('%B %d, %Y')}", align: :center, color: '666666' }
+      pdf.move_down 20
+      
+      # Filter info
+      filter_data = [
+        ["Date Range:", options[:date_range]],
+        ["Section:", options[:section]]
+      ]
+      
+      pdf.table(filter_data, width: pdf.bounds.width * 0.7, position: :center) do
+        cells.borders = []
+        column(0).font_style = :bold
+        column(0).width = 100
+        column(1).align = :left
+        cells.padding = [5, 10]
+      end
+      
+      pdf.move_down 20
+      
+      # Report data
+      if options[:submission_status] == 'submitted'
+        if @submitted_feedbacks.any?
+          # Table header
+          header = ['Date', 'Participant', 'Section', 'Training Program', 'Rating', 'Content']
+          
+          # Table data
+          data = []
+          @submitted_feedbacks.each do |feedback|
+            row = [
+              feedback.created_at.strftime("%b %d, %Y"),
+              feedback.participant.full_name,
+              feedback.participant.section.name,
+              feedback.training_program.title,
+              feedback.rating,
+              feedback.content
+            ]
+            
+            data << row
+          end
+          
+          # Generate table
+          pdf.table([header] + data, header: true, width: pdf.bounds.width) do
+            cells.padding = [8, 10]
+            
+            row(0).font_style = :bold
+            row(0).background_color = 'EEEEEE'
+            
+            # Zebra striping
+            rows(1..data.length).each_with_index do |row, i|
+              row.background_color = 'F5F5F5' if i.even?
+            end
+          end
+        else
+          pdf.text "No submitted feedbacks found for the selected criteria.", align: :center, style: :italic, color: '666666'
+          pdf.stroke do
+            pdf.rectangle [0, pdf.cursor], pdf.bounds.width, 50
+          end
+        end
+      else
+        if @not_submitted_participants.any?
+          # Table header
+          header = ['Participant', 'Section', 'Email']
+          
+          # Table data
+          data = []
+          @not_submitted_participants.each do |participant|
+            row = [
+              participant.full_name,
+              participant.section.name,
+              participant.email
+            ]
+            
+            data << row
+          end
+          
+          # Generate table
+          pdf.table([header] + data, header: true, width: pdf.bounds.width) do
+            cells.padding = [8, 10]
+            
+            row(0).font_style = :bold
+            row(0).background_color = 'EEEEEE'
+            
+            # Zebra striping
+            rows(1..data.length).each_with_index do |row, i|
+              row.background_color = 'F5F5F5' if i.even?
+            end
+          end
+        else
+          pdf.text "No pending submissions found for the selected criteria.", align: :center, style: :italic, color: '666666'
+          pdf.stroke do
+            pdf.rectangle [0, pdf.cursor], pdf.bounds.width, 50
+          end
+        end
+      end
+      
+      # Footer
+      pdf.number_pages "Page <page> of <total>", 
+                       at: [pdf.bounds.right - 150, 0],
+                       width: 150,
+                       align: :right,
+                       size: 9
+      
+      # Add footer note
+      pdf.go_to_page(pdf.page_count)
+      pdf.move_down 10
+      pdf.horizontal_rule
+      pdf.move_down 5
+      pdf.text "This is a system generated report.", align: :center, size: 9, color: '666666'
+      
+      pdf
+    end
+
+    def render_individual_feedback_report_pdf
+      submission_status = params[:submission_status] || 'submitted'
+      report_title = submission_status == 'submitted' ? "Individual Feedback Report" : "Not Submitted Individual Feedback Report"
+      
+      participant = current_institute.participants.find(@participant_id)
+      
+      # Get filter information for the report header
+      date_range_text = case @date_range
+                        when 'today'
+                          "Today (#{Date.current.strftime('%b %d, %Y')})"
+                        when 'yesterday'
+                          "Yesterday (#{Date.yesterday.strftime('%b %d, %Y')})"
+                        when 'last_7_days'
+                          "Last 7 Days"
+                        when 'this_month'
+                          "This Month (#{Date.current.strftime('%B %Y')})"
+                        when 'custom'
+                          "#{@start_date.strftime('%b %d, %Y')} to #{@end_date.strftime('%b %d, %Y')}"
+                        else
+                          "All Dates"
+                        end
+                        
+      assignment_text = if @training_program_id.present? && @training_program_id != 'all'
+                        training_program = current_institute.training_programs.find(@training_program_id)
+                        "Training Program: #{training_program.title}"
+                      else
+                        "All Training Programs"
+                      end
+
+      # Generate PDF using Prawn directly
+      pdf = generate_individual_feedback_pdf(
+        report_title: report_title,
+        date_range: date_range_text,
+        participant: participant.full_name,
+        section: participant.section.name,
+        assignment: assignment_text,
+        institute_name: current_institute.name,
+        submission_status: submission_status
+      )
+      
+      # Check if the user wants to download or preview
+      disposition = params[:download] == 'true' ? 'attachment' : 'inline'
+      
+      send_data pdf.render, 
+        filename: "individual_feedback_report_#{Date.current.strftime('%Y%m%d')}.pdf",
+        type: 'application/pdf',
+        disposition: disposition
+    end
+
+    def generate_individual_feedback_pdf(options = {})
+      require 'prawn'
+      require 'prawn/table'
+      
+      pdf = Prawn::Document.new(
+        page_size: 'A4',
+        margin: [30, 30, 30, 30],
+        info: {
+          Title: options[:report_title],
+          Author: current_institute.name,
+          Subject: 'Individual Feedback Report',
+          Creator: 'Soul ERP',
+          CreationDate: Time.now
+        }
+      )
+      
+      # Add logo if present
+      if current_institute.respond_to?(:logo) && 
+         current_institute.logo.present? && 
+         current_institute.logo.respond_to?(:attached?) && 
+         current_institute.logo.attached?
+        begin
+          logo_path = ActiveStorage::Blob.service.path_for(current_institute.logo.key)
+          pdf.image logo_path, position: :center, width: 120
+        rescue => e
+          # Skip logo if it can't be processed
+          Rails.logger.warn "Failed to add logo to PDF: #{e.message}"
+        end
+      end
+      
+      # Report header
+      pdf.font_size(18) { pdf.text options[:report_title], align: :center, style: :bold }
+      pdf.move_down 10
+      
+      # Institute info
+      pdf.font_size(14) { pdf.text options[:institute_name], align: :center, style: :bold }
+      pdf.font_size(10) { pdf.text "Generated on #{Date.current.strftime('%B %d, %Y')}", align: :center, color: '666666' }
+      pdf.move_down 20
+      
+      # Filter info
+      filter_data = [
+        ["Date Range:", options[:date_range]],
+        ["Participant:", options[:participant]],
+        ["Section:", options[:section]],
+        ["Assignment:", options[:assignment]]
+      ]
+      
+      pdf.table(filter_data, width: pdf.bounds.width * 0.7, position: :center) do
+        cells.borders = []
+        column(0).font_style = :bold
+        column(0).width = 100
+        column(0).align = :right
+        column(1).align = :left
+        cells.padding = [5, 10]
+      end
+      
+      pdf.move_down 20
+      
+      # Report data
+      if options[:submission_status] == 'submitted'
+        if @submitted_feedbacks.any?
+          # Table header
+          header = ['Date', 'Participant', 'Section', 'Training Program', 'Rating', 'Content']
+          
+          # Table data
+          data = []
+          @submitted_feedbacks.each do |feedback|
+            row = [
+              feedback.created_at.strftime("%b %d, %Y"),
+              feedback.participant.full_name,
+              feedback.participant.section.name,
+              feedback.training_program.title,
+              feedback.rating,
+              feedback.content
+            ]
+            
+            data << row
+          end
+          
+          # Generate table
+          pdf.table([header] + data, header: true, width: pdf.bounds.width) do
+            cells.padding = [8, 10]
+            
+            row(0).font_style = :bold
+            row(0).background_color = 'EEEEEE'
+            
+            # Zebra striping
+            rows(1..data.length).each_with_index do |row, i|
+              row.background_color = 'F5F5F5' if i.even?
+            end
+          end
+        else
+          pdf.text "No submitted feedbacks found for the selected criteria.", align: :center, style: :italic, color: '666666'
+          pdf.stroke do
+            pdf.rectangle [0, pdf.cursor], pdf.bounds.width, 50
+          end
+        end
+      else
+        if @not_submitted_participants.any?
+          # Table header
+          header = ['Participant', 'Section', 'Email']
+          
+          # Table data
+          data = []
+          @not_submitted_participants.each do |participant|
+            row = [
+              participant.full_name,
+              participant.section.name,
+              participant.email
+            ]
+            
+            data << row
+          end
+          
+          # Generate table
+          pdf.table([header] + data, header: true, width: pdf.bounds.width) do
+            cells.padding = [8, 10]
+            
+            row(0).font_style = :bold
+            row(0).background_color = 'EEEEEE'
+            
+            # Zebra striping
+            rows(1..data.length).each_with_index do |row, i|
+              row.background_color = 'F5F5F5' if i.even?
+            end
+          end
+        else
+          pdf.text "No pending submissions found for the selected criteria.", align: :center, style: :italic, color: '666666'
           pdf.stroke do
             pdf.rectangle [0, pdf.cursor], pdf.bounds.width, 50
           end

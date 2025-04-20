@@ -1,16 +1,16 @@
 <div class="card mb-4">
   <div class="card-header d-flex justify-content-between align-items-center py-3">
     <div class="d-flex align-items-center">
-      <h5 class="mb-0">Individual Assignment Reports</h5>
+      <h5 class="mb-0">Section-wise Feedback Reports</h5>
     </div>
-    <%= link_to assignment_reports_menu_institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
+    <%= link_to feedback_reports_menu_institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
       <i class="bi bi-arrow-left"></i> Back
     <% end %>
   </div>
 
   <div class="card-body">
     <!-- Filters -->
-    <%= form_with url: individual_assignment_reports_institute_admin_reports_path, method: :get, local: true, class: "mb-4" do |f| %>
+    <%= form_with url: section_feedback_reports_institute_admin_reports_path, method: :get, local: true, class: "mb-4" do |f| %>
       <div class="filter-container p-3 mb-4 bg-light rounded-3">
         <h6 class="text-muted mb-3">
           <i class="bi bi-funnel-fill me-2"></i>Filter Options
@@ -85,58 +85,26 @@
                   ['Select Section', '']
                 ] + current_institute.sections.map { |s| [s.name, s.id] }, @section_id),
                 class: 'form-select',
-                required: true,
-                data: { action: 'change->participant-filter#updateParticipants' } %>
+                required: true %>
           </div>
         </div>
 
-        <!-- Participant Filter -->
+        <!-- Training Program Filter -->
         <div class="row mb-3 align-items-center">
-          <label for="participant_id" class="col-md-3 col-form-label">
+          <label for="training_program_id" class="col-md-3 col-form-label">
             <div class="d-flex align-items-center">
               <div class="icon-circle bg-primary bg-opacity-10 me-2">
-                <i class="bi bi-person-fill text-primary"></i>
+                <i class="bi bi-journal-richtext text-primary"></i>
               </div>
-              <span>Participant</span>
+              <span>Training Program</span>
             </div>
           </label>
           <div class="col-md-9">
-            <% if @participants.present? %>
-              <%= select_tag :participant_id,
-                  options_for_select([
-                    ['Select Participant', '']
-                  ] + @participants.map { |p| [p.full_name, p.id] }, @participant_id),
-                  class: 'form-select',
-                  required: true %>
-            <% else %>
-              <%= select_tag :participant_id,
-                  options_for_select([
-                    ['Select Participant', '']
-                  ]),
-                  class: 'form-select',
-                  required: true,
-                  disabled: true %>
-              <div class="form-text text-muted mt-1">Please select a section first</div>
-            <% end %>
-          </div>
-        </div>
-
-        <!-- Assignment Filter -->
-        <div class="row mb-3 align-items-center">
-          <label for="assignment_id" class="col-md-3 col-form-label">
-            <div class="d-flex align-items-center">
-              <div class="icon-circle bg-primary bg-opacity-10 me-2">
-                <i class="bi bi-file-earmark-text-fill text-primary"></i>
-              </div>
-              <span>Assignment</span>
-            </div>
-          </label>
-          <div class="col-md-9">
-            <%= select_tag :assignment_id,
+            <%= select_tag :training_program_id,
                 options_for_select([
-                  ['Select Assignment', ''],
-                  ['All Assignments', 'all']
-                ] + current_institute.assignments.map { |a| [a.title, a.id] }, @assignment_id),
+                  ['Select Training Program', ''],
+                  ['All Training Programs', 'all']
+                ] + current_institute.training_programs.map { |tp| [tp.title, tp.id] }, @training_program_id),
                 class: 'form-select' %>
           </div>
         </div>
@@ -170,7 +138,7 @@
             <div class="d-flex">
               <%= submit_tag "Generate Report", class: "btn btn-primary px-4 me-2" %>
               <% if params[:commit].present? %>
-                <%= link_to individual_assignment_reports_institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
+                <%= link_to section_feedback_reports_institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
                   <i class="bi bi-arrow-clockwise me-1"></i>Reset Filters
                 <% end %>
               <% end %>
@@ -183,45 +151,47 @@
     <!-- Report Content -->
     <% if params[:commit].present? && params[:submission_status].present? %>
       <% if params[:submission_status] == 'submitted' %>
-        <!-- Submitted Assignments -->
+        <!-- Submitted Feedbacks -->
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-            <h6 class="mb-0">Submitted Assignments</h6>
-            <% if @submitted_logs&.any? %>
+            <h6 class="mb-0">Submitted Feedbacks</h6>
+            <% if @submitted_feedbacks&.any? %>
             <div>
-              <%= link_to individual_assignment_reports_institute_admin_reports_path(format: :csv, submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, participant_id: @participant_id, assignment_id: @assignment_id), class: "btn btn-sm btn-outline-primary me-2" do %>
+              <%= link_to section_feedback_reports_institute_admin_reports_path(format: :csv, submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-primary me-2" do %>
                 <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
               <% end %>
-              <%= link_to individual_assignment_reports_institute_admin_reports_path(format: :pdf, submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, participant_id: @participant_id, assignment_id: @assignment_id), class: "btn btn-sm btn-outline-danger me-2", target: "_blank" do %>
+              <%= link_to section_feedback_reports_institute_admin_reports_path(format: :pdf, submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-danger me-2", target: "_blank" do %>
                 <i class="bi bi-file-earmark-pdf"></i> Preview PDF
               <% end %>
-              <%= link_to individual_assignment_reports_institute_admin_reports_path(format: :pdf, download: true, submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, participant_id: @participant_id, assignment_id: @assignment_id), class: "btn btn-sm btn-outline-danger" do %>
+              <%= link_to section_feedback_reports_institute_admin_reports_path(format: :pdf, download: true, submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-danger" do %>
                 <i class="bi bi-download"></i> Download PDF
               <% end %>
             </div>
             <% end %>
           </div>
           <div class="card-body">
-            <% if @submitted_logs&.any? %>
+            <% if @submitted_feedbacks&.any? %>
               <div class="table-responsive">
                 <table class="table table-hover">
                   <thead>
                     <tr>
                       <th>Date</th>
-                      <th>Assignment</th>
-                      <th>Questions</th>
                       <th>Participant</th>
                       <th>Section</th>
+                      <th>Training Program</th>
+                      <th>Rating</th>
+                      <th>Feedback</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <% @submitted_logs.each do |log| %>
+                    <% @submitted_feedbacks.each do |feedback| %>
                       <tr>
-                        <td><%= log.response_date.strftime("%b %d, %Y") %></td>
-                        <td><%= log.assignment.title %></td>
-                        <td><%= log.assignment_response_ids.size %></td>
-                        <td><%= log.participant.full_name %></td>
-                        <td><%= log.participant.section.name %></td>
+                        <td><%= feedback.created_at.strftime("%b %d, %Y") %></td>
+                        <td><%= feedback.participant.full_name %></td>
+                        <td><%= feedback.participant.section.name %></td>
+                        <td><%= feedback.training_program.title %></td>
+                        <td><%= "★" * feedback.rating %></td>
+                        <td><%= truncate(feedback.content, length: 100) %></td>
                       </tr>
                     <% end %>
                   </tbody>
@@ -230,49 +200,53 @@
             <% else %>
               <div class="text-center py-5">
                 <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
-                <p class="text-muted">No submitted assignments found for the selected criteria.</p>
+                <p class="text-muted">No submitted feedbacks found for the selected criteria.</p>
               </div>
             <% end %>
           </div>
         </div>
       <% else %>
-        <!-- Not Submitted Assignments -->
+        <!-- Not Submitted Feedbacks -->
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-            <h6 class="mb-0">Not Submitted Assignments</h6>
-            <% if @not_submitted_assignments&.any? %>
+            <h6 class="mb-0">Not Submitted Feedbacks</h6>
+            <% if @not_submitted_participants&.any? %>
             <div>
-              <%= link_to individual_assignment_reports_institute_admin_reports_path(format: :csv, submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, participant_id: @participant_id, assignment_id: @assignment_id), class: "btn btn-sm btn-outline-primary me-2" do %>
+              <%= link_to section_feedback_reports_institute_admin_reports_path(format: :csv, submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-primary me-2" do %>
                 <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
               <% end %>
-              <%= link_to individual_assignment_reports_institute_admin_reports_path(format: :pdf, submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, participant_id: @participant_id, assignment_id: @assignment_id), class: "btn btn-sm btn-outline-danger me-2", target: "_blank" do %>
+              <%= link_to section_feedback_reports_institute_admin_reports_path(format: :pdf, submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-danger me-2", target: "_blank" do %>
                 <i class="bi bi-file-earmark-pdf"></i> Preview PDF
               <% end %>
-              <%= link_to individual_assignment_reports_institute_admin_reports_path(format: :pdf, download: true, submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, participant_id: @participant_id, assignment_id: @assignment_id), class: "btn btn-sm btn-outline-danger" do %>
+              <%= link_to section_feedback_reports_institute_admin_reports_path(format: :pdf, download: true, submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id, training_program_id: @training_program_id), class: "btn btn-sm btn-outline-danger" do %>
                 <i class="bi bi-download"></i> Download PDF
               <% end %>
             </div>
             <% end %>
           </div>
           <div class="card-body">
-            <% if @not_submitted_assignments&.any? %>
+            <% if @not_submitted_participants&.any? %>
               <div class="table-responsive">
                 <table class="table table-hover">
                   <thead>
                     <tr>
-                      <th>Assignment</th>
-                      <th>Start Date</th>
-                      <th>End Date</th>
-                      <th>Status</th>
+                      <th>Participant</th>
+                      <th>Email</th>
+                      <th>Section</th>
+                      <% if @training_program_id.present? && @training_program_id != 'all' %>
+                        <th>Training Program</th>
+                      <% end %>
                     </tr>
                   </thead>
                   <tbody>
-                    <% @not_submitted_assignments.each do |assignment| %>
+                    <% @not_submitted_participants.each do |participant| %>
                       <tr>
-                        <td><%= assignment.title %></td>
-                        <td><%= assignment.start_date.strftime("%b %d, %Y") %></td>
-                        <td><%= assignment.end_date.strftime("%b %d, %Y") %></td>
-                        <td><span class="badge bg-<%= assignment.status == 'active' ? 'success' : (assignment.status == 'upcoming' ? 'warning' : 'secondary') %>"><%= assignment.status.titleize %></span></td>
+                        <td><%= participant.full_name %></td>
+                        <td><%= participant.email %></td>
+                        <td><%= participant.section.name %></td>
+                        <% if @training_program_id.present? && @training_program_id != 'all' %>
+                          <td><%= @training_program_title %></td>
+                        <% end %>
                       </tr>
                     <% end %>
                   </tbody>
@@ -281,7 +255,7 @@
             <% else %>
               <div class="text-center py-5">
                 <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
-                <p class="text-muted">No pending assignments found for the selected criteria.</p>
+                <p class="text-muted">No pending feedbacks found for the selected criteria.</p>
               </div>
             <% end %>
           </div>
@@ -398,7 +372,6 @@
         }
 
         const sectionId = document.getElementById('section_id').value;
-        const participantId = document.getElementById('participant_id').value;
         const submissionStatus = document.getElementById('submission_status').value;
         
         if (!sectionId || sectionId === '') {
@@ -407,52 +380,10 @@
           return;
         }
         
-        if (!participantId || participantId === '') {
-          event.preventDefault();
-          alert('Please select a participant');
-          return;
-        }
-        
         if (!submissionStatus || submissionStatus === '') {
           event.preventDefault();
           alert('Please select a submission status');
           return;
-        }
-      });
-    }
-    
-    // Section-based participant loading
-    const sectionSelect = document.getElementById('section_id');
-    const participantSelect = document.getElementById('participant_id');
-    
-    if (sectionSelect && participantSelect) {
-      sectionSelect.addEventListener('change', function() {
-        if (this.value && this.value !== '' && this.value !== 'all') {
-          // Make an AJAX request to get participants for this section
-          fetch(`/institute_admin/sections/${this.value}/participants?format=json`)
-            .then(response => response.json())
-            .then(data => {
-              // Clear existing options
-              participantSelect.innerHTML = '<option value="">Select Participant</option>';
-              
-              // Add new options
-              data.forEach(participant => {
-                const option = document.createElement('option');
-                option.value = participant.id;
-                option.textContent = participant.full_name;
-                participantSelect.appendChild(option);
-              });
-              
-              // Enable the select
-              participantSelect.disabled = false;
-            })
-            .catch(error => {
-              console.error('Error fetching participants:', error);
-            });
-        } else {
-          // Clear and disable the participant select
-          participantSelect.innerHTML = '<option value="">Select Participant</option>';
-          participantSelect.disabled = true;
         }
       });
     }

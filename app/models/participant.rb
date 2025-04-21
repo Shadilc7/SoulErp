@@ -3,6 +3,7 @@ class Participant < ApplicationRecord
   belongs_to :institute
   has_one :guardian, dependent: :destroy
   has_many :assignment_responses, dependent: :destroy
+  has_many :assignment_response_logs, dependent: :destroy
   belongs_to :guardian_for_participant, class_name: 'Participant', optional: true
   has_many :guardians, class_name: 'Participant', foreign_key: 'guardian_for_participant_id'
 

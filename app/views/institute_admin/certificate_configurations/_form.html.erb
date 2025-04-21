@@ -1,0 +1,42 @@
+<%= form_with(model: [:institute_admin, certificate_configuration], local: true) do |form| %>
+  <% if certificate_configuration.errors.any? %>
+    <div class="alert alert-danger">
+      <h6>Please fix the following errors:</h6>
+      <ul class="mb-0">
+        <% certificate_configuration.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= form.label :name, "Certificate Name", class: "form-label" %>
+    <%= form.text_field :name, class: "form-control", placeholder: "Enter certificate name" %>
+    <small class="form-text text-muted">Example: Course Completion Certificate, Achievement Certificate</small>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :details, "Certificate Details", class: "form-label" %>
+    <%= form.text_area :details, class: "form-control", rows: 3, placeholder: "Enter certificate details (optional)" %>
+    <small class="form-text text-muted">Enter a description of when this certificate is awarded</small>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :duration_period, "Validity Period (months)", class: "form-label" %>
+    <%= form.number_field :duration_period, class: "form-control", min: 1, placeholder: "Enter validity period in months" %>
+    <small class="form-text text-muted">Number of months the certificate will be valid (minimum 1 month)</small>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :status, "Status", class: "form-label" %>
+    <%= form.select :status, 
+      CertificateConfiguration.statuses.keys.map { |status| [status.titleize, status] },
+      {}, { class: "form-select" } %>
+  </div>
+
+  <div class="form-actions mt-4">
+    <%= form.submit class: "btn btn-primary" %>
+    <%= link_to "Cancel", institute_admin_certificate_configurations_path, class: "btn btn-secondary ms-2" %>
+  </div>
+<% end %> 

@@ -11,6 +11,7 @@ class Institute < ApplicationRecord
   has_many :question_sets, dependent: :destroy
   has_many :assignments, dependent: :destroy
   has_many :assignment_responses, through: :participants
+  has_many :certificate_configurations, dependent: :destroy
 
   # Validations
   validates :name, presence: true

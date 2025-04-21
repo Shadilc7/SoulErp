@@ -1,0 +1,85 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold">Certificate Configurations</h1>
+    <%= link_to new_institute_admin_certificate_configuration_path, class: "btn btn-primary" do %>
+      <i class="bi bi-plus-circle me-2"></i>Add New Configuration
+    <% end %>
+  </div>
+
+  <div class="card card-custom">
+    <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">All Configurations</h5>
+      <%= link_to institute_admin_settings_path, class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left me-1"></i> Back to Settings
+      <% end %>
+    </div>
+    <div class="card-body">
+      <% if @certificate_configurations.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Details</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @certificate_configurations.each do |config| %>
+                <tr>
+                  <td><%= config.name %></td>
+                  <td><%= config.details.present? ? config.details.truncate(50) : "N/A" %></td>
+                  <td><%= config.formatted_duration %></td>
+                  <td>
+                    <span class="badge bg-<%= config.active? ? 'success' : 'secondary' %>">
+                      <%= config.status.titleize %>
+                    </span>
+                  </td>
+                  <td>
+                    <div class="btn-group">
+                      <%= link_to edit_institute_admin_certificate_configuration_path(config), class: "btn btn-sm btn-outline-primary" do %>
+                        <i class="bi bi-pencil"></i>
+                      <% end %>
+                      <%= button_to institute_admin_certificate_configuration_path(config), method: :delete, class: "btn btn-sm btn-outline-danger", 
+                            data: { turbo_confirm: "Are you sure you want to delete this configuration?" } do %>
+                        <i class="bi bi-trash"></i>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="alert alert-info text-center">
+          <i class="bi bi-info-circle me-2"></i>No certificate configurations have been added yet.
+          <%= link_to "Create your first configuration", new_institute_admin_certificate_configuration_path, class: "alert-link" %>.
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card-custom {
+    border-radius: 0.5rem;
+    border: 1px solid rgba(0,0,0,.1);
+  }
+
+  .card-header-custom {
+    background-color: white;
+    border-bottom: 1px solid rgba(0,0,0,.1);
+    padding: 1rem;
+  }
+  
+  .btn-group .btn {
+    margin-right: 5px;
+  }
+  
+  .btn-group form {
+    display: inline;
+  }
+</style>

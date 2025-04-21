@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  namespace :institute_admin do
+    resources :certificate_configurations
+  end
   # Move this to the top, before any authenticate blocks
   get "/sections/fetch", to: "institute_admin/sections#fetch"
 

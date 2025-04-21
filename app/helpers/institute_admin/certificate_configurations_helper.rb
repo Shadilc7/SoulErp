@@ -1,0 +1,2 @@
+module InstituteAdmin::CertificateConfigurationsHelper
+end

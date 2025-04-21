@@ -1,58 +1,46 @@
 <div class="container-fluid py-4">
-  <h1 class="fw-bold mb-4">Reports</h1>
+  <h1 class="fw-bold mb-4">Settings</h1>
 
   <div class="row g-3">
-    <!-- Certificates Card -->
+    <!-- Sections Card -->
+    <div class="col-sm-6 col-lg-4">
+      <div class="mini-card">
+        <div class="icon-box">
+          <i class="bi bi-grid"></i>
+        </div>
+        <div class="content">
+          <h6>Sections</h6>
+        </div>
+        <%= link_to "", institute_admin_sections_path, class: "card-link" %>
+      </div>
+    </div>
+
+    <!-- Certificate Configurations Card -->
     <div class="col-sm-6 col-lg-4">
       <div class="mini-card">
         <div class="icon-box">
           <i class="bi bi-award"></i>
         </div>
         <div class="content">
-          <h6>Certificates</h6>
+          <h6>Certificate Configurations</h6>
         </div>
-        <%= link_to "", certificates_institute_admin_reports_path, class: "card-link" %>
+        <a href="#" class="card-link"></a>
       </div>
     </div>
 
-    <!-- Assignment Reports Card -->
+    <!-- General Settings Card -->
     <div class="col-sm-6 col-lg-4">
       <div class="mini-card">
         <div class="icon-box">
-          <i class="bi bi-clipboard-check"></i>
+          <i class="bi bi-sliders"></i>
         </div>
         <div class="content">
-          <h6>Assignment Reports</h6>
+          <h6>General Settings</h6>
         </div>
-        <%= link_to "", assignment_reports_menu_institute_admin_reports_path, class: "card-link" %>
-      </div>
-    </div>
-
-    <!-- Feedback Reports Card -->
-    <div class="col-sm-6 col-lg-4">
-      <div class="mini-card">
-        <div class="icon-box">
-          <i class="bi bi-chat-square-text"></i>
-        </div>
-        <div class="content">
-          <h6>Feedback Reports</h6>
-        </div>
-        <%= link_to "", feedback_reports_menu_institute_admin_reports_path, class: "card-link" %>
+        <%= link_to "", institute_admin_general_settings_path, class: "card-link" %>
       </div>
     </div>
   </div>
-
-  <% if @report_type.present? %>
-    <div class="mt-5">
-      <% if @report_type == 'certificates' %>
-        <%= render 'certificate_options' %>
-      <% elsif @report_type == 'assignments' %>
-        <%= render 'assignment_reports' %>
-      <% elsif @report_type == 'feedbacks' %>
-        <%= render 'feedback_reports' %>
-      <% end %>
-    </div>
-  <% end %>
 </div>
 
 <style>

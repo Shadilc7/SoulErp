@@ -536,12 +536,6 @@
               <span>Dashboard</span>
             <% end %>
 
-            <%= link_to institute_admin_sections_path,
-                class: "nav-link #{'active' if active_link?('sections')}" do %>
-              <i class="bi bi-grid"></i>
-              <span>Sections</span>
-            <% end %>
-
             <%= link_to institute_admin_participants_path,
                 class: "nav-link #{'active' if active_link?('participants')}" do %>
               <i class="bi bi-people"></i>
@@ -651,6 +645,12 @@
                 class: "nav-link #{'active' if controller.controller_name == 'reports'}" do %>
               <i class="bi bi-graph-up"></i>
               <span>Reports</span>
+            <% end %>
+            
+            <%= link_to institute_admin_settings_path,
+                class: "nav-link #{'active' if controller.controller_name == 'settings' || active_link?('sections') || controller.controller_name == 'general_settings' || controller.controller_name == 'certificate_configurations'}" do %>
+              <i class="bi bi-gear"></i>
+              <span>Settings</span>
             <% end %>
           </nav>
         </div>

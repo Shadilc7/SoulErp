@@ -32,7 +32,7 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Admin routes
-  authenticate :user, lambda { |u| u.master_admin? } do
+  authenticate :user do
     namespace :admin do
       root "admin#dashboard"
       resources :institutes do
@@ -50,12 +50,17 @@ Rails.application.routes.draw do
   end
 
   # Institute Admin routes
-  authenticate :user, lambda { |u| u.institute_admin? } do
+  authenticate :user do
     namespace :institute_admin do
       root "dashboard#index"
       
       # Add profile routes
       get 'profile', to: 'profile#show'
+      
+      # Add settings routes
+      resources :settings, only: [:index]
+      get 'general_settings', to: 'general_settings#index', as: 'general_settings'
+      patch 'general_settings', to: 'general_settings#update'
       
       resources :sections do
         member do
@@ -104,12 +109,23 @@ Rails.application.routes.draw do
         get "section/:section_id", action: :index, on: :collection
         get "section/:section_id/participant/:participant_id", action: :index, on: :collection
       end
-      resources :reports, only: [:index]
+      resources :reports, only: [:index] do
+        collection do
+          get 'assignment_reports_menu'
+          get 'assignment_reports'
+          get 'individual_assignment_reports'
+          get 'feedback_reports_menu'
+          get 'feedback_reports'
+          get 'section_feedback_reports'
+          get 'individual_feedback_reports'
+          get 'certificates'
+        end
+      end
     end
   end
 
   # Trainer Portal routes
-  authenticate :user, lambda { |u| u.trainer? } do
+  authenticate :user do
     namespace :trainer_portal do
       root "dashboard#index"
       
@@ -144,7 +160,7 @@ Rails.application.routes.draw do
   end
 
   # Participant routes
-  authenticate :user, lambda { |u| u.participant? } do
+  authenticate :user do
     namespace :participant_portal do
       root "dashboard#index"
       resources :training_programs, only: [ :index, :show ] do

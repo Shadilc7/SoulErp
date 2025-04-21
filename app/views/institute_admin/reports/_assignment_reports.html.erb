@@ -1,0 +1,235 @@
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center py-3">
+    <div class="d-flex align-items-center">
+      <h5 class="mb-0">Assignment Reports</h5>
+    </div>
+    <%= link_to institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left"></i> Back
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <!-- Filters -->
+    <%= form_tag institute_admin_reports_path, method: :get, class: 'mb-4', data: { turbo: false } do %>
+      <%= hidden_field_tag :report_type, @report_type %>
+      
+      <div class="row g-3">
+        <!-- Date Range Selection -->
+        <div class="col-md-3">
+          <%= select_tag :date_range,
+              options_for_select([
+                ['Select Date Range', ''],
+                ['Today', 'today'],
+                ['Yesterday', 'yesterday'],
+                ['Last 7 Days', 'last_7_days'],
+                ['This Month', 'this_month'],
+                ['Custom Range', 'custom']
+              ], @date_range),
+              class: 'form-select',
+              required: true,
+              data: { action: 'change->custom-range#toggle' } %>
+        </div>
+
+        <!-- Custom Date Range -->
+        <div class="col-md-4" id="custom-range-fields" style="<%= @date_range == 'custom' ? '' : 'display: none;' %>">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <div class="input-group">
+                <span class="input-group-text">From</span>
+                <%= date_field_tag :start_date, @start_date, class: 'form-control' %>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="input-group">
+                <span class="input-group-text">To</span>
+                <%= date_field_tag :end_date, @end_date, class: 'form-control' %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Filter -->
+        <div class="col-md-3">
+          <%= select_tag :section_id,
+              options_for_select([
+                ['Select Section', ''],
+                ['All Sections', 'all']
+              ] + current_institute.sections.map { |s| [s.name, s.id] }, @section_id),
+              class: 'form-select',
+              required: true %>
+        </div>
+
+        <!-- Submission Status -->
+        <div class="col-md-2">
+          <%= select_tag :submission_status,
+              options_for_select([
+                ['Select Status', ''],
+                ['Submitted', 'submitted'],
+                ['Not Submitted', 'not_submitted']
+              ], params[:submission_status]),
+              class: 'form-select',
+              required: true %>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="col-md-12 text-end">
+          <%= submit_tag "Generate Report", class: "btn btn-primary px-4" %>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Report Content -->
+    <% if params[:commit].present? && params[:submission_status].present? %>
+      <% if params[:submission_status] == 'submitted' %>
+        <!-- Submitted Assignments -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <h6 class="mb-0">Submitted Assignments</h6>
+            <%= link_to institute_admin_reports_path(format: :csv, report_type: 'assignments', submission_status: 'submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id), class: "btn btn-sm btn-outline-primary" do %>
+              <i class="bi bi-download"></i> Export CSV
+            <% end %>
+          </div>
+          <div class="card-body">
+            <% if @submitted_logs.any? %>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Participant</th>
+                      <th>Section</th>
+                      <th>Assignment</th>
+                      <th>Responses</th>
+                      <th>Score</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% @submitted_logs.each do |log| %>
+                      <tr>
+                        <td><%= log.response_date.strftime("%b %d, %Y") %></td>
+                        <td><%= log.participant.full_name %></td>
+                        <td><%= log.participant.section.name %></td>
+                        <td><%= log.assignment.title %></td>
+                        <td><%= log.assignment_response_ids.size %></td>
+                        <td>
+                          <% responses = log.assignment_response_ids.map { |id| @assignment_responses[id] }.compact %>
+                          <% total_questions = responses.count %>
+                          <% if total_questions > 0 %>
+                            <% gradable_responses = responses.reject { |r| r.question.rating? } %>
+                            <% if gradable_responses.any? %>
+                              <% correct_answers = gradable_responses.count(&:correct?) %>
+                              <% score_percentage = (correct_answers.to_f / gradable_responses.count * 100).round(1) %>
+                              <span class="badge bg-<%= score_percentage >= 70 ? 'success' : (score_percentage >= 40 ? 'warning' : 'danger') %>">
+                                <%= number_to_percentage(score_percentage, precision: 1) %>
+                              </span>
+                            <% else %>
+                              <span class="badge bg-info">No Score</span>
+                            <% end %>
+                          <% else %>
+                            <span class="badge bg-warning">Pending</span>
+                          <% end %>
+                        </td>
+                        <td>
+                          <%= link_to institute_admin_assignment_responses_path(log.assignment, participant_id: log.participant.id), 
+                              class: "btn btn-sm btn-outline-primary" do %>
+                            <i class="bi bi-eye"></i> View
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% else %>
+              <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+                <p class="text-muted">No submitted assignments found for the selected criteria.</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% else %>
+        <!-- Not Submitted Assignments -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <h6 class="mb-0">Not Submitted Assignments</h6>
+            <%= link_to institute_admin_reports_path(format: :csv, report_type: 'assignments', submission_status: 'not_submitted', date_range: @date_range, start_date: @start_date, end_date: @end_date, section_id: @section_id), class: "btn btn-sm btn-outline-primary" do %>
+              <i class="bi bi-download"></i> Export CSV
+            <% end %>
+          </div>
+          <div class="card-body">
+            <% if @not_submitted_participants.any? %>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Participant</th>
+                      <th>Section</th>
+                      <th>Email</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% @not_submitted_participants.each do |participant| %>
+                      <tr>
+                        <td><%= participant.full_name %></td>
+                        <td><%= participant.section.name %></td>
+                        <td><%= participant.email %></td>
+                        <td>
+                          <%= mail_to participant.email, 
+                              class: "btn btn-sm btn-outline-primary",
+                              subject: "Assignment Submission Reminder" do %>
+                            <i class="bi bi-envelope"></i> Remind
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% else %>
+              <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+                <p class="text-muted">No pending submissions found for the selected criteria.</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('turbo:load', function() {
+    // Handle date range selection
+    const dateRangeSelect = document.querySelector('select[name="date_range"]');
+    const customRangeFields = document.getElementById('custom-range-fields');
+    
+    if (dateRangeSelect) {
+      dateRangeSelect.addEventListener('change', function() {
+        if (this.value === 'custom') {
+          customRangeFields.style.display = 'block';
+        } else {
+          customRangeFields.style.display = 'none';
+        }
+      });
+    }
+
+    // Validate custom date range on form submit
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(event) {
+      const dateRange = dateRangeSelect.value;
+      if (dateRange === 'custom') {
+        const startDate = document.querySelector('input[name="start_date"]').value;
+        const endDate = document.querySelector('input[name="end_date"]').value;
+        
+        if (!startDate || !endDate) {
+          event.preventDefault();
+          alert('Please select both start and end dates for custom range');
+        }
+      }
+    });
+  });
+</script> 

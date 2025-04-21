@@ -332,9 +332,21 @@
 </div>
 
 <script>
-  document.addEventListener('turbo:load', function() {
-    console.log('Turbo load event triggered');
-    // Destroy existing chart instances if they exist
+  // Track if we're on the dashboard page
+  let isDashboardPage = true;
+  
+  // Function to initialize dashboard charts
+  function initializeDashboardCharts() {
+    if (!isDashboardPage) return;
+    
+    console.log('Initializing dashboard charts');
+    
+    // Check if chart containers exist before initializing
+    var sectionChartContainer = document.querySelector("#participants-section-chart");
+    var typeChartContainer = document.querySelector("#participants-type-chart");
+    var feedbackChartContainer = document.querySelector("#feedback-training-chart");
+
+    // Only destroy and recreate charts if we're on the dashboard page
     if (window.sectionChart) {
       console.log('Destroying existing section chart');
       window.sectionChart.destroy();
@@ -347,11 +359,6 @@
       console.log('Destroying existing feedback chart');
       window.feedbackChart.destroy();
     }
-
-    // Check if chart containers exist before initializing
-    var sectionChartContainer = document.querySelector("#participants-section-chart");
-    var typeChartContainer = document.querySelector("#participants-type-chart");
-    var feedbackChartContainer = document.querySelector("#feedback-training-chart");
 
     if (sectionChartContainer) {
       console.log('Initializing Participants by Section Chart');
@@ -398,6 +405,41 @@
       };
       window.feedbackChart = new ApexCharts(feedbackChartContainer, feedbackChartOptions);
       window.feedbackChart.render();
+    }
+  }
+
+  // Initialize on first load
+  document.addEventListener('DOMContentLoaded', initializeDashboardCharts);
+  
+  // Handle navigation to/from dashboard page
+  document.addEventListener('turbo:load', function() {
+    // Check if we're on the dashboard page by looking for chart containers
+    isDashboardPage = document.querySelector("#participants-section-chart") !== null;
+    
+    if (isDashboardPage) {
+      console.log('Dashboard page detected, initializing charts');
+      initializeDashboardCharts();
+    } else {
+      console.log('Not on dashboard page, skipping chart initialization');
+    }
+  });
+
+  // Clean up only when leaving dashboard page
+  document.addEventListener('turbo:before-visit', function() {
+    if (isDashboardPage) {
+      console.log('Leaving dashboard page, cleaning up charts');
+      if (window.sectionChart) {
+        window.sectionChart.destroy();
+        window.sectionChart = null;
+      }
+      if (window.typeChart) {
+        window.typeChart.destroy();
+        window.typeChart = null;
+      }
+      if (window.feedbackChart) {
+        window.feedbackChart.destroy();
+        window.feedbackChart = null;
+      }
     }
   });
 </script>

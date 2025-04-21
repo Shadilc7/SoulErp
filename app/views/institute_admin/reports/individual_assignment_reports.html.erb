@@ -417,8 +417,8 @@
 </style>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Toggle custom date range fields
+  // Function to initialize date range fields
+  function initDateRangeFields() {
     const dateRangeSelect = document.getElementById('date_range');
     const customRangeFields = document.getElementById('custom-range-fields');
     
@@ -436,13 +436,72 @@
         customRangeFields.style.display = 'flex';
       }
     }
+  }
+  
+  // Function to initialize section-based participant loading
+  function initSectionParticipantFilter() {
+    const sectionSelect = document.getElementById('section_id');
+    const participantSelect = document.getElementById('participant_id');
     
-    // Validate form on submit
+    if (sectionSelect && participantSelect) {
+      // First load participants if a section is already selected
+      if (sectionSelect.value && sectionSelect.value !== '' && sectionSelect.value !== 'all') {
+        loadParticipantsForSection(sectionSelect.value, participantSelect);
+      }
+      
+      // Add change event listener
+      sectionSelect.addEventListener('change', function() {
+        if (this.value && this.value !== '' && this.value !== 'all') {
+          loadParticipantsForSection(this.value, participantSelect);
+        } else {
+          // Clear and disable the participant select
+          participantSelect.innerHTML = '<option value="">Select Participant</option>';
+          participantSelect.disabled = true;
+        }
+      });
+    }
+  }
+  
+  // Function to load participants for a section
+  function loadParticipantsForSection(sectionId, participantSelect) {
+    // Make an AJAX request to get participants for this section
+    fetch(`/institute_admin/sections/${sectionId}/participants?format=json`)
+      .then(response => response.json())
+      .then(data => {
+        // Clear existing options
+        participantSelect.innerHTML = '<option value="">Select Participant</option>';
+        
+        // Add new options
+        data.forEach(participant => {
+          const option = document.createElement('option');
+          option.value = participant.id;
+          option.textContent = participant.full_name;
+          participantSelect.appendChild(option);
+        });
+        
+        // Enable the select
+        participantSelect.disabled = false;
+        
+        // If there's a participant_id in the URL, select it
+        const urlParams = new URLSearchParams(window.location.search);
+        const participantId = urlParams.get('participant_id');
+        if (participantId) {
+          participantSelect.value = participantId;
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching participants:', error);
+      });
+  }
+  
+  // Function to initialize form validation
+  function initFormValidation() {
     const form = document.querySelector('form');
     if (form) {
       form.addEventListener('submit', function(event) {
-        const dateRange = dateRangeSelect.value;
-        if (dateRange === 'custom') {
+        const dateRangeSelect = document.getElementById('date_range');
+        
+        if (dateRangeSelect.value === 'custom') {
           const startDate = document.querySelector('input[name="start_date"]').value;
           const endDate = document.querySelector('input[name="end_date"]').value;
           
@@ -476,41 +535,19 @@
         }
       });
     }
-    
-    // Section-based participant loading
-    const sectionSelect = document.getElementById('section_id');
-    const participantSelect = document.getElementById('participant_id');
-    
-    if (sectionSelect && participantSelect) {
-      sectionSelect.addEventListener('change', function() {
-        if (this.value && this.value !== '' && this.value !== 'all') {
-          // Make an AJAX request to get participants for this section
-          fetch(`/institute_admin/sections/${this.value}/participants?format=json`)
-            .then(response => response.json())
-            .then(data => {
-              // Clear existing options
-              participantSelect.innerHTML = '<option value="">Select Participant</option>';
-              
-              // Add new options
-              data.forEach(participant => {
-                const option = document.createElement('option');
-                option.value = participant.id;
-                option.textContent = participant.full_name;
-                participantSelect.appendChild(option);
-              });
-              
-              // Enable the select
-              participantSelect.disabled = false;
-            })
-            .catch(error => {
-              console.error('Error fetching participants:', error);
-            });
-        } else {
-          // Clear and disable the participant select
-          participantSelect.innerHTML = '<option value="">Select Participant</option>';
-          participantSelect.disabled = true;
-        }
-      });
-    }
-  });
+  }
+  
+  // Initialize all filters and form handlers
+  function initializeFilters() {
+    initDateRangeFields();
+    initSectionParticipantFilter();
+    initFormValidation();
+  }
+  
+  // Initialize on regular page load
+  document.addEventListener('DOMContentLoaded', initializeFilters);
+  
+  // Also initialize when navigating with Turbo
+  document.addEventListener('turbo:load', initializeFilters);
+  document.addEventListener('turbo:render', initializeFilters);
 </script> 

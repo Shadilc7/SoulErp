@@ -12,6 +12,7 @@ class Institute < ApplicationRecord
   has_many :assignments, dependent: :destroy
   has_many :assignment_responses, through: :participants
   has_many :certificate_configurations, dependent: :destroy
+  has_many :individual_certificates, dependent: :destroy
 
   # Validations
   validates :name, presence: true
@@ -34,5 +35,10 @@ class Institute < ApplicationRecord
   # Add a scope to get participants with their users
   def active_participants
     participants.includes(:user).active
+  end
+  
+  # Helper method to find a certificate
+  def find_certificate(id)
+    individual_certificates.find(id)
   end
 end

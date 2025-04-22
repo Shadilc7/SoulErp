@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  participant: one
+  assignment: one
+  certificate_configuration: one
+  institute: one
+  filename: MyString
+  generated_at: 2025-04-22 04:20:08
+
+two:
+  participant: two
+  assignment: two
+  certificate_configuration: two
+  institute: two
+  filename: MyString
+  generated_at: 2025-04-22 04:20:08

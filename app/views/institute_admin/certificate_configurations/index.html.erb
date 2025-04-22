@@ -1,4 +1,6 @@
 <div class="container-fluid py-4">
+  <%= render partial: 'institute_admin/reports/certificate_config_breadcrumb' %>
+
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="fw-bold">Certificate Configurations</h1>
     <%= link_to new_institute_admin_certificate_configuration_path, class: "btn btn-primary" do %>
@@ -21,7 +23,7 @@
               <tr>
                 <th>Name</th>
                 <th>Details</th>
-                <th>Duration</th>
+                <th>Interval Period</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -31,7 +33,7 @@
                 <tr>
                   <td><%= config.name %></td>
                   <td><%= config.details.present? ? config.details.truncate(50) : "N/A" %></td>
-                  <td><%= config.formatted_duration %></td>
+                  <td><%= config.formatted_duration %> per interval</td>
                   <td>
                     <span class="badge bg-<%= config.active? ? 'success' : 'secondary' %>">
                       <%= config.status.titleize %>

@@ -129,6 +129,162 @@ module InstituteAdmin
       # Handle certificate options page
     end
 
+    def generate_certificate
+      @sections = current_institute.sections.active
+      @certificate_configurations = current_institute.certificate_configurations.active
+      
+      # Load data based on parameters
+      @section_id = params[:section_id]
+      @participant_id = params[:participant_id]
+      @assignment_id = params[:assignment_id]
+      
+      # Load participants if section is selected
+      @participants = if @section_id.present?
+                       current_institute.participants.includes(:user).where(section_id: @section_id)
+                     else
+                       []
+                     end
+      
+      # Load assignments if participant is selected
+      @assignments = if @participant_id.present?
+                      participant = current_institute.participants.find_by(id: @participant_id)
+                      
+                      if participant
+                        # Get all assignments for this participant (both individual and section assignments)
+                        individual_assignments = Assignment.joins(:assignment_participants)
+                                                        .where(assignment_participants: { participant_id: @participant_id })
+                        
+                        section_assignments = Assignment.joins(:assignment_sections)
+                                                     .where(assignment_sections: { section_id: participant.section_id })
+                                                     
+                        Assignment.where(id: individual_assignments.pluck(:id) + section_assignments.pluck(:id))
+                                .distinct.order(created_at: :desc)
+                      else
+                        []
+                      end
+                    else
+                      []
+                    end
+    end
+    
+    def create_certificate
+      @section_id = params[:section_id]
+      @participant_id = params[:participant_id]
+      @assignment_id = params[:assignment_id]
+      @certificate_configuration_id = params[:certificate_configuration_id]
+      
+      # Validate all required parameters
+      unless @section_id.present? && @participant_id.present? && @assignment_id.present? && @certificate_configuration_id.present?
+        redirect_to generate_certificate_institute_admin_reports_path, alert: "All fields are required"
+        return
+      end
+      
+      # Find records
+      @participant = current_institute.participants.find_by(id: @participant_id)
+      @assignment = current_institute.assignments.find_by(id: @assignment_id)
+      @certificate_configuration = current_institute.certificate_configurations.find_by(id: @certificate_configuration_id)
+      
+      # Validate records exist
+      errors = []
+      errors << "Participant not found" unless @participant
+      errors << "Assignment not found" unless @assignment
+      errors << "Certificate configuration not found" unless @certificate_configuration
+      
+      if errors.any?
+        redirect_to generate_certificate_institute_admin_reports_path, alert: "Invalid selection: #{errors.join(', ')}"
+        return
+      end
+      
+      # Check if this certificate already exists
+      if IndividualCertificate.exists?(
+          participant_id: @participant_id,
+          assignment_id: @assignment_id,
+          certificate_configuration_id: @certificate_configuration_id
+        )
+        redirect_to view_certificates_institute_admin_reports_path, alert: "A certificate already exists for this participant and assignment"
+        return
+      end
+      
+      # Create certificate record
+      @certificate = IndividualCertificate.new(
+        participant: @participant,
+        assignment: @assignment,
+        certificate_configuration: @certificate_configuration,
+        institute: current_institute
+      )
+      
+      # Generate the certificate PDF
+      success = generate_individual_certificate(@certificate)
+      
+      if success && @certificate.save
+        redirect_to view_certificates_institute_admin_reports_path, notice: "Certificate successfully generated. <a href='#{show_certificate_institute_admin_reports_path(@certificate)}' target='_blank'>View Certificate</a>".html_safe
+      else
+        error_messages = @certificate.errors.full_messages
+        error_messages << "Failed to generate certificate PDF" unless success
+        redirect_to generate_certificate_institute_admin_reports_path(
+          section_id: @section_id,
+          participant_id: @participant_id,
+          assignment_id: @assignment_id,
+          certificate_configuration_id: @certificate_configuration_id
+        ), alert: "Failed to generate certificate: #{error_messages.join(', ')}"
+      end
+    end
+    
+    def view_certificates
+      # Load certificates with pagination
+      @certificates = IndividualCertificate.includes(:participant, :assignment, :certificate_configuration)
+                               .where(institute_id: current_institute.id)
+                               .order(generated_at: :desc)
+                               .page(params[:page]).per(10)
+    end
+    
+    def show_certificate
+      @certificate = current_institute.individual_certificates.find(params[:id])
+      
+      # Ensure the certificate file exists
+      unless @certificate.filename.present? && File.exist?(@certificate.file_path)
+        redirect_to view_certificates_institute_admin_reports_path, alert: "Certificate file not found"
+        return
+      end
+      
+      # Display the certificate
+      send_file @certificate.file_path, 
+                type: 'application/pdf', 
+                disposition: 'inline'
+    end
+    
+    def delete_certificate
+      @certificate = current_institute.individual_certificates.find(params[:id])
+      
+      # Delete the physical file if it exists
+      File.delete(@certificate.file_path) if @certificate.filename.present? && File.exist?(@certificate.file_path)
+      
+      # Delete the record
+      @certificate.destroy
+      
+      redirect_to view_certificates_institute_admin_reports_path, notice: "Certificate successfully deleted"
+    end
+
+    def regenerate_certificate
+      @certificate = current_institute.individual_certificates.find(params[:id])
+      
+      # Delete the existing file if it exists
+      if @certificate.filename.present? && File.exist?(@certificate.file_path)
+        File.delete(@certificate.file_path) 
+      end
+      
+      # Regenerate the certificate PDF
+      success = generate_individual_certificate(@certificate)
+      
+      if success && @certificate.save
+        redirect_to view_certificates_institute_admin_reports_path, notice: "Certificate successfully regenerated. <a href='#{show_certificate_institute_admin_reports_path(@certificate)}' target='_blank'>View Certificate</a>".html_safe
+      else
+        error_messages = @certificate.errors.full_messages
+        error_messages << "Failed to regenerate certificate PDF" unless success
+        redirect_to view_certificates_institute_admin_reports_path, alert: "Failed to regenerate certificate: #{error_messages.join(', ')}"
+      end
+    end
+
     def individual_assignment_reports
       @date_range = params[:date_range]
       @start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : Date.current
@@ -170,6 +326,60 @@ module InstituteAdmin
           render_individual_assignment_report_pdf
         }
       end
+    end
+
+    def certificate_stats
+      # Get certificates for current institute only
+      base_query = IndividualCertificate.joins(:certificate_configuration)
+                             .where(certificate_configurations: { institute_id: current_institute.id })
+      
+      # Get total count of certificates
+      @total_certificates = base_query.count
+      
+      # Get certificates created in the last 7 days
+      @recent_certificates = base_query.where('individual_certificates.created_at >= ?', 7.days.ago).count
+      
+      # Get certificate types (distinct configurations)
+      @certificate_types = current_institute.certificate_configurations.count
+      
+      # Get certificate count by configuration
+      @certificates_by_config = base_query.group('certificate_configurations.name')
+                                        .order('count_all DESC')
+                                        .count
+      
+      # Get certificates by month for the current year
+      @certificates_by_month = base_query.where('individual_certificates.created_at >= ?', Time.zone.now.beginning_of_year)
+                                       .group(Arel.sql("DATE_TRUNC('month', individual_certificates.created_at)"))
+                                       .order(Arel.sql("DATE_TRUNC('month', individual_certificates.created_at)"))
+                                       .count
+                                       .transform_keys { |k| k.strftime('%B') }
+      
+      # Get top 10 participants with most certificates
+      @top_participants = base_query.joins(participant: :user)
+                                   .group(Arel.sql("users.first_name || ' ' || users.last_name"))
+                                   .order('count_all DESC')
+                                   .limit(10)
+                                   .count
+      
+      # Get certificates by section
+      @certificates_by_section = base_query.joins(participant: :section)
+                                         .group('sections.name')
+                                         .order('count_all DESC')
+                                         .count
+
+      # Monthly growth rate
+      current_month_count = base_query.where('individual_certificates.created_at >= ?', Time.zone.now.beginning_of_month).count
+      previous_month_count = base_query.where('individual_certificates.created_at >= ? AND individual_certificates.created_at <= ?', 
+                                             1.month.ago.beginning_of_month, 
+                                             1.month.ago.end_of_month).count
+      @monthly_growth = previous_month_count.zero? ? 100 : ((current_month_count - previous_month_count).to_f / previous_month_count * 100).round(2)
+      
+      render :certificate_stats
+    end
+
+    def certificate_configurations
+      @certificate_configs = CertificateConfiguration.order(created_at: :desc)
+                                                  .page(params[:page]).per(10)
     end
 
     private
@@ -1206,155 +1416,254 @@ module InstituteAdmin
         disposition: disposition
     end
 
-    def generate_individual_feedback_pdf(options = {})
+    def generate_individual_certificate(certificate)
       require 'prawn'
       require 'prawn/table'
       
-      pdf = Prawn::Document.new(
-        page_size: 'A4',
-        margin: [30, 30, 30, 30],
-        info: {
-          Title: options[:report_title],
-          Author: current_institute.name,
-          Subject: 'Individual Feedback Report',
-          Creator: 'Soul ERP',
-          CreationDate: Time.now
-        }
-      )
+      participant = certificate.participant
+      assignment = certificate.assignment
+      config = certificate.certificate_configuration
       
-      # Add logo if present
-      if current_institute.respond_to?(:logo) && 
-         current_institute.logo.present? && 
-         current_institute.logo.respond_to?(:attached?) && 
-         current_institute.logo.attached?
-        begin
-          logo_path = ActiveStorage::Blob.service.path_for(current_institute.logo.key)
-          pdf.image logo_path, position: :center, width: 120
-        rescue => e
-          # Skip logo if it can't be processed
-          Rails.logger.warn "Failed to add logo to PDF: #{e.message}"
-        end
+      # Define the filename
+      timestamp = Time.current.strftime('%Y%m%d%H%M%S')
+      filename = "certificate_#{participant.id}_#{assignment.id}_#{timestamp}.pdf"
+      
+      # Ensure certificates directory exists
+      certificates_dir = Rails.root.join('public', 'certificates')
+      FileUtils.mkdir_p(certificates_dir) unless File.directory?(certificates_dir)
+      
+      filepath = certificates_dir.join(filename)
+      
+      # Get the date range for the assignment
+      start_date = assignment.start_date.to_date
+      end_date = assignment.end_date.to_date
+      
+      # Create interval periods based on certificate configuration
+      intervals = []
+      current_date = start_date
+      
+      while current_date <= end_date
+        interval_end = [current_date + config.duration_period.days - 1, end_date].min
+        intervals << [current_date, interval_end]
+        current_date = interval_end + 1.day
       end
       
-      # Report header
-      pdf.font_size(18) { pdf.text options[:report_title], align: :center, style: :bold }
-      pdf.move_down 10
+      # Get all responses for this assignment and participant
+      responses = AssignmentResponse.where(
+        participant: participant,
+        assignment: assignment
+      ).includes(:question)
       
-      # Institute info
-      pdf.font_size(14) { pdf.text options[:institute_name], align: :center, style: :bold }
-      pdf.font_size(10) { pdf.text "Generated on #{Date.current.strftime('%B %d, %Y')}", align: :center, color: '666666' }
-      pdf.move_down 20
+      # Group responses by date
+      responses_by_date = responses.group_by { |r| r.response_date.to_date }
       
-      # Filter info
-      filter_data = [
-        ["Date Range:", options[:date_range]],
-        ["Participant:", options[:participant]],
-        ["Section:", options[:section]],
-        ["Assignment:", options[:assignment]]
-      ]
+      # Filter for yes/no and number questions
+      yes_no_questions = assignment.questions.where(question_type: "yes_or_no").select(:id, :title, :question_type)
+      number_questions = assignment.questions.where(question_type: "number").select(:id, :title, :question_type)
       
-      pdf.table(filter_data, width: pdf.bounds.width * 0.7, position: :center) do
-        cells.borders = []
-        column(0).font_style = :bold
-        column(0).width = 100
-        column(0).align = :right
-        column(1).align = :left
-        cells.padding = [5, 10]
+      # Calculate data for the certificate
+      table_data = []
+      
+      # Add header row
+      header = ["Question"]
+      intervals.each_with_index do |(start_date, end_date), index|
+        interval_name = "#{(index+1).ordinalize} #{config.duration_period} Days"
+        header << interval_name
       end
+      table_data << header
       
-      pdf.move_down 20
-      
-      # Report data
-      if options[:submission_status] == 'submitted'
-        if @submitted_feedbacks.any?
-          # Table header
-          header = ['Date', 'Participant', 'Section', 'Training Program', 'Rating', 'Content']
+      # Add yes/no questions data
+      yes_no_questions.each do |question|
+        question_text = question.respond_to?(:title) ? question.title : "Question #{question.id}"
+        row = [question_text]
+        
+        intervals.each do |(interval_start, interval_end)|
+          # Count 'yes' responses in this interval
+          yes_count = 0
           
-          # Table data
-          data = []
-          @submitted_feedbacks.each do |feedback|
-            row = [
-              feedback.created_at.strftime("%b %d, %Y"),
-              feedback.participant.full_name,
-              feedback.participant.section.name,
-              feedback.training_program.title,
-              feedback.rating,
-              feedback.content
-            ]
+          (interval_start..interval_end).each do |date|
+            date_responses = responses_by_date[date] || []
+            question_responses = date_responses.select { |r| r.question_id == question.id }
             
-            data << row
-          end
-          
-          # Generate table
-          pdf.table([header] + data, header: true, width: pdf.bounds.width) do
-            cells.padding = [8, 10]
-            
-            row(0).font_style = :bold
-            row(0).background_color = 'EEEEEE'
-            
-            # Zebra striping
-            rows(1..data.length).each_with_index do |row, i|
-              row.background_color = 'F5F5F5' if i.even?
+            question_responses.each do |response|
+              yes_count += 1 if response.answer.to_s.downcase == 'yes'
             end
           end
-        else
-          pdf.text "No submitted feedbacks found for the selected criteria.", align: :center, style: :italic, color: '666666'
-          pdf.stroke do
-            pdf.rectangle [0, pdf.cursor], pdf.bounds.width, 50
-          end
-        end
-      else
-        if @not_submitted_participants.any?
-          # Table header
-          header = ['Participant', 'Section', 'Email']
           
-          # Table data
-          data = []
-          @not_submitted_participants.each do |participant|
-            row = [
-              participant.full_name,
-              participant.section.name,
-              participant.email
-            ]
-            
-            data << row
-          end
-          
-          # Generate table
-          pdf.table([header] + data, header: true, width: pdf.bounds.width) do
-            cells.padding = [8, 10]
-            
-            row(0).font_style = :bold
-            row(0).background_color = 'EEEEEE'
-            
-            # Zebra striping
-            rows(1..data.length).each_with_index do |row, i|
-              row.background_color = 'F5F5F5' if i.even?
-            end
-          end
-        else
-          pdf.text "No pending submissions found for the selected criteria.", align: :center, style: :italic, color: '666666'
-          pdf.stroke do
-            pdf.rectangle [0, pdf.cursor], pdf.bounds.width, 50
-          end
+          row << yes_count
         end
+        
+        table_data << row
       end
       
-      # Footer
-      pdf.number_pages "Page <page> of <total>", 
-                       at: [pdf.bounds.right - 150, 0],
-                       width: 150,
-                       align: :right,
-                       size: 9
+      # Add number questions data
+      number_questions.each do |question|
+        question_text = question.respond_to?(:title) ? question.title : "Question #{question.id}"
+        row = [question_text]
+        
+        intervals.each do |(interval_start, interval_end)|
+          # Sum number responses in this interval
+          sum = 0
+          
+          (interval_start..interval_end).each do |date|
+            date_responses = responses_by_date[date] || []
+            question_responses = date_responses.select { |r| r.question_id == question.id }
+            
+            question_responses.each do |response|
+              sum += response.answer.to_i if response.answer.present?
+            end
+          end
+          
+          row << sum
+        end
+        
+        table_data << row
+      end
       
-      # Add footer note
-      pdf.go_to_page(pdf.page_count)
-      pdf.move_down 10
-      pdf.horizontal_rule
-      pdf.move_down 5
-      pdf.text "This is a system generated report.", align: :center, size: 9, color: '666666'
-      
-      pdf
+      # Generate the PDF
+      begin
+        Prawn::Document.generate(filepath, page_size: "A4") do |pdf|
+          # Set up fonts
+          roboto_font_available = true
+          font_paths = {
+            normal: Rails.root.join("app/assets/fonts/Roboto-Regular.ttf"),
+            bold: Rails.root.join("app/assets/fonts/Roboto-Bold.ttf"),
+            italic: Rails.root.join("app/assets/fonts/Roboto-Italic.ttf")
+          }
+          
+          # Check if font files exist
+          font_paths.each do |style, path|
+            unless File.exist?(path)
+              Rails.logger.error "Font file not found: #{path}"
+              roboto_font_available = false
+            end
+          end
+          
+          # Initialize fonts
+          if roboto_font_available
+            pdf.font_families.update(
+              "Roboto" => {
+                normal: font_paths[:normal],
+                bold: font_paths[:bold],
+                italic: font_paths[:italic]
+              }
+            )
+            pdf.font "Roboto"
+          else
+            # Use Helvetica as fallback - built into Prawn
+            pdf.font "Helvetica"
+          end
+          
+          # Certificate header
+          pdf.bounding_box([0, pdf.bounds.height], width: pdf.bounds.width, height: 120) do
+            pdf.fill_color "003366"
+            pdf.rectangle([0, pdf.bounds.height], pdf.bounds.width, 100)
+            pdf.fill
+            
+            pdf.fill_color "FFFFFF"
+            pdf.text_box "CERTIFICATE", 
+                        at: [0, pdf.bounds.height - 30], 
+                        width: pdf.bounds.width, 
+                        align: :center,
+                        size: 24,
+                        style: :bold
+            
+            pdf.text_box certificate.certificate_configuration.name, 
+                        at: [0, pdf.bounds.height - 60], 
+                        width: pdf.bounds.width, 
+                        align: :center,
+                        size: 16
+          end
+          
+          # Reset color
+          pdf.fill_color "000000"
+          
+          # Institute details
+          pdf.move_down 110
+          pdf.text "#{current_institute.name}", align: :center, size: 16, style: :bold
+          pdf.move_down 5
+          pdf.text "#{current_institute.address}", align: :center, size: 10 if current_institute.address.present?
+          
+          # Participant details
+          pdf.move_down 20
+          pdf.text "This certificate is awarded to:", align: :center, size: 12
+          pdf.move_down 10
+          pdf.text "#{participant.user.full_name}", align: :center, size: 18, style: :bold
+          
+          # Assignment details
+          pdf.move_down 20
+          pdf.text "For completing the assignment:", align: :center, size: 12
+          pdf.move_down 10
+          pdf.text "#{assignment.title}", align: :center, size: 16, style: :bold
+          pdf.move_down 5
+          pdf.text "#{assignment.start_date.strftime('%B %d, %Y')} - #{assignment.end_date.strftime('%B %d, %Y')}", 
+                  align: :center, 
+                  size: 12
+          
+          # Response data table
+          pdf.move_down 30
+          pdf.text "Performance Summary", size: 14, style: :bold
+          pdf.move_down 10
+          
+          # Create the table
+          if table_data.size > 1
+            pdf.table table_data do |t|
+              t.header = true
+              t.row(0).font_style = :bold
+              t.row(0).background_color = "CCCCCC"
+              t.cells.padding = 8
+              t.cells.borders = [:bottom, :top]
+              t.cells.border_width = 0.5
+              t.cells.border_color = "CCCCCC"
+              
+              # First column is wider for question text
+              t.column(0).width = 200
+            end
+          else
+            pdf.text "No response data available", align: :center, style: :italic
+          end
+          
+          # Additional details
+          pdf.move_down 30
+          pdf.text certificate.certificate_configuration.details, align: :center, size: 10 if certificate.certificate_configuration.details.present?
+          
+          # Date and signature
+          pdf.move_down 40
+          
+          # Date on left
+          pdf.bounding_box([0, pdf.cursor], width: pdf.bounds.width / 2, height: 50) do
+            pdf.text "Generated on:", size: 10
+            pdf.move_down 5
+            pdf.text Time.current.strftime("%B %d, %Y"), size: 12, style: :bold
+          end
+          
+          # Signature on right
+          pdf.bounding_box([pdf.bounds.width / 2, pdf.cursor + 50], width: pdf.bounds.width / 2, height: 50) do
+            pdf.text "Authorized Signature:", size: 10, align: :right
+            pdf.move_down 20
+            pdf.stroke_horizontal_rule
+          end
+          
+          # Footer
+          pdf.bounding_box([0, 50], width: pdf.bounds.width, height: 50) do
+            pdf.stroke_horizontal_rule
+            pdf.move_down 10
+            pdf.text "Certificate ID: #{certificate.id}", size: 8, align: :center
+            pdf.text "Verify at: #{request.base_url}/verify/#{certificate.id}", size: 8, align: :center
+          end
+        end
+        
+        # Update certificate with the filename
+        certificate.filename = filename
+        certificate.generated_at = Time.current
+        
+        true
+      rescue => e
+        Rails.logger.error "Error generating certificate: #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+        certificate.errors.add(:base, "Certificate generation failed: #{e.message}")
+        false
+      end
     end
   end
 end 

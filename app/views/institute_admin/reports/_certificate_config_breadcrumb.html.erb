@@ -1,0 +1,54 @@
+<!-- Modern Breadcrumb -->
+<div class="breadcrumb-wrapper mb-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom">
+      <li class="breadcrumb-item"><%= link_to institute_admin_root_path do %><i class="bi bi-house-door"></i><% end %></li>
+      <li class="breadcrumb-item"><%= link_to "Reports", institute_admin_reports_path %></li>
+      <li class="breadcrumb-item"><%= link_to "Certificates", certificates_institute_admin_reports_path %></li>
+      <li class="breadcrumb-item active" aria-current="page">Certificate Configurations</li>
+    </ol>
+  </nav>
+</div>
+
+<style>
+  /* Modern Breadcrumb Styling */
+  .breadcrumb-wrapper {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+  }
+  
+  .breadcrumb-custom {
+    margin-bottom: 0;
+    padding: 0;
+    background: transparent;
+  }
+  
+  .breadcrumb-custom .breadcrumb-item {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .breadcrumb-custom .breadcrumb-item a {
+    color: #6c757d;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  
+  .breadcrumb-custom .breadcrumb-item a:hover {
+    color: var(--bs-primary);
+  }
+  
+  .breadcrumb-custom .breadcrumb-item.active {
+    color: var(--bs-primary);
+    font-weight: 600;
+  }
+  
+  .breadcrumb-custom .breadcrumb-item+.breadcrumb-item::before {
+    content: "›";
+    color: #adb5bd;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0 0.5rem;
+  }
+</style> 

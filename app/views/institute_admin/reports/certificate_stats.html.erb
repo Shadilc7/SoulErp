@@ -1,0 +1,270 @@
+<div class="container-fluid">
+  <%= render 'certificate_breadcrumb', current_page: "Certificate Statistics" %>
+
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="text-primary">Certificate Statistics</h1>
+      <p class="text-muted">Overview of certificates issued in your institute</p>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3 mb-md-0">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title text-muted">Total Certificates</h5>
+          <h2 class="display-4 fw-bold text-primary"><%= @total_certificates || 0 %></h2>
+          <p class="text-muted">All-time issued certificates</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3 mb-md-0">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title text-muted">Recent Certificates</h5>
+          <h2 class="display-4 fw-bold text-success"><%= @recent_certificates || 0 %></h2>
+          <p class="text-muted">Issued in the last 7 days</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3 mb-md-0">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title text-muted">Certificate Types</h5>
+          <h2 class="display-4 fw-bold text-info"><%= @certificate_types || 0 %></h2>
+          <p class="text-muted">Unique certificate configurations</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title text-muted">Monthly Growth</h5>
+          <h2 class="display-4 fw-bold <%= @monthly_growth >= 0 ? 'text-success' : 'text-danger' %>">
+            <%= @monthly_growth >= 0 ? '+' : '' %><%= @monthly_growth %>%
+          </h2>
+          <p class="text-muted">Compared to previous month</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-6 mb-4 mb-md-0">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-transparent">
+          <h5 class="mb-0">Certificates by Configuration</h5>
+        </div>
+        <div class="card-body">
+          <% if @certificates_by_config && @certificates_by_config.any? %>
+            <canvas id="configChart" width="400" height="300"></canvas>
+          <% else %>
+            <div class="text-center py-5">
+              <p class="text-muted">No data available</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-transparent">
+          <h5 class="mb-0">Certificates by Month</h5>
+        </div>
+        <div class="card-body">
+          <% if @certificates_by_month && @certificates_by_month.any? %>
+            <canvas id="monthChart" width="400" height="300"></canvas>
+          <% else %>
+            <div class="text-center py-5">
+              <p class="text-muted">No data available</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-6 mb-4 mb-md-0">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-transparent">
+          <h5 class="mb-0">Top Participants</h5>
+        </div>
+        <div class="card-body">
+          <% if @top_participants && @top_participants.any? %>
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Participant</th>
+                    <th>Certificates</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @top_participants.each do |name, count| %>
+                    <tr>
+                      <td><%= name %></td>
+                      <td><%= count %></td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <div class="text-center py-4">
+              <p class="text-muted">No data available</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-transparent">
+          <h5 class="mb-0">Certificates by Section</h5>
+        </div>
+        <div class="card-body">
+          <% if @certificates_by_section && @certificates_by_section.any? %>
+            <canvas id="sectionChart" width="400" height="300"></canvas>
+          <% else %>
+            <div class="text-center py-4">
+              <p class="text-muted">No data available</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between">
+        <%= link_to certificates_institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
+          <i class="bi bi-arrow-left me-1"></i> Back to Certificates
+        <% end %>
+        <%= link_to institute_admin_certificate_configurations_path, class: "btn btn-outline-info" do %>
+          <i class="bi bi-gear me-1"></i> Certificate Configurations
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if @certificates_by_config&.any? || @certificates_by_month&.any? || @certificates_by_section&.any? %>
+<script>
+  document.addEventListener('turbo:load', function() {
+    const chartColors = [
+      '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+      '#6610f2', '#6f42c1', '#fd7e14', '#20c997', '#5a5c69'
+    ];
+
+    // Certificate by config chart
+    <% if @certificates_by_config&.any? %>
+      const configCtx = document.getElementById('configChart');
+      const configLabels = <%= raw @certificates_by_config.keys.to_json %>;
+      const configData = <%= raw @certificates_by_config.values.to_json %>;
+      
+      new Chart(configCtx, {
+        type: 'pie',
+        data: {
+          labels: configLabels,
+          datasets: [{
+            data: configData,
+            backgroundColor: chartColors,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = Math.round((value / total) * 100);
+                  return `${label}: ${value} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    <% end %>
+
+    // Certificates by month chart
+    <% if @certificates_by_month&.any? %>
+      const monthCtx = document.getElementById('monthChart');
+      const monthLabels = <%= raw @certificates_by_month.keys.to_json %>;
+      const monthData = <%= raw @certificates_by_month.values.to_json %>;
+      
+      new Chart(monthCtx, {
+        type: 'bar',
+        data: {
+          labels: monthLabels,
+          datasets: [{
+            label: 'Certificates Issued',
+            data: monthData,
+            backgroundColor: '#4e73df',
+            borderColor: '#3a5ccc',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
+        }
+      });
+    <% end %>
+    
+    // Certificates by section chart
+    <% if @certificates_by_section&.any? %>
+      const sectionCtx = document.getElementById('sectionChart');
+      const sectionLabels = <%= raw @certificates_by_section.keys.to_json %>;
+      const sectionData = <%= raw @certificates_by_section.values.to_json %>;
+      
+      new Chart(sectionCtx, {
+        type: 'doughnut',
+        data: {
+          labels: sectionLabels,
+          datasets: [{
+            data: sectionData,
+            backgroundColor: chartColors,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = Math.round((value / total) * 100);
+                  return `${label}: ${value} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    <% end %>
+  });
+</script>
+<% end %> 

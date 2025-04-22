@@ -112,6 +112,24 @@ module InstituteAdmin
       end
     end
 
+    def assignments
+      @participant = current_institute.participants.find(params[:id])
+      
+      # Get assignments for this participant (both individual and section assignments)
+      individual_assignments = Assignment.joins(:assignment_participants)
+                                        .where(assignment_participants: { participant_id: @participant.id })
+      
+      section_assignments = Assignment.joins(:assignment_sections)
+                                     .where(assignment_sections: { section_id: @participant.section_id })
+                                     
+      @assignments = Assignment.where(id: individual_assignments.pluck(:id) + section_assignments.pluck(:id))
+                              .distinct.order(created_at: :desc)
+      
+      respond_to do |format|
+        format.json { render json: @assignments.map { |a| { id: a.id, title: a.title } } }
+      end
+    end
+
     private
 
     def set_participant

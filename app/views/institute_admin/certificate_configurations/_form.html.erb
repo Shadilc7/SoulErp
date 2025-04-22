@@ -23,9 +23,9 @@
   </div>
 
   <div class="mb-3">
-    <%= form.label :duration_period, "Validity Period (months)", class: "form-label" %>
-    <%= form.number_field :duration_period, class: "form-control", min: 1, placeholder: "Enter validity period in months" %>
-    <small class="form-text text-muted">Number of months the certificate will be valid (minimum 1 month)</small>
+    <%= form.label :duration_period, "Interval Period (days)", class: "form-label" %>
+    <%= form.number_field :duration_period, class: "form-control", min: 1, placeholder: "Enter interval period in days" %>
+    <small class="form-text text-muted">Number of days for each result interval on the certificate (e.g., 5 for 1st-5th day, 6th-10th day, etc.)</small>
   </div>
 
   <div class="mb-3">

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_15_145543) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_21_225008) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -112,6 +112,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_15_145543) do
     t.index ["training_program_id"], name: "index_attendances_on_training_program_id"
   end
 
+  create_table "certificate_configurations", force: :cascade do |t|
+    t.string "name"
+    t.text "details"
+    t.integer "duration_period"
+    t.bigint "institute_id", null: false
+    t.integer "status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["institute_id"], name: "index_certificate_configurations_on_institute_id"
+  end
+
   create_table "guardians", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "participant_id", null: false
@@ -123,6 +134,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_15_145543) do
     t.datetime "updated_at", null: false
     t.index ["participant_id"], name: "index_guardians_on_participant_id"
     t.index ["user_id"], name: "index_guardians_on_user_id"
+  end
+
+  create_table "individual_certificates", force: :cascade do |t|
+    t.bigint "participant_id", null: false
+    t.bigint "assignment_id", null: false
+    t.bigint "certificate_configuration_id", null: false
+    t.bigint "institute_id", null: false
+    t.string "filename"
+    t.datetime "generated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assignment_id"], name: "index_individual_certificates_on_assignment_id"
+    t.index ["certificate_configuration_id"], name: "index_individual_certificates_on_certificate_configuration_id"
+    t.index ["institute_id"], name: "index_individual_certificates_on_institute_id"
+    t.index ["participant_id"], name: "index_individual_certificates_on_participant_id"
   end
 
   create_table "institutes", force: :cascade do |t|
@@ -215,6 +241,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_15_145543) do
     t.datetime "updated_at", null: false
     t.boolean "required", default: false
     t.integer "max_rating", default: 5
+    t.string "display_name"
     t.index ["institute_id"], name: "index_questions_on_institute_id"
   end
 
@@ -357,8 +384,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_15_145543) do
   add_foreign_key "attendances", "participants"
   add_foreign_key "attendances", "training_programs"
   add_foreign_key "attendances", "users", column: "marked_by_id"
+  add_foreign_key "certificate_configurations", "institutes"
   add_foreign_key "guardians", "participants"
   add_foreign_key "guardians", "users"
+  add_foreign_key "individual_certificates", "assignments"
+  add_foreign_key "individual_certificates", "certificate_configurations"
+  add_foreign_key "individual_certificates", "institutes"
+  add_foreign_key "individual_certificates", "participants"
   add_foreign_key "options", "questions"
   add_foreign_key "participants", "institutes"
   add_foreign_key "participants", "sections"

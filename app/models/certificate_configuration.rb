@@ -21,10 +21,26 @@ class CertificateConfiguration < ApplicationRecord
   # Methods
   def formatted_duration
     if duration_period == 1
-      "1 month"
+      "1 day"
     else
-      "#{duration_period} months"
+      "#{duration_period} days"
     end
+  end
+  
+  # Returns an array of interval labels based on the duration period
+  def interval_labels(total_days)
+    return [] if duration_period <= 0 || total_days <= 0
+    
+    intervals = []
+    current_day = 1
+    
+    while current_day <= total_days
+      end_day = [current_day + duration_period - 1, total_days].min
+      intervals << "#{current_day.ordinalize}-#{end_day.ordinalize} day"
+      current_day = end_day + 1
+    end
+    
+    intervals
   end
   
   private

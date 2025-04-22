@@ -1,0 +1,231 @@
+<div class="container-fluid py-4">
+  <%= render 'certificate_breadcrumb', current_page: "Generate Certificate" %>
+
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card card-custom">
+        <div class="card-header d-flex justify-content-between align-items-center py-3">
+          <h5 class="mb-0">Generate Individual Certificate</h5>
+          <%= link_to certificates_institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
+            <i class="bi bi-arrow-left me-1"></i> Back
+          <% end %>
+        </div>
+        
+        <div class="card-body">
+          <%= form_with url: create_certificate_institute_admin_reports_path, method: :post, local: true, class: 'needs-validation', data: { turbo: false } do |f| %>
+            
+            <% if flash[:alert].present? %>
+              <div class="alert alert-danger">
+                <%= flash[:alert] %>
+              </div>
+            <% end %>
+            
+            <div class="row g-3">
+              <!-- Section Selection -->
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label class="form-label">
+                    <i class="bi bi-people-fill text-primary me-2"></i>Section
+                  </label>
+                  <%= f.select :section_id, 
+                      options_for_select([['Select Section', '']] + @sections.map { |s| [s.name, s.id] }, @section_id),
+                      {}, 
+                      { class: 'form-select', required: true, id: 'section_select' } %>
+                </div>
+              </div>
+              
+              <!-- Participant Selection -->
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label class="form-label">
+                    <i class="bi bi-person-fill text-primary me-2"></i>Participant
+                  </label>
+                  <%= f.select :participant_id, 
+                      options_for_select([['Select Participant', '']] + @participants.map { |p| [p.user.full_name, p.id] }, @participant_id),
+                      {}, 
+                      { class: 'form-select', required: true, id: 'participant_select', disabled: @participants.empty? } %>
+                  <% if @participants.empty? %>
+                    <div class="form-text text-muted">Please select a section first</div>
+                  <% end %>
+                </div>
+              </div>
+              
+              <!-- Assignment Selection -->
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label class="form-label">
+                    <i class="bi bi-file-earmark-text-fill text-primary me-2"></i>Assignment
+                  </label>
+                  <%= f.select :assignment_id, 
+                      options_for_select([['Select Assignment', '']] + @assignments.map { |a| [a.title, a.id] }, @assignment_id),
+                      {}, 
+                      { class: 'form-select', required: true, id: 'assignment_select', disabled: @assignments.empty? } %>
+                  <% if @assignments.empty? %>
+                    <div class="form-text text-muted">Please select a participant first</div>
+                  <% end %>
+                </div>
+              </div>
+              
+              <!-- Certificate Configuration Selection -->
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label class="form-label">
+                    <i class="bi bi-award-fill text-primary me-2"></i>Certificate Configuration
+                  </label>
+                  <%= f.select :certificate_configuration_id, 
+                      options_for_select([['Select Configuration', '']] + @certificate_configurations.map { |c| ["#{c.name} (#{c.formatted_duration} interval)", c.id] }),
+                      {}, 
+                      { class: 'form-select', required: true } %>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-actions mt-4">
+              <%= f.submit 'Generate Certificate', class: 'btn btn-primary', data: { disable_with: 'Generating...' } %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', initializeCertificateForm);
+  document.addEventListener('turbo:load', initializeCertificateForm);
+  
+  function initializeCertificateForm() {
+    const sectionSelect = document.getElementById('section_select');
+    const participantSelect = document.getElementById('participant_select');
+    const assignmentSelect = document.getElementById('assignment_select');
+    
+    if (!sectionSelect || !participantSelect || !assignmentSelect) return;
+    
+    // Initialize state based on current values
+    if (sectionSelect.value && !participantSelect.disabled) {
+      participantSelect.disabled = false;
+    }
+    
+    if (participantSelect.value && !assignmentSelect.disabled) {
+      loadAssignmentsForParticipant(participantSelect.value);
+    }
+    
+    // Add event listeners
+    sectionSelect.addEventListener('change', function() {
+      const sectionId = this.value;
+      
+      // Clear and disable participant and assignment selects
+      participantSelect.innerHTML = '<option value="">Select Participant</option>';
+      participantSelect.disabled = true;
+      
+      assignmentSelect.innerHTML = '<option value="">Select Assignment</option>';
+      assignmentSelect.disabled = true;
+      
+      if (sectionId) {
+        // Show loading state
+        participantSelect.innerHTML = '<option value="">Loading participants...</option>';
+        
+        // Fetch participants for this section
+        fetch(`/institute_admin/sections/${sectionId}/participants?format=json`)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            participantSelect.innerHTML = '<option value="">Select Participant</option>';
+            
+            if (data.length > 0) {
+              data.forEach(participant => {
+                const option = document.createElement('option');
+                option.value = participant.id;
+                option.textContent = participant.full_name;
+                participantSelect.appendChild(option);
+              });
+              
+              participantSelect.disabled = false;
+            } else {
+              participantSelect.innerHTML = '<option value="">No participants found</option>';
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching participants:', error);
+            participantSelect.innerHTML = '<option value="">Error loading participants</option>';
+          });
+      }
+    });
+    
+    participantSelect.addEventListener('change', function() {
+      const participantId = this.value;
+      loadAssignmentsForParticipant(participantId);
+    });
+  }
+  
+  function loadAssignmentsForParticipant(participantId) {
+    const assignmentSelect = document.getElementById('assignment_select');
+    if (!assignmentSelect) return;
+    
+    // Clear and disable assignment select
+    assignmentSelect.innerHTML = '<option value="">Select Assignment</option>';
+    assignmentSelect.disabled = true;
+    
+    if (!participantId) return;
+    
+    // Show loading state
+    assignmentSelect.innerHTML = '<option value="">Loading assignments...</option>';
+    
+    // Fetch assignments for this participant
+    fetch(`/institute_admin/participants/${participantId}/assignments.json`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        assignmentSelect.innerHTML = '<option value="">Select Assignment</option>';
+        
+        if (data.length > 0) {
+          data.forEach(assignment => {
+            const option = document.createElement('option');
+            option.value = assignment.id;
+            option.textContent = assignment.title;
+            assignmentSelect.appendChild(option);
+          });
+          
+          assignmentSelect.disabled = false;
+          
+          // If there's an assignment_id in the URL, try to select it
+          const urlParams = new URLSearchParams(window.location.search);
+          const assignmentId = urlParams.get('assignment_id');
+          if (assignmentId) {
+            const option = assignmentSelect.querySelector(`option[value="${assignmentId}"]`);
+            if (option) option.selected = true;
+          }
+        } else {
+          assignmentSelect.innerHTML = '<option value="">No assignments found</option>';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching assignments:', error);
+        assignmentSelect.innerHTML = '<option value="">Error loading assignments</option>';
+      });
+  }
+</script>
+
+<style>
+  .form-label {
+    font-weight: 500;
+  }
+  
+  .card-custom {
+    border-radius: 0.5rem;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  
+  .card-header {
+    background-color: white;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+</style> 

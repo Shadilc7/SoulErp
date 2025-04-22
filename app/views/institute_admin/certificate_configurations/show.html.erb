@@ -19,7 +19,7 @@
                 <span class="badge bg-<%= @certificate_configuration.active? ? 'success' : 'secondary' %> me-2">
                   <%= @certificate_configuration.status.titleize %>
                 </span>
-                Valid for <%= @certificate_configuration.formatted_duration %>
+                <%= @certificate_configuration.formatted_duration %> intervals
               </p>
             </div>
           </div>
@@ -57,8 +57,12 @@
                 <td><%= @certificate_configuration.name %></td>
               </tr>
               <tr>
-                <th>Validity Period:</th>
-                <td><%= @certificate_configuration.formatted_duration %></td>
+                <th>Interval Period:</th>
+                <td><%= @certificate_configuration.formatted_duration %> per interval</td>
+              </tr>
+              <tr>
+                <th>Example Intervals:</th>
+                <td><%= @certificate_configuration.interval_labels(30).first(3).join(", ") %>...</td>
               </tr>
               <tr>
                 <th>Status:</th>

@@ -74,7 +74,11 @@ Rails.application.routes.draw do
       end
 
       resources :trainers
-      resources :participants
+      resources :participants do
+        member do
+          get :assignments
+        end
+      end
       resources :questions do
         member do
           post :duplicate
@@ -122,6 +126,13 @@ Rails.application.routes.draw do
           get 'section_feedback_reports'
           get 'individual_feedback_reports'
           get 'certificates'
+          get 'certificate_stats'
+          get 'generate_certificate'
+          post 'create_certificate'
+          get 'view_certificates'
+          get 'certificate/:id', to: 'reports#show_certificate', as: 'show_certificate'
+          delete 'certificate/:id', to: 'reports#delete_certificate', as: 'delete_certificate'
+          post 'certificate/:id/regenerate', to: 'reports#regenerate_certificate', as: 'regenerate_certificate'
         end
       end
     end

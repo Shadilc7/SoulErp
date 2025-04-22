@@ -1,91 +1,119 @@
 <div class="container-fluid py-4">
   <%= render 'certificate_breadcrumb', current_page: "Generate Certificate" %>
 
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card card-custom">
-        <div class="card-header d-flex justify-content-between align-items-center py-3">
-          <h5 class="mb-0">Generate Individual Certificate</h5>
-          <%= link_to certificates_institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
-            <i class="bi bi-arrow-left me-1"></i> Back
-          <% end %>
-        </div>
-        
-        <div class="card-body">
-          <%= form_with url: create_certificate_institute_admin_reports_path, method: :post, local: true, class: 'needs-validation', data: { turbo: false } do |f| %>
-            
-            <% if flash[:alert].present? %>
-              <div class="alert alert-danger">
-                <%= flash[:alert] %>
-              </div>
-            <% end %>
-            
-            <div class="row g-3">
-              <!-- Section Selection -->
-              <div class="col-md-6 mb-3">
-                <div class="form-group">
-                  <label class="form-label">
-                    <i class="bi bi-people-fill text-primary me-2"></i>Section
-                  </label>
-                  <%= f.select :section_id, 
-                      options_for_select([['Select Section', '']] + @sections.map { |s| [s.name, s.id] }, @section_id),
-                      {}, 
-                      { class: 'form-select', required: true, id: 'section_select' } %>
-                </div>
-              </div>
-              
-              <!-- Participant Selection -->
-              <div class="col-md-6 mb-3">
-                <div class="form-group">
-                  <label class="form-label">
-                    <i class="bi bi-person-fill text-primary me-2"></i>Participant
-                  </label>
-                  <%= f.select :participant_id, 
-                      options_for_select([['Select Participant', '']] + @participants.map { |p| [p.user.full_name, p.id] }, @participant_id),
-                      {}, 
-                      { class: 'form-select', required: true, id: 'participant_select', disabled: @participants.empty? } %>
-                  <% if @participants.empty? %>
-                    <div class="form-text text-muted">Please select a section first</div>
-                  <% end %>
-                </div>
-              </div>
-              
-              <!-- Assignment Selection -->
-              <div class="col-md-6 mb-3">
-                <div class="form-group">
-                  <label class="form-label">
-                    <i class="bi bi-file-earmark-text-fill text-primary me-2"></i>Assignment
-                  </label>
-                  <%= f.select :assignment_id, 
-                      options_for_select([['Select Assignment', '']] + @assignments.map { |a| [a.title, a.id] }, @assignment_id),
-                      {}, 
-                      { class: 'form-select', required: true, id: 'assignment_select', disabled: @assignments.empty? } %>
-                  <% if @assignments.empty? %>
-                    <div class="form-text text-muted">Please select a participant first</div>
-                  <% end %>
-                </div>
-              </div>
-              
-              <!-- Certificate Configuration Selection -->
-              <div class="col-md-6 mb-3">
-                <div class="form-group">
-                  <label class="form-label">
-                    <i class="bi bi-award-fill text-primary me-2"></i>Certificate Configuration
-                  </label>
-                  <%= f.select :certificate_configuration_id, 
-                      options_for_select([['Select Configuration', '']] + @certificate_configurations.map { |c| ["#{c.name} (#{c.formatted_duration} interval)", c.id] }),
-                      {}, 
-                      { class: 'form-select', required: true } %>
-                </div>
-              </div>
-            </div>
-            
-            <div class="form-actions mt-4">
-              <%= f.submit 'Generate Certificate', class: 'btn btn-primary', data: { disable_with: 'Generating...' } %>
-            </div>
-          <% end %>
-        </div>
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center py-3">
+      <div class="d-flex align-items-center">
+        <h5 class="mb-0">Generate Individual Certificate</h5>
       </div>
+      <%= link_to certificates_institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left"></i> Back
+      <% end %>
+    </div>
+    
+    <div class="card-body">
+      <%= form_with url: create_certificate_institute_admin_reports_path, method: :post, local: true, class: 'needs-validation', data: { turbo: false } do |f| %>
+        
+        <% if flash[:alert].present? %>
+          <div class="alert alert-danger">
+            <%= flash[:alert] %>
+          </div>
+        <% end %>
+        
+        <div class="filter-container p-3 mb-4 bg-light rounded-3">
+          <h6 class="text-muted mb-3">
+            <i class="bi bi-funnel-fill me-2"></i>Certificate Options
+          </h6>
+          
+          <!-- Section Selection -->
+          <div class="row mb-3 align-items-center">
+            <label for="section_id" class="col-md-3 col-form-label">
+              <div class="d-flex align-items-center">
+                <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                  <i class="bi bi-people-fill text-primary"></i>
+                </div>
+                <span>Section</span>
+              </div>
+            </label>
+            <div class="col-md-9">
+              <%= f.select :section_id, 
+                  options_for_select(@sections.map { |s| [s.name, s.id] }, @section_id),
+                  { prompt: 'Select Section' }, 
+                  { class: 'form-select', required: true, id: 'section_select' } %>
+            </div>
+          </div>
+          
+          <!-- Participant Selection -->
+          <div class="row mb-3 align-items-center">
+            <label for="participant_id" class="col-md-3 col-form-label">
+              <div class="d-flex align-items-center">
+                <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                  <i class="bi bi-person-fill text-primary"></i>
+                </div>
+                <span>Participant</span>
+              </div>
+            </label>
+            <div class="col-md-9">
+              <%= f.select :participant_id, 
+                  options_for_select(@participants.map { |p| [p.user.full_name, p.id] }, @participant_id),
+                  { prompt: 'Select Participant' }, 
+                  { class: 'form-select', required: true, id: 'participant_select', disabled: @participants.empty? } %>
+              <% if @participants.empty? %>
+                <div class="form-text text-muted mt-1">Please select a section first</div>
+              <% end %>
+            </div>
+          </div>
+          
+          <!-- Assignment Selection -->
+          <div class="row mb-3 align-items-center">
+            <label for="assignment_id" class="col-md-3 col-form-label">
+              <div class="d-flex align-items-center">
+                <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                  <i class="bi bi-file-earmark-text-fill text-primary"></i>
+                </div>
+                <span>Assignment</span>
+              </div>
+            </label>
+            <div class="col-md-9">
+              <%= f.select :assignment_id, 
+                  options_for_select(@assignments.map { |a| [a.title, a.id] }, @assignment_id),
+                  { prompt: 'Select Assignment' }, 
+                  { class: 'form-select', required: true, id: 'assignment_select', disabled: @assignments.empty? } %>
+              <% if @assignments.empty? %>
+                <div class="form-text text-muted mt-1">Please select a participant first</div>
+              <% end %>
+            </div>
+          </div>
+          
+          <!-- Certificate Configuration Selection -->
+          <div class="row mb-3 align-items-center">
+            <label for="certificate_configuration_id" class="col-md-3 col-form-label">
+              <div class="d-flex align-items-center">
+                <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                  <i class="bi bi-award-fill text-primary"></i>
+                </div>
+                <span>Certificate Configuration</span>
+              </div>
+            </label>
+            <div class="col-md-9">
+              <%= f.select :certificate_configuration_id, 
+                  options_for_select(@certificate_configurations.map { |c| ["#{c.name} (#{c.formatted_duration} interval)", c.id] }),
+                  { prompt: 'Select Configuration' }, 
+                  { class: 'form-select', required: true } %>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-9">
+              <div class="d-flex">
+                <%= f.submit 'Generate Certificate', class: 'btn btn-primary px-4', data: { disable_with: 'Generating...' } %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
     </div>
   </div>
 </div>
@@ -134,6 +162,7 @@
             return response.json();
           })
           .then(data => {
+            // Create the prompt option first
             participantSelect.innerHTML = '<option value="">Select Participant</option>';
             
             if (data.length > 0) {
@@ -184,6 +213,7 @@
         return response.json();
       })
       .then(data => {
+        // Create the prompt option first
         assignmentSelect.innerHTML = '<option value="">Select Assignment</option>';
         
         if (data.length > 0) {
@@ -215,17 +245,12 @@
 </script>
 
 <style>
-  .form-label {
-    font-weight: 500;
-  }
-  
-  .card-custom {
-    border-radius: 0.5rem;
-    border: 1px solid rgba(0,0,0,0.1);
-  }
-  
-  .card-header {
-    background-color: white;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
+  .icon-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style> 

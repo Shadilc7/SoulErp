@@ -131,6 +131,7 @@ Rails.application.routes.draw do
           post 'create_certificate'
           get 'view_certificates'
           get 'certificate/:id', to: 'reports#show_certificate', as: 'show_certificate'
+          get 'show_certificate/:id', to: 'reports#show_certificate', as: 'institute_admin_reports_show_certificate'
           delete 'certificate/:id', to: 'reports#delete_certificate', as: 'delete_certificate'
           post 'certificate/:id/regenerate', to: 'reports#regenerate_certificate', as: 'regenerate_certificate'
         end

@@ -1,94 +1,166 @@
 <div class="container-fluid py-4">
   <%= render 'certificate_breadcrumb', current_page: nil %>
 
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card shadow-sm">
-        <div class="card-header border-0 pb-0">
-          <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Certificate Management</h5>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 fw-bold">Certificate Management</h4>
+  </div>
+
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+    <!-- Generate Certificates Card -->
+    <div class="col">
+      <div class="modern-card card-primary">
+        <div class="icon-wrapper">
+          <div class="icon-container bg-primary-soft">
+            <i class="bi bi-plus-circle-fill text-primary"></i>
           </div>
         </div>
-        
-        <div class="card-body">
-          <div class="row g-4">
-            <!-- Generate Certificates Card -->
-            <div class="col-md-6">
-              <div class="card h-100 border">
-                <div class="card-body text-center p-4">
-                  <div class="mb-3">
-                    <i class="bi bi-plus-circle text-primary" style="font-size: 3rem;"></i>
-                  </div>
-                  <h5 class="mb-3">Generate Certificates</h5>
-                  <p class="text-muted mb-4">Create new certificates for students based on their assignments</p>
-                  <%= link_to generate_certificate_institute_admin_reports_path, class: "btn btn-primary" do %>
-                    <i class="bi bi-plus me-1"></i> Generate Certificate
-                  <% end %>
-                </div>
-              </div>
-            </div>
-            
-            <!-- View Certificates Card -->
-            <div class="col-md-6">
-              <div class="card h-100 border">
-                <div class="card-body text-center p-4">
-                  <div class="mb-3">
-                    <i class="bi bi-eye text-success" style="font-size: 3rem;"></i>
-                  </div>
-                  <h5 class="mb-3">View Certificates</h5>
-                  <p class="text-muted mb-4">View, download or delete existing certificates</p>
-                  <%= link_to view_certificates_institute_admin_reports_path, class: "btn btn-success" do %>
-                    <i class="bi bi-list me-1"></i> View Certificates
-                  <% end %>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Certificate Configurations Card -->
-            <div class="col-md-6">
-              <div class="card h-100 border">
-                <div class="card-body text-center p-4">
-                  <div class="mb-3">
-                    <i class="bi bi-gear text-info" style="font-size: 3rem;"></i>
-                  </div>
-                  <h5 class="mb-3">Certificate Configurations</h5>
-                  <p class="text-muted mb-4">Manage certificate templates and appearance settings</p>
-                  <%= link_to institute_admin_certificate_configurations_path, class: "btn btn-info" do %>
-                    <i class="bi bi-gear me-1"></i> Manage Configurations
-                  <% end %>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Certificate Stats Card -->
-            <div class="col-md-6">
-              <div class="card h-100 border">
-                <div class="card-body text-center p-4">
-                  <div class="mb-3">
-                    <i class="bi bi-bar-chart text-warning" style="font-size: 3rem;"></i>
-                  </div>
-                  <h5 class="mb-3">Certificate Statistics</h5>
-                  <p class="text-muted mb-4">View statistics about generated certificates</p>
-                  <%= link_to certificate_stats_institute_admin_reports_path, class: "btn btn-warning" do %>
-                    <i class="bi bi-bar-chart me-1"></i> View Statistics
-                  <% end %>
-                </div>
-              </div>
-            </div>
+        <h6 class="card-title">Generate Certificates</h6>
+        <%= link_to generate_certificate_institute_admin_reports_path, class: "stretched-link" do %>
+          <span class="d-none">Generate Certificate</span>
+        <% end %>
+      </div>
+    </div>
+    
+    <!-- View Certificates Card -->
+    <div class="col">
+      <div class="modern-card card-success">
+        <div class="icon-wrapper">
+          <div class="icon-container bg-success-soft">
+            <i class="bi bi-eye-fill text-success"></i>
           </div>
         </div>
+        <h6 class="card-title">View Certificates</h6>
+        <%= link_to view_certificates_institute_admin_reports_path, class: "stretched-link" do %>
+          <span class="d-none">View Certificates</span>
+        <% end %>
+      </div>
+    </div>
+    
+    <!-- Certificate Configurations Card -->
+    <div class="col">
+      <div class="modern-card card-info">
+        <div class="icon-wrapper">
+          <div class="icon-container bg-info-soft">
+            <i class="bi bi-gear-fill text-info"></i>
+          </div>
+        </div>
+        <h6 class="card-title">Configurations</h6>
+        <%= link_to institute_admin_certificate_configurations_path, class: "stretched-link" do %>
+          <span class="d-none">Manage Configurations</span>
+        <% end %>
+      </div>
+    </div>
+    
+    <!-- Certificate Stats Card -->
+    <div class="col">
+      <div class="modern-card card-warning">
+        <div class="icon-wrapper">
+          <div class="icon-container bg-warning-soft">
+            <i class="bi bi-bar-chart-fill text-warning"></i>
+          </div>
+        </div>
+        <h6 class="card-title">Statistics</h6>
+        <%= link_to certificate_stats_institute_admin_reports_path, class: "stretched-link" do %>
+          <span class="d-none">View Statistics</span>
+        <% end %>
       </div>
     </div>
   </div>
 </div>
 
 <style>
-  .card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  .modern-card {
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 24px 20px;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    transition: all 0.3s ease;
   }
   
-  .card:hover {
+  .modern-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+  
+  .modern-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.5), rgba(255,255,255,0));
+    z-index: 1;
+  }
+  
+  .card-primary::before { background-color: #0d6efd; }
+  .card-success::before { background-color: #198754; }
+  .card-info::before { background-color: #0dcaf0; }
+  .card-warning::before { background-color: #ffc107; }
+  
+  .icon-wrapper {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .icon-container {
+    width: 70px;
+    height: 70px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+  }
+  
+  .modern-card:hover .icon-container {
+    transform: scale(1.1);
+  }
+  
+  .icon-container i {
+    font-size: 36px;
+  }
+  
+  .card-title {
+    font-weight: 600;
+    font-size: 18px;
+    margin: 0;
+    transition: color 0.3s ease;
+  }
+  
+  .card-primary:hover .card-title { color: #0d6efd; }
+  .card-success:hover .card-title { color: #198754; }
+  .card-info:hover .card-title { color: #0dcaf0; }
+  .card-warning:hover .card-title { color: #ffc107; }
+  
+  .bg-primary-soft {
+    background-color: rgba(13, 110, 253, 0.15);
+  }
+  
+  .bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.15);
+  }
+  
+  .bg-info-soft {
+    background-color: rgba(13, 202, 240, 0.15);
+  }
+  
+  .bg-warning-soft {
+    background-color: rgba(255, 193, 7, 0.15);
+  }
+  
+  .stretched-link::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    content: "";
   }
 </style> 

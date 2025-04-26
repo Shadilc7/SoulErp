@@ -1,11 +1,11 @@
-<div class="container-fluid py-4">
+<div class="container-fluid">
   <h1 class="fw-bold mb-4">Reports</h1>
 
   <div class="row g-3">
     <!-- Certificates Card -->
     <div class="col-sm-6 col-lg-4">
       <div class="mini-card">
-        <div class="icon-box">
+        <div class="icon-box certificate-icon">
           <i class="bi bi-award"></i>
         </div>
         <div class="content">
@@ -18,7 +18,7 @@
     <!-- Assignment Reports Card -->
     <div class="col-sm-6 col-lg-4">
       <div class="mini-card">
-        <div class="icon-box">
+        <div class="icon-box assignment-icon">
           <i class="bi bi-clipboard-check"></i>
         </div>
         <div class="content">
@@ -31,7 +31,7 @@
     <!-- Feedback Reports Card -->
     <div class="col-sm-6 col-lg-4">
       <div class="mini-card">
-        <div class="icon-box">
+        <div class="icon-box feedback-icon">
           <i class="bi bi-chat-square-text"></i>
         </div>
         <div class="content">
@@ -82,10 +82,24 @@
     min-width: 40px;
     height: 40px;
     border-radius: 8px;
-    background-color: rgba(var(--bs-primary-rgb), 0.1);
-    color: var(--bs-primary);
     margin-right: 16px;
     font-size: 1.2rem;
+  }
+  
+  /* Colorful icon backgrounds */
+  .certificate-icon {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #ff9800;
+  }
+  
+  .assignment-icon {
+    background-color: rgba(25, 135, 84, 0.15);
+    color: #198754;
+  }
+  
+  .feedback-icon {
+    background-color: rgba(13, 110, 253, 0.15);
+    color: #0d6efd;
   }
   
   .content {

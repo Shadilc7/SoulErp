@@ -1,16 +1,12 @@
-<div class="container-fluid py-4">
+<div class="container-fluid">
   <%= render partial: 'institute_admin/reports/certificate_config_breadcrumb' %>
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="fw-bold">Certificate Configurations</h1>
-    <%= link_to new_institute_admin_certificate_configuration_path, class: "btn btn-primary" do %>
-      <i class="bi bi-plus-circle me-2"></i>Add New Configuration
-    <% end %>
-  </div>
-
-  <div class="card card-custom">
+  <div class="card card-custom mt-4">
     <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
       <h5 class="mb-0">All Configurations</h5>
+      <%= link_to new_institute_admin_certificate_configuration_path, class: "btn btn-primary btn-sm" do %>
+        <i class="bi bi-plus-circle me-2"></i>Add New Configuration
+      <% end %>
     </div>
     <div class="card-body">
       <% if @certificate_configurations.any? %>

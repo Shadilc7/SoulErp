@@ -1,21 +1,14 @@
-<!-- Modern Breadcrumb -->
-<div class="breadcrumb-wrapper mb-4">
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb breadcrumb-custom">
-      <li class="breadcrumb-item"><%= link_to institute_admin_root_path do %><i class="bi bi-house-door"></i><% end %></li>
-      <li class="breadcrumb-item"><%= link_to "Reports", institute_admin_reports_path %></li>
-      <li class="breadcrumb-item"><%= link_to "Feedback Reports", feedback_reports_menu_institute_admin_reports_path %></li>
-      <li class="breadcrumb-item active" aria-current="page">Individual Feedback</li>
-    </ol>
-  </nav>
-</div>
-
-<div class="container-fluid py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="fw-bold mb-0">Individual Feedback Reports</h1>
-    <%= link_to feedback_reports_menu_institute_admin_reports_path, class: "btn btn-outline-secondary" do %>
-      <i class="bi bi-arrow-left"></i> Back
-    <% end %>
+<div class="container-fluid">
+  <!-- Modern Breadcrumb -->
+  <div class="breadcrumb-wrapper mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb breadcrumb-custom">
+        <li class="breadcrumb-item"><%= link_to institute_admin_root_path do %><i class="bi bi-house-door"></i><% end %></li>
+        <li class="breadcrumb-item"><%= link_to "Reports", institute_admin_reports_path %></li>
+        <li class="breadcrumb-item"><%= link_to "Feedback Reports", feedback_reports_menu_institute_admin_reports_path %></li>
+        <li class="breadcrumb-item active" aria-current="page">Individual Feedback</li>
+      </ol>
+    </nav>
   </div>
 
   <div class="card mb-4">

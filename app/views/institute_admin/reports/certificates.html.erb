@@ -1,142 +1,123 @@
-<div class="container-fluid py-4">
+<div class="container-fluid">
   <%= render 'certificate_breadcrumb', current_page: nil %>
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0 fw-bold">Certificate Management</h4>
+  <div class="d-flex justify-content-between align-items-center mb-1 mt-4">
   </div>
 
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
-    <!-- Generate Certificates Card -->
-    <div class="col">
-      <div class="modern-card card-primary">
-        <div class="icon-wrapper">
-          <div class="icon-container bg-primary-soft">
-            <i class="bi bi-plus-circle-fill text-primary"></i>
-          </div>
+  <div class="row g-3">
+    <div class="col-12 col-md-6">
+      <!-- Generate Certificates Card -->
+      <div class="mini-card">
+        <div class="icon-box bg-primary-soft">
+          <i class="bi bi-plus-circle-fill text-primary"></i>
         </div>
-        <h6 class="card-title">Generate Certificates</h6>
-        <%= link_to generate_certificate_institute_admin_reports_path, class: "stretched-link" do %>
-          <span class="d-none">Generate Certificate</span>
-        <% end %>
+        <div class="content">
+          <h6>Generate Certificates</h6>
+        </div>
+        <%= link_to "", generate_certificate_institute_admin_reports_path, class: "card-link" %>
       </div>
     </div>
     
-    <!-- View Certificates Card -->
-    <div class="col">
-      <div class="modern-card card-success">
-        <div class="icon-wrapper">
-          <div class="icon-container bg-success-soft">
-            <i class="bi bi-eye-fill text-success"></i>
-          </div>
+    <div class="col-12 col-md-6">
+      <!-- View Certificates Card -->
+      <div class="mini-card">
+        <div class="icon-box bg-success-soft">
+          <i class="bi bi-eye-fill text-success"></i>
         </div>
-        <h6 class="card-title">View Certificates</h6>
-        <%= link_to view_certificates_institute_admin_reports_path, class: "stretched-link" do %>
-          <span class="d-none">View Certificates</span>
-        <% end %>
+        <div class="content">
+          <h6>View Certificates</h6>
+        </div>
+        <%= link_to "", view_certificates_institute_admin_reports_path, class: "card-link" %>
       </div>
     </div>
     
-    <!-- Certificate Configurations Card -->
-    <div class="col">
-      <div class="modern-card card-info">
-        <div class="icon-wrapper">
-          <div class="icon-container bg-info-soft">
-            <i class="bi bi-gear-fill text-info"></i>
-          </div>
+    <div class="col-12 col-md-6">
+      <!-- Certificate Configurations Card -->
+      <div class="mini-card">
+        <div class="icon-box bg-info-soft">
+          <i class="bi bi-gear-fill text-info"></i>
         </div>
-        <h6 class="card-title">Configurations</h6>
-        <%= link_to institute_admin_certificate_configurations_path, class: "stretched-link" do %>
-          <span class="d-none">Manage Configurations</span>
-        <% end %>
+        <div class="content">
+          <h6>Configurations</h6>
+        </div>
+        <%= link_to "", institute_admin_certificate_configurations_path, class: "card-link" %>
       </div>
     </div>
     
-    <!-- Certificate Stats Card -->
-    <div class="col">
-      <div class="modern-card card-warning">
-        <div class="icon-wrapper">
-          <div class="icon-container bg-warning-soft">
-            <i class="bi bi-bar-chart-fill text-warning"></i>
-          </div>
+    <div class="col-12 col-md-6">
+      <!-- Certificate Stats Card -->
+      <div class="mini-card">
+        <div class="icon-box bg-warning-soft">
+          <i class="bi bi-bar-chart-fill text-warning"></i>
         </div>
-        <h6 class="card-title">Statistics</h6>
-        <%= link_to certificate_stats_institute_admin_reports_path, class: "stretched-link" do %>
-          <span class="d-none">View Statistics</span>
-        <% end %>
+        <div class="content">
+          <h6>Statistics</h6>
+        </div>
+        <%= link_to "", certificate_stats_institute_admin_reports_path, class: "card-link" %>
       </div>
     </div>
   </div>
 </div>
 
 <style>
-  .modern-card {
-    background-color: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    padding: 24px 20px;
-    height: 100%;
+  .mini-card {
     position: relative;
-    overflow: hidden;
-    text-align: center;
-    transition: all 0.3s ease;
-  }
-  
-  .modern-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-  }
-  
-  .modern-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.5), rgba(255,255,255,0));
-    z-index: 1;
-  }
-  
-  .card-primary::before { background-color: #0d6efd; }
-  .card-success::before { background-color: #198754; }
-  .card-info::before { background-color: #0dcaf0; }
-  .card-warning::before { background-color: #ffc107; }
-  
-  .icon-wrapper {
-    margin-bottom: 20px;
+    background-color: white;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: all 0.15s ease;
     display: flex;
-    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    height: 72px;
   }
   
-  .icon-container {
-    width: 70px;
-    height: 70px;
-    border-radius: 20px;
+  .mini-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    background-color: #fcfcfc;
+  }
+  
+  .icon-box {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.3s ease;
+    min-width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    margin-right: 16px;
+    font-size: 1.2rem;
   }
   
-  .modern-card:hover .icon-container {
-    transform: scale(1.1);
+  .content {
+    flex: 1;
+    overflow: hidden;
   }
   
-  .icon-container i {
-    font-size: 36px;
-  }
-  
-  .card-title {
-    font-weight: 600;
-    font-size: 18px;
+  .mini-card h6 {
+    font-weight: 500;
+    font-size: 1rem;
     margin: 0;
-    transition: color 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #333;
   }
   
-  .card-primary:hover .card-title { color: #0d6efd; }
-  .card-success:hover .card-title { color: #198754; }
-  .card-info:hover .card-title { color: #0dcaf0; }
-  .card-warning:hover .card-title { color: #ffc107; }
+  .card-link {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+  }
+  
+  .mini-card:focus-within {
+    box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.25);
+    outline: 0;
+  }
   
   .bg-primary-soft {
     background-color: rgba(13, 110, 253, 0.15);
@@ -154,13 +135,17 @@
     background-color: rgba(255, 193, 7, 0.15);
   }
   
-  .stretched-link::after {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 1;
-    content: "";
+  @media (max-width: 576px) {
+    .mini-card {
+      padding: 12px;
+      height: 64px;
+    }
+    
+    .icon-box {
+      min-width: 36px;
+      height: 36px;
+      margin-right: 12px;
+      font-size: 1rem;
+    }
   }
 </style> 

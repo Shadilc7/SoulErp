@@ -1522,7 +1522,7 @@ module InstituteAdmin
       
       # Generate the PDF
       begin
-        Prawn::Document.generate(filepath, page_size: "A4") do |pdf|
+        Prawn::Document.generate(filepath, page_size: "A4", margin: [30, 30, 30, 30]) do |pdf|
           # Set up fonts
           roboto_font_available = true
           font_paths = {
@@ -1554,102 +1554,107 @@ module InstituteAdmin
             pdf.font "Helvetica"
           end
           
-          # Certificate header
-          pdf.bounding_box([0, pdf.bounds.height], width: pdf.bounds.width, height: 120) do
-            pdf.fill_color "003366"
-            pdf.rectangle([0, pdf.bounds.height], pdf.bounds.width, 100)
-            pdf.fill
-            
-            pdf.fill_color "FFFFFF"
-            pdf.text_box "CERTIFICATE", 
-                        at: [0, pdf.bounds.height - 30], 
-                        width: pdf.bounds.width, 
-                        align: :center,
-                        size: 24,
-                        style: :bold
-            
-            pdf.text_box certificate.certificate_configuration.name, 
-                        at: [0, pdf.bounds.height - 60], 
-                        width: pdf.bounds.width, 
-                        align: :center,
-                        size: 16
+          # Define modern colors
+          primary_color = "3498db"    # Blue
+          secondary_color = "2ecc71"  # Green
+          dark_color = "2c3e50"       # Dark Blue/Gray
+          light_color = "ecf0f1"      # Light Gray
+          accent_color = "e74c3c"     # Red accent
+          border_color = "bdc3c7"     # Light gray for borders
+          
+          # Simple modern header with reduced height
+          pdf.stroke_color primary_color
+          pdf.line_width 2
+          pdf.stroke_rectangle [0, pdf.bounds.height], pdf.bounds.width, 50
+          
+          # Fill header with color
+          pdf.fill_color primary_color
+          pdf.fill_rectangle [0, pdf.bounds.height], pdf.bounds.width, 50
+          
+          # Certificate title
+          pdf.fill_color "FFFFFF"
+          pdf.font_size 20  # Reduced font size
+          pdf.text_box "CERTIFICATE", 
+                     at: [0, pdf.bounds.height - 18], 
+                     width: pdf.bounds.width, 
+                     align: :center,
+                     style: :bold
+          
+          # Reset colors
+          pdf.fill_color dark_color
+          pdf.stroke_color dark_color
+          
+          # Participant details - Simple table format with proper alignment
+          pdf.move_down 60  # Reduced spacing
+          
+          # Create participant details table with no-break cells and left alignment
+          participant_data = [
+            ["Name:", participant.user.full_name],
+            ["Section:", participant.section.name],
+            ["Assignment:", "#{assignment.title}"],
+            ["Date Range:", "#{assignment.start_date.strftime('%B %d, %Y')} - #{assignment.end_date.strftime('%B %d, %Y')}"]
+          ]
+          
+          pdf.table participant_data, width: 500, position: :left do |t|
+            t.cells.borders = []
+            t.cells.padding = [4, 8]  # Reduced padding
+            t.cells.inline_format = true
+            t.column(0).font_style = :bold
+            t.column(0).width = 80  # Slightly wider label column
+            t.column(0).align = :left
+            t.column(0).size = 10  # Smaller font size
+            t.column(1).align = :left
+            t.column(1).text_color = primary_color
+            t.column(1).size = 10  # Smaller font size
           end
           
-          # Reset color
-          pdf.fill_color "000000"
+          # Create the table with clear borders and alternating rows - skip straight to table
+          pdf.move_down 20  # Reduced spacing
           
-          # Institute details
-          pdf.move_down 110
-          pdf.text "#{current_institute.name}", align: :center, size: 16, style: :bold
-          pdf.move_down 5
-          pdf.text "#{current_institute.address}", align: :center, size: 10 if current_institute.address.present?
+          # Reset color for table
+          pdf.fill_color dark_color
           
-          # Participant details
-          pdf.move_down 20
-          pdf.text "This certificate is awarded to:", align: :center, size: 12
-          pdf.move_down 10
-          pdf.text "#{participant.user.full_name}", align: :center, size: 18, style: :bold
-          
-          # Assignment details
-          pdf.move_down 20
-          pdf.text "For completing the assignment:", align: :center, size: 12
-          pdf.move_down 10
-          pdf.text "#{assignment.title}", align: :center, size: 16, style: :bold
-          pdf.move_down 5
-          pdf.text "#{assignment.start_date.strftime('%B %d, %Y')} - #{assignment.end_date.strftime('%B %d, %Y')}", 
-                  align: :center, 
-                  size: 12
-          
-          # Response data table
-          pdf.move_down 30
-          pdf.text "Performance Summary", size: 14, style: :bold
-          pdf.move_down 10
-          
-          # Create the table
           if table_data.size > 1
-            pdf.table table_data do |t|
+            pdf.font_size 9  # Smaller font for table
+            pdf.table table_data, width: pdf.bounds.width do |t|
               t.header = true
-              t.row(0).font_style = :bold
-              t.row(0).background_color = "CCCCCC"
-              t.cells.padding = 8
-              t.cells.borders = [:bottom, :top]
-              t.cells.border_width = 0.5
-              t.cells.border_color = "CCCCCC"
               
-              # First column is wider for question text
-              t.column(0).width = 200
+              # Style header row
+              t.row(0).font_style = :bold
+              t.row(0).background_color = primary_color
+              t.row(0).text_color = "FFFFFF"
+              t.row(0).min_font_size = 8
+              
+              # Add visible borders to all cells
+              t.cells.borders = [:top, :bottom, :left, :right]
+              t.cells.border_width = 0.5
+              t.cells.border_color = border_color
+              
+              # Add proper padding
+              t.cells.padding = [6, 4]  # Reduced padding
+              
+              # Style alternating rows with more visible contrast
+              (1...table_data.length).each do |i|
+                if i % 2 == 1
+                  t.row(i).background_color = "F0F0F0"
+                else
+                  t.row(i).background_color = "FFFFFF"
+                end
+              end
+              
+              # First column styling
+              t.column(0).font_style = :bold
+              t.column(0).width = pdf.bounds.width * 0.35
             end
           else
             pdf.text "No response data available", align: :center, style: :italic
           end
           
-          # Additional details
-          pdf.move_down 30
-          pdf.text certificate.certificate_configuration.details, align: :center, size: 10 if certificate.certificate_configuration.details.present?
-          
-          # Date and signature
-          pdf.move_down 40
-          
-          # Date on left
-          pdf.bounding_box([0, pdf.cursor], width: pdf.bounds.width / 2, height: 50) do
-            pdf.text "Generated on:", size: 10
-            pdf.move_down 5
-            pdf.text Time.current.strftime("%B %d, %Y"), size: 12, style: :bold
-          end
-          
-          # Signature on right
-          pdf.bounding_box([pdf.bounds.width / 2, pdf.cursor + 50], width: pdf.bounds.width / 2, height: 50) do
-            pdf.text "Authorized Signature:", size: 10, align: :right
-            pdf.move_down 20
-            pdf.stroke_horizontal_rule
-          end
-          
-          # Footer
-          pdf.bounding_box([0, 50], width: pdf.bounds.width, height: 50) do
-            pdf.stroke_horizontal_rule
-            pdf.move_down 10
-            pdf.text "Certificate ID: #{certificate.id}", size: 8, align: :center
-            pdf.text "Verify at: #{request.base_url}/verify/#{certificate.id}", size: 8, align: :center
+          # Additional details if present
+          if certificate.certificate_configuration.details.present?
+            pdf.move_down 15  # Reduced spacing
+            pdf.font_size 8  # Smaller font for details
+            pdf.text certificate.certificate_configuration.details, align: :center
           end
         end
         

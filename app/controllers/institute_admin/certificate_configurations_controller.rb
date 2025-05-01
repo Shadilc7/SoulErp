@@ -1,5 +1,6 @@
 class InstituteAdmin::CertificateConfigurationsController < InstituteAdmin::BaseController
   before_action :set_certificate_configuration, only: [:show, :edit, :update, :destroy]
+  before_action :set_active_section
 
   def index
     @certificate_configurations = current_institute.certificate_configurations.order(created_at: :desc)
@@ -46,5 +47,9 @@ class InstituteAdmin::CertificateConfigurationsController < InstituteAdmin::Base
 
   def certificate_configuration_params
     params.require(:certificate_configuration).permit(:name, :details, :duration_period, :status)
+  end
+  
+  def set_active_section
+    @active_section = 'reports'
   end
 end

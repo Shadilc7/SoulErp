@@ -1,13 +1,16 @@
 <div class="container-fluid">
   <!-- Modern Breadcrumb -->
-  <div class="breadcrumb-wrapper mb-4">
+  <div class="breadcrumb-wrapper d-flex justify-content-between align-items-center mb-4">
     <nav aria-label="breadcrumb">
-      <ol class="breadcrumb breadcrumb-custom">
+      <ol class="breadcrumb breadcrumb-custom mb-0">
         <li class="breadcrumb-item"><%= link_to institute_admin_root_path do %><i class="bi bi-house-door"></i><% end %></li>
         <li class="breadcrumb-item"><%= link_to "Reports", institute_admin_reports_path %></li>
         <li class="breadcrumb-item active" aria-current="page">Assignment Reports</li>
       </ol>
     </nav>
+    <%= link_to institute_admin_reports_path, class: "btn btn-sm btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left me-1"></i> Back
+    <% end %>
   </div>
 
  

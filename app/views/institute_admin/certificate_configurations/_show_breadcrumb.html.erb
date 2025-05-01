@@ -5,12 +5,11 @@
       <li class="breadcrumb-item"><%= link_to institute_admin_root_path do %><i class="bi bi-house-door"></i><% end %></li>
       <li class="breadcrumb-item"><%= link_to "Reports", institute_admin_reports_path %></li>
       <li class="breadcrumb-item"><%= link_to "Certificates", certificates_institute_admin_reports_path %></li>
-      <% if current_page.present? %>
-        <li class="breadcrumb-item active" aria-current="page"><%= current_page %></li>
-      <% end %>
+      <li class="breadcrumb-item"><%= link_to "Certificate Configurations", institute_admin_certificate_configurations_path %></li>
+      <li class="breadcrumb-item active" aria-current="page"><%= @certificate_configuration.name %></li>
     </ol>
   </nav>
-  <%= link_to certificates_institute_admin_reports_path, class: "btn btn-sm btn-outline-secondary" do %>
+  <%= link_to institute_admin_certificate_configurations_path, class: "btn btn-sm btn-outline-secondary" do %>
     <i class="bi bi-arrow-left me-1"></i> Back
   <% end %>
 </div>
@@ -21,6 +20,7 @@
     background-color: #f8f9fa;
     border-radius: 8px;
     padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
   }
   
   .breadcrumb-custom {

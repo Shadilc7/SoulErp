@@ -1,10 +1,9 @@
 <div class="container-fluid">
+  <%= render partial: 'show_breadcrumb' %>
+
   <div class="card card-custom">
     <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
       <h5 class="mb-0">Certificate Configuration Details</h5>
-      <%= link_to institute_admin_certificate_configurations_path, class: "btn btn-outline-secondary" do %>
-        <i class="bi bi-arrow-left me-1"></i> Back
-      <% end %>
     </div>
     <div class="card-body">
       <div class="row mb-4">
@@ -25,15 +24,7 @@
           </div>
         </div>
         <div class="col-md-6 text-md-end">
-          <div class="btn-group">
-            <%= link_to edit_institute_admin_certificate_configuration_path(@certificate_configuration), class: "btn btn-outline-primary" do %>
-              <i class="bi bi-pencil me-1"></i> Edit
-            <% end %>
-            <%= button_to institute_admin_certificate_configuration_path(@certificate_configuration), method: :delete, class: "btn btn-outline-danger",
-                  data: { turbo_confirm: "Are you sure you want to delete this certificate configuration?" } do %>
-              <i class="bi bi-trash me-1"></i> Delete
-            <% end %>
-          </div>
+          <!-- Edit and Delete buttons removed -->
         </div>
       </div>
 
@@ -59,26 +50,6 @@
               <tr>
                 <th>Interval Period:</th>
                 <td><%= @certificate_configuration.formatted_duration %> per interval</td>
-              </tr>
-              <tr>
-                <th>Example Intervals:</th>
-                <td><%= @certificate_configuration.interval_labels(30).first(3).join(", ") %>...</td>
-              </tr>
-              <tr>
-                <th>Status:</th>
-                <td>
-                  <span class="badge bg-<%= @certificate_configuration.active? ? 'success' : 'secondary' %>">
-                    <%= @certificate_configuration.status.titleize %>
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <th>Created:</th>
-                <td><%= @certificate_configuration.created_at.strftime("%B %d, %Y") %></td>
-              </tr>
-              <tr>
-                <th>Last Updated:</th>
-                <td><%= @certificate_configuration.updated_at.strftime("%B %d, %Y") %></td>
               </tr>
             </table>
           </div>

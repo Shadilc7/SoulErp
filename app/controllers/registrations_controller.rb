@@ -21,15 +21,9 @@ class RegistrationsController < Devise::RegistrationsController
     end
 
     if resource.save
-      if resource.active_for_authentication?
-        set_flash_message! :notice, :signed_up
-        # Instead of signing in, redirect to login page
-        redirect_to new_user_session_path, notice: "Registration successful! Please login to continue."
-      else
-        set_flash_message! :notice, :"signed_up_but_#{resource.inactive_message}"
-        expire_data_after_sign_in!
-        redirect_to new_user_session_path
-      end
+      # Since all new accounts are inactive, we'll always show the pending approval message
+      redirect_to new_user_session_path, 
+        notice: "Registration successful! Your account is currently pending approval."
     else
       clean_up_passwords resource
       set_minimum_password_length
@@ -63,6 +57,7 @@ class RegistrationsController < Devise::RegistrationsController
   def build_resource(hash = {})
     super
     resource.role = :participant
+    resource.active = false
     resource.build_participant if resource.participant.nil?
     resource.participant.enrollment_date = Date.current if resource.participant
   end

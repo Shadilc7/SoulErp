@@ -1470,12 +1470,14 @@ module InstituteAdmin
         interval_name = "#{(index+1).ordinalize} #{config.duration_period} Days"
         header << interval_name
       end
+      header << "Total" # Add Total column header
       table_data << header
       
       # Add yes/no questions data
       yes_no_questions.each do |question|
         question_text = question.respond_to?(:title) ? question.title : "Question #{question.id}"
         row = [question_text]
+        row_total = 0 # Initialize total for this yes/no row
         
         intervals.each do |(interval_start, interval_end)|
           # Count 'yes' responses in this interval
@@ -1491,8 +1493,10 @@ module InstituteAdmin
           end
           
           row << yes_count
+          row_total += yes_count # Accumulate total for yes/no
         end
         
+        row << row_total # Add total to the end of the yes/no row
         table_data << row
       end
       
@@ -1500,6 +1504,7 @@ module InstituteAdmin
       number_questions.each do |question|
         question_text = question.respond_to?(:title) ? question.title : "Question #{question.id}"
         row = [question_text]
+        row_total = 0 # Initialize total for this number row
         
         intervals.each do |(interval_start, interval_end)|
           # Sum number responses in this interval
@@ -1515,8 +1520,10 @@ module InstituteAdmin
           end
           
           row << sum
+          row_total += sum # Accumulate total for number
         end
         
+        row << row_total # Add total to the end of the number row
         table_data << row
       end
       
@@ -1574,7 +1581,9 @@ module InstituteAdmin
           # Certificate title
           pdf.fill_color "FFFFFF"
           pdf.font_size 20  # Reduced font size
-          pdf.text_box "CERTIFICATE", 
+          # Use certificate configuration name as title, fallback if blank
+          certificate_title = config.name.present? ? config.name.upcase : "CERTIFICATE"
+          pdf.text_box certificate_title, 
                      at: [0, pdf.bounds.height - 18], 
                      width: pdf.bounds.width, 
                      align: :center,
@@ -1583,10 +1592,25 @@ module InstituteAdmin
           # Reset colors
           pdf.fill_color dark_color
           pdf.stroke_color dark_color
+
+          pdf.move_down 60 # Space below header
           
+          # Add certificate configuration details below header if present
+          if config.details.present?
+            pdf.font_size 10 # Slightly larger than footer size
+            pdf.text_box config.details, 
+                         at: [0, pdf.cursor], 
+                         width: pdf.bounds.width,
+                         height: 30, # Give it some height to avoid overlap
+                         align: :center,
+                         style: :italic,
+                         overflow: :shrink_to_fit
+            pdf.move_down 35 # Space after details, before participant info
+          else
+             pdf.move_down 15 # Smaller space if no details present
+          end
+
           # Participant details - Simple table format with proper alignment
-          pdf.move_down 60  # Reduced spacing
-          
           # Create participant details table with no-break cells and left alignment
           participant_data = [
             ["Name:", participant.user.full_name],
@@ -1650,12 +1674,7 @@ module InstituteAdmin
             pdf.text "No response data available", align: :center, style: :italic
           end
           
-          # Additional details if present
-          if certificate.certificate_configuration.details.present?
-            pdf.move_down 15  # Reduced spacing
-            pdf.font_size 8  # Smaller font for details
-            pdf.text certificate.certificate_configuration.details, align: :center
-          end
+          # Removed the section that displayed certificate_configuration.details
         end
         
         # Update certificate with the filename

@@ -536,11 +536,38 @@
               <span>Dashboard</span>
             <% end %>
 
-            <%= link_to institute_admin_participants_path,
-                class: "nav-link #{'active' if active_link?('participants')}" do %>
-              <i class="bi bi-people"></i>
-              <span>Participants</span>
-            <% end %>
+            <!-- Participants Section (Collapsible) -->
+            <div class="sidebar-submenu-container">
+              <a href="#participantsSubmenu" 
+                 class="nav-link d-flex justify-content-between align-items-center <%= 'active-parent' if controller.controller_name == 'participants' %>" 
+                 data-bs-toggle="collapse"
+                 data-custom-toggle="true"
+                 data-action="click->sidebar#toggleSubmenu"
+                 aria-expanded="<%= (controller.controller_name == 'participants').to_s %>">
+                <div>
+                  <i class="bi bi-people"></i>
+                  <span>Participants</span>
+                </div>
+                <i class="bi bi-chevron-down submenu-toggle-icon"></i>
+              </a>
+              
+              <div class="collapse <%= 'show' if controller.controller_name == 'participants' %>" 
+                   id="participantsSubmenu">
+                <div class="submenu py-1">
+                  <%= link_to institute_admin_participants_path(approved: 'true'),
+                      class: "nav-link submenu-link ps-4 #{'active' if controller.controller_name == 'participants' && params[:approved] != 'false'}" do %>
+                    <i class="bi bi-check-circle"></i>
+                    <span>Approved</span>
+                  <% end %>
+
+                  <%= link_to institute_admin_participants_path(approved: 'false'),
+                      class: "nav-link submenu-link ps-4 #{'active' if controller.controller_name == 'participants' && params[:approved] == 'false'}" do %>
+                    <i class="bi bi-x-circle"></i>
+                    <span>Not Approved</span>
+                  <% end %>
+                </div>
+              </div>
+            </div>
 
             <!-- Training Section (Collapsible) -->
             <div class="sidebar-submenu-container">
@@ -673,7 +700,22 @@
       <!-- Main Content -->
       <div id="main-content" data-sidebar-target="content">
         <div class="topbar d-flex justify-content-between align-items-center">
+          <!-- Left side: Toggle button for sidebar -->
+          <button class="btn btn-sm btn-outline-secondary d-lg-none" data-action="click->sidebar#toggle">
+            <i class="bi bi-list"></i>
+          </button>
           
+          <!-- Right side: Admin return button if in impersonation mode -->
+          <% if current_user&.master_admin? && session[:admin_institute_id].present? && session[:admin_return_to].present? %>
+            <div class="d-flex align-items-center">
+              <div class="alert alert-warning py-1 px-3 mb-0 me-3 d-none d-md-block">
+                <small>You are viewing as institute admin for <%= current_institute&.name %></small>
+              </div>
+              <%= link_to session[:admin_return_to], class: "btn btn-outline-primary", method: :get, data: { admin_return: true } do %>
+                <i class="bi bi-arrow-return-left"></i> Return to Admin
+              <% end %>
+            </div>
+          <% end %>
         </div>
 
         <div class="content-wrapper">

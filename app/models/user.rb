@@ -64,8 +64,13 @@ class User < ApplicationRecord
     super && active?
   end
 
+  # This provides the reason shown to users when they can't log in
+  def inactive_message
+    active? ? super : :inactive
+  end
+
   def full_name
-    "#{first_name} #{last_name}".strip
+    first_name
   end
 
   def institute_admin?

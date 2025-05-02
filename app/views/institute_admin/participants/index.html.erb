@@ -1,78 +1,180 @@
 <div class="card card-custom">
   <div class="card-header card-header-custom py-3">
     <div class="d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">Participants</h5>
-      <%= link_to new_institute_admin_participant_path, class: "btn btn-primary" do %>
-        <i class="bi bi-plus-lg"></i> Add Participant
+      <div>
+        <h5 class="mb-0">
+          <% if params[:approved] == 'false' %>
+            Not Approved Participants
+          <% else %>
+            Approved Participants
+          <% end %>
+        </h5>
+      </div>
+      <% if params[:approved] == 'false' %>
+        <% if @participants.any? %>
+          <%= button_to approve_all_institute_admin_participants_path, 
+              method: :patch, 
+              class: "btn btn-success", 
+              data: { turbo_confirm: "Are you sure you want to approve all participants?" } do %>
+            <i class="bi bi-check-circle"></i> Approve All
+          <% end %>
+        <% end %>
+      <% else %>
+        <%= link_to new_institute_admin_participant_path, class: "btn btn-primary" do %>
+          <i class="bi bi-plus-lg"></i> Add Participant
+        <% end %>
       <% end %>
     </div>
   </div>
 
-  <div class="card-body">
-    <% if @participants.any? %>
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Section</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @participants.each do |participant| %>
+  <% if params[:approved] == 'false' %>
+    <!-- Not Approved Participants Section -->
+    <div class="card-body">
+      <% if @participants.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
               <tr>
-                <td><%= participant.user.full_name %></td>
-                <td>
-                  <span class="badge bg-primary">
-                    <%= participant.participant_type&.titleize || "Student" %>
-                  </span>
-                </td>
-                <td>
-                  <% if participant.student? || participant.participant_type.nil? %>
-                    <%= participant.section&.name || 'Not Assigned' %>
-                  <% elsif participant.employee? %>
-                    <%= participant.section&.name || 'Not Assigned' %>
-                  <% elsif participant.guardian? %>
-                    <% if participant.guardian_for_participant&.section %>
-                      <%= participant.guardian_for_participant.section.name %>
-                    <% else %>
-                      <span class="text-muted">Student's Section</span>
-                    <% end %>
-                  <% end %>
-                </td>
-                <td>
-                  <span class="badge <%= participant.active? ? 'badge-success' : 'badge-warning' %>">
-                    <%= participant.status.titleize %>
-                  </span>
-                </td>
-                <td>
-                  <%= link_to institute_admin_participant_path(participant.user), class: "btn btn-sm btn-custom-primary me-2" do %>
-                    <i class="bi bi-eye"></i>
-                  <% end %>
-                  <%= link_to edit_institute_admin_participant_path(participant.user), class: "btn btn-sm btn-outline-custom me-2" do %>
-                    <i class="bi bi-pencil"></i>
-                  <% end %>
-                  <%= button_to institute_admin_participant_path(participant.user), 
-                      method: :delete, 
-                      class: "btn btn-sm btn-outline-danger",
-                      form: { style: 'display: inline-block' },
-                      data: { turbo_confirm: "Are you sure you want to delete this participant?" } do %>
-                    <i class="bi bi-trash"></i>
-                  <% end %>
-                </td>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Type</th>
+                <th>Section</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-    <% else %>
-      <div class="text-center py-4">
-        <i class="bi bi-people fs-1 text-muted mb-3"></i>
-        <p class="text-muted mb-0">No participants found</p>
-      </div>
-    <% end %>
-  </div>
+            </thead>
+            <tbody>
+              <% @participants.each do |participant| %>
+                <tr>
+                  <td><%= participant.user.full_name %></td>
+                  <td><%= participant.user.email %></td>
+                  <td>
+                    <span class="badge bg-primary">
+                      <%= participant.participant_type&.titleize || "Student" %>
+                    </span>
+                  </td>
+                  <td>
+                    <% if participant.student? || participant.participant_type.nil? %>
+                      <%= participant.section&.name || 'Not Assigned' %>
+                    <% elsif participant.employee? %>
+                      <%= participant.section&.name || 'Not Assigned' %>
+                    <% elsif participant.guardian? %>
+                      <% if participant.guardian_for_participant&.section %>
+                        <%= participant.guardian_for_participant.section.name %>
+                      <% else %>
+                        <span class="text-muted">Student's Section</span>
+                      <% end %>
+                    <% end %>
+                  </td>
+                  <td>
+                    <span class="badge badge-warning">
+                      Not Approved
+                    </span>
+                  </td>
+                  <td>
+                    <%= link_to institute_admin_participant_path(participant.user), class: "btn btn-sm btn-custom-primary me-2" do %>
+                      <i class="bi bi-eye"></i>
+                    <% end %>
+                    <%= link_to edit_institute_admin_participant_path(participant.user), class: "btn btn-sm btn-outline-custom me-2" do %>
+                      <i class="bi bi-pencil"></i>
+                    <% end %>
+                    <%= button_to institute_admin_participant_path(participant.user), 
+                        method: :delete, 
+                        class: "btn btn-sm btn-outline-danger",
+                        form: { style: 'display: inline-block' },
+                        data: { turbo_confirm: "Are you sure you want to delete this participant?" } do %>
+                      <i class="bi bi-trash"></i>
+                    <% end %>
+                    <%= button_to toggle_status_institute_admin_participant_path(participant.user),
+                        method: :patch,
+                        class: "btn btn-sm btn-success me-2",
+                        form: { style: 'display: inline-block' },
+                        data: { turbo_confirm: "Are you sure you want to approve this participant?" } do %>
+                      <i class="bi bi-check-circle"></i> Approve
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-4">
+          <i class="bi bi-people fs-1 text-muted mb-3"></i>
+          <p class="text-muted mb-0">No pending approval participants found</p>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <!-- Approved Participants Section -->
+    <div class="card-body">
+      <% if @participants.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Type</th>
+                <th>Section</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @participants.each do |participant| %>
+                <tr>
+                  <td><%= participant.user.full_name %></td>
+                  <td><%= participant.user.email %></td>
+                  <td>
+                    <span class="badge bg-primary">
+                      <%= participant.participant_type&.titleize || "Student" %>
+                    </span>
+                  </td>
+                  <td>
+                    <% if participant.student? || participant.participant_type.nil? %>
+                      <%= participant.section&.name || 'Not Assigned' %>
+                    <% elsif participant.employee? %>
+                      <%= participant.section&.name || 'Not Assigned' %>
+                    <% elsif participant.guardian? %>
+                      <% if participant.guardian_for_participant&.section %>
+                        <%= participant.guardian_for_participant.section.name %>
+                      <% else %>
+                        <span class="text-muted">Student's Section</span>
+                      <% end %>
+                    <% end %>
+                  </td>
+                  <td>
+                    <span class="badge badge-success">
+                      Approved
+                    </span>
+                  </td>
+                  <td>
+                    <%= link_to institute_admin_participant_path(participant.user), class: "btn btn-sm btn-custom-primary me-2" do %>
+                      <i class="bi bi-eye"></i>
+                    <% end %>
+                    <%= link_to edit_institute_admin_participant_path(participant.user), class: "btn btn-sm btn-outline-custom me-2" do %>
+                      <i class="bi bi-pencil"></i>
+                    <% end %>
+                    <%= button_to institute_admin_participant_path(participant.user), 
+                        method: :delete, 
+                        class: "btn btn-sm btn-outline-danger",
+                        form: { style: 'display: inline-block' },
+                        data: { turbo_confirm: "Are you sure you want to delete this participant?" } do %>
+                      <i class="bi bi-trash"></i>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-4">
+          <i class="bi bi-people fs-1 text-muted mb-3"></i>
+          <p class="text-muted mb-0">No approved participants found</p>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </div> 

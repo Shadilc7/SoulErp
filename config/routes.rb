@@ -42,6 +42,7 @@ Rails.application.routes.draw do
         member do
           post "assign_admin"
           delete "unassign_admin"
+          post "login_as_institute_admin"
         end
         resources :sections
       end
@@ -53,7 +54,9 @@ Rails.application.routes.draw do
   end
 
   # Institute Admin routes
-  authenticate :user do
+  # We can't directly access session in the route constraints,
+  # but the controller's before_action will handle the proper authorization
+  authenticate :user, lambda { |u| u.institute_admin? || u.master_admin? } do
     namespace :institute_admin do
       root "dashboard#index"
       
@@ -77,6 +80,10 @@ Rails.application.routes.draw do
       resources :participants do
         member do
           get :assignments
+          patch :toggle_status
+        end
+        collection do
+          patch :approve_all
         end
       end
       resources :questions do

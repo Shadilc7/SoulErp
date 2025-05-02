@@ -1,6 +1,6 @@
 module Admin
   class InstitutesController < Admin::BaseController
-    before_action :set_institute, only: [ :show, :edit, :update ]
+    before_action :set_institute, only: [ :show, :edit, :update, :login_as_institute_admin ]
     skip_before_action :authenticate_user!, only: [:sections]
 
     def index
@@ -56,6 +56,19 @@ module Admin
         redirect_to admin_institute_path(@institute), notice: "Admin successfully unassigned from institute."
       else
         redirect_to admin_institute_path(@institute), alert: "Failed to unassign admin."
+      end
+    end
+
+    def login_as_institute_admin
+      if current_user.master_admin?
+        session[:admin_institute_id] = @institute.id
+        session[:admin_return_to] = admin_institute_path(@institute)
+        
+        redirect_to institute_admin_root_path, 
+          notice: "You are now logged in as an institute admin for #{@institute.name}. Your actions will affect this institute."
+      else
+        redirect_to admin_institute_path(@institute), 
+          alert: "Only master admins can access this functionality."
       end
     end
 

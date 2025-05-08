@@ -9,21 +9,44 @@
     </div>
     
     <div class="card-body">
+      <!-- Progress Steps -->
+      <div class="steps mb-4">
+        <div class="step active" id="step1">
+          <div class="step-icon">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <span>Section</span>
+        </div>
+        <div class="step" id="step2">
+          <div class="step-icon">
+            <i class="bi bi-person-fill"></i>
+          </div>
+          <span>Participant</span>
+        </div>
+        <div class="step" id="step3">
+          <div class="step-icon">
+            <i class="bi bi-file-earmark-text-fill"></i>
+          </div>
+          <span>Assignment</span>
+        </div>
+        <div class="step" id="step4">
+          <div class="step-icon">
+            <i class="bi bi-award-fill"></i>
+          </div>
+          <span>Configuration</span>
+        </div>
+      </div>
+
       <%= form_with url: create_certificate_institute_admin_reports_path, method: :post, local: true, class: 'needs-validation', data: { turbo: false } do |f| %>
-        
         <% if flash[:alert].present? %>
           <div class="alert alert-danger">
             <%= flash[:alert] %>
           </div>
         <% end %>
         
-        <div class="filter-container p-3 mb-4 bg-light rounded-3">
-          <h6 class="text-muted mb-3">
-            <i class="bi bi-funnel-fill me-2"></i>Certificate Options
-          </h6>
-          
+        <div class="filter-container p-4 bg-light rounded-3">
           <!-- Section Selection -->
-          <div class="row mb-3 align-items-center">
+          <div class="row mb-4 align-items-center selection-group" id="section-group">
             <label for="section_id" class="col-md-3 col-form-label">
               <div class="d-flex align-items-center">
                 <div class="icon-circle bg-primary bg-opacity-10 me-2">
@@ -36,12 +59,12 @@
               <%= f.select :section_id, 
                   options_for_select(@sections.map { |s| [s.name, s.id] }, @section_id),
                   { prompt: 'Select Section' }, 
-                  { class: 'form-select', required: true, id: 'section_select' } %>
+                  { class: 'form-select form-select-lg', required: true, id: 'section_select' } %>
             </div>
           </div>
           
           <!-- Participant Selection -->
-          <div class="row mb-3 align-items-center">
+          <div class="row mb-4 align-items-center selection-group" id="participant-group">
             <label for="participant_id" class="col-md-3 col-form-label">
               <div class="d-flex align-items-center">
                 <div class="icon-circle bg-primary bg-opacity-10 me-2">
@@ -51,18 +74,22 @@
               </div>
             </label>
             <div class="col-md-9">
-              <%= f.select :participant_id, 
-                  options_for_select(@participants.map { |p| [p.user.full_name, p.id] }, @participant_id),
-                  { prompt: 'Select Participant' }, 
-                  { class: 'form-select', required: true, id: 'participant_select', disabled: @participants.empty? } %>
-              <% if @participants.empty? %>
-                <div class="form-text text-muted mt-1">Please select a section first</div>
-              <% end %>
+              <div class="position-relative">
+                <%= f.select :participant_id, 
+                    options_for_select(@participants.map { |p| [p.user.full_name, p.id] }, @participant_id),
+                    { prompt: 'Select Participant' }, 
+                    { class: 'form-select form-select-lg', required: true, id: 'participant_select', disabled: @participants.empty? } %>
+                <% if @participants.empty? %>
+                  <div class="form-text text-muted mt-2">
+                    <i class="bi bi-info-circle me-1"></i>Please select a section first
+                  </div>
+                <% end %>
+              </div>
             </div>
           </div>
           
           <!-- Assignment Selection -->
-          <div class="row mb-3 align-items-center">
+          <div class="row mb-4 align-items-center selection-group" id="assignment-group">
             <label for="assignment_id" class="col-md-3 col-form-label">
               <div class="d-flex align-items-center">
                 <div class="icon-circle bg-primary bg-opacity-10 me-2">
@@ -72,18 +99,22 @@
               </div>
             </label>
             <div class="col-md-9">
-              <%= f.select :assignment_id, 
-                  options_for_select(@assignments.map { |a| [a.title, a.id] }, @assignment_id),
-                  { prompt: 'Select Assignment' }, 
-                  { class: 'form-select', required: true, id: 'assignment_select', disabled: @assignments.empty? } %>
-              <% if @assignments.empty? %>
-                <div class="form-text text-muted mt-1">Please select a participant first</div>
-              <% end %>
+              <div class="position-relative">
+                <%= f.select :assignment_id, 
+                    options_for_select(@assignments.map { |a| [a.title, a.id] }, @assignment_id),
+                    { prompt: 'Select Assignment' }, 
+                    { class: 'form-select form-select-lg', required: true, id: 'assignment_select', disabled: @assignments.empty? } %>
+                <% if @assignments.empty? %>
+                  <div class="form-text text-muted mt-2">
+                    <i class="bi bi-info-circle me-1"></i>Please select a participant first
+                  </div>
+                <% end %>
+              </div>
             </div>
           </div>
           
           <!-- Certificate Configuration Selection -->
-          <div class="row mb-3 align-items-center">
+          <div class="row mb-4 align-items-center selection-group" id="config-group">
             <label for="certificate_configuration_id" class="col-md-3 col-form-label">
               <div class="d-flex align-items-center">
                 <div class="icon-circle bg-primary bg-opacity-10 me-2">
@@ -96,7 +127,7 @@
               <%= f.select :certificate_configuration_id, 
                   options_for_select(@certificate_configurations.map { |c| ["#{c.name} (#{c.formatted_duration} interval)", c.id] }),
                   { prompt: 'Select Configuration' }, 
-                  { class: 'form-select', required: true } %>
+                  { class: 'form-select form-select-lg', required: true } %>
             </div>
           </div>
 
@@ -104,8 +135,9 @@
           <div class="row">
             <div class="col-md-3"></div>
             <div class="col-md-9">
-              <div class="d-flex">
-                <%= f.submit 'Generate Certificate', class: 'btn btn-primary px-4', data: { disable_with: 'Generating...' } %>
+              <div class="d-flex gap-2">
+                <%= f.submit 'Generate Certificate', class: 'btn btn-primary btn-lg px-4', data: { disable_with: 'Generating...' } %>
+                <%= link_to 'Cancel', certificates_institute_admin_reports_path, class: 'btn btn-outline-secondary btn-lg' %>
               </div>
             </div>
           </div>
@@ -115,102 +147,204 @@
   </div>
 </div>
 
+<style>
+  .steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .steps::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e9ecef;
+    z-index: -1;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+  }
+
+  .step.active {
+    opacity: 1;
+  }
+
+  .step.completed .step-icon {
+    background-color: var(--bs-primary);
+    color: white;
+  }
+
+  .step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .step.active .step-icon {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+  }
+
+  .step span {
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+
+  .selection-group {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+
+  .selection-group.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .form-select-lg {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .icon-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+
 <script>
-  document.addEventListener('DOMContentLoaded', initializeCertificateForm);
-  document.addEventListener('turbo:load', initializeCertificateForm);
+document.addEventListener('DOMContentLoaded', initializeCertificateForm);
+document.addEventListener('turbo:load', initializeCertificateForm);
+
+function initializeCertificateForm() {
+  const sectionSelect = document.getElementById('section_select');
+  const participantSelect = document.getElementById('participant_select');
+  const assignmentSelect = document.getElementById('assignment_select');
   
-  function initializeCertificateForm() {
-    const sectionSelect = document.getElementById('section_select');
-    const participantSelect = document.getElementById('participant_select');
-    const assignmentSelect = document.getElementById('assignment_select');
+  if (!sectionSelect || !participantSelect || !assignmentSelect) return;
+  
+  // Initialize steps
+  updateSteps();
+  
+  // Initialize groups
+  document.getElementById('section-group').classList.add('active');
+  
+  // Event listeners for steps
+  sectionSelect.addEventListener('change', function() {
+    updateSteps();
+    loadParticipantsForSection(this.value);
+  });
+  
+  participantSelect.addEventListener('change', function() {
+    updateSteps();
+    loadAssignmentsForParticipant(this.value);
+  });
+  
+  assignmentSelect.addEventListener('change', function() {
+    updateSteps();
+  });
+  
+  // Helper functions
+  function updateSteps() {
+    const steps = document.querySelectorAll('.step');
+    const groups = document.querySelectorAll('.selection-group');
     
-    if (!sectionSelect || !participantSelect || !assignmentSelect) return;
+    // Reset all
+    steps.forEach(step => step.classList.remove('active', 'completed'));
+    groups.forEach(group => group.classList.remove('active'));
     
-    // Initialize state based on current values
-    if (sectionSelect.value && !participantSelect.disabled) {
-      participantSelect.disabled = false;
-    }
+    // Section step
+    steps[0].classList.add('active');
+    groups[0].classList.add('active');
     
-    if (participantSelect.value && !assignmentSelect.disabled) {
-      loadAssignmentsForParticipant(participantSelect.value);
-    }
-    
-    // Add event listeners
-    sectionSelect.addEventListener('change', function() {
-      const sectionId = this.value;
+    if (sectionSelect.value) {
+      steps[0].classList.add('completed');
+      steps[1].classList.add('active');
+      groups[1].classList.add('active');
       
-      // Clear and disable participant and assignment selects
-      participantSelect.innerHTML = '<option value="">Select Participant</option>';
-      participantSelect.disabled = true;
-      
-      assignmentSelect.innerHTML = '<option value="">Select Assignment</option>';
-      assignmentSelect.disabled = true;
-      
-      if (sectionId) {
-        // Show loading state
-        participantSelect.innerHTML = '<option value="">Loading participants...</option>';
+      if (participantSelect.value) {
+        steps[1].classList.add('completed');
+        steps[2].classList.add('active');
+        groups[2].classList.add('active');
         
-        // Fetch participants for this section
-        fetch(`/institute_admin/sections/${sectionId}/participants?format=json`)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json();
-          })
-          .then(data => {
-            // Create the prompt option first
-            participantSelect.innerHTML = '<option value="">Select Participant</option>';
-            
-            if (data.length > 0) {
-              data.forEach(participant => {
-                const option = document.createElement('option');
-                option.value = participant.id;
-                option.textContent = participant.full_name;
-                participantSelect.appendChild(option);
-              });
-              
-              participantSelect.disabled = false;
-            } else {
-              participantSelect.innerHTML = '<option value="">No participants found</option>';
-            }
-          })
-          .catch(error => {
-            console.error('Error fetching participants:', error);
-            participantSelect.innerHTML = '<option value="">Error loading participants</option>';
-          });
+        if (assignmentSelect.value) {
+          steps[2].classList.add('completed');
+          steps[3].classList.add('active');
+          groups[3].classList.add('active');
+        }
       }
-    });
-    
-    participantSelect.addEventListener('change', function() {
-      const participantId = this.value;
-      loadAssignmentsForParticipant(participantId);
-    });
+    }
   }
   
-  function loadAssignmentsForParticipant(participantId) {
-    const assignmentSelect = document.getElementById('assignment_select');
-    if (!assignmentSelect) return;
-    
-    // Clear and disable assignment select
+  function loadParticipantsForSection(sectionId) {
+    participantSelect.innerHTML = '<option value="">Loading participants...</option>';
+    participantSelect.disabled = true;
     assignmentSelect.innerHTML = '<option value="">Select Assignment</option>';
     assignmentSelect.disabled = true;
     
-    if (!participantId) return;
+    if (!sectionId) {
+      participantSelect.innerHTML = '<option value="">Select Participant</option>';
+      return;
+    }
     
-    // Show loading state
-    assignmentSelect.innerHTML = '<option value="">Loading assignments...</option>';
-    
-    // Fetch assignments for this participant
-    fetch(`/institute_admin/participants/${participantId}/assignments.json`)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Network response was not ok: ${response.status}`);
-        }
-        return response.json();
-      })
+    fetch(`/institute_admin/sections/${sectionId}/participants?format=json`)
+      .then(response => response.json())
       .then(data => {
-        // Create the prompt option first
+        participantSelect.innerHTML = '<option value="">Select Participant</option>';
+        
+        if (data.length > 0) {
+          data.forEach(participant => {
+            const option = document.createElement('option');
+            option.value = participant.id;
+            option.textContent = participant.full_name;
+            participantSelect.appendChild(option);
+          });
+          participantSelect.disabled = false;
+        } else {
+          participantSelect.innerHTML = '<option value="">No participants found</option>';
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        participantSelect.innerHTML = '<option value="">Error loading participants</option>';
+      });
+  }
+  
+  function loadAssignmentsForParticipant(participantId) {
+    assignmentSelect.innerHTML = '<option value="">Loading assignments...</option>';
+    assignmentSelect.disabled = true;
+    
+    if (!participantId) {
+      assignmentSelect.innerHTML = '<option value="">Select Assignment</option>';
+      return;
+    }
+    
+    fetch(`/institute_admin/participants/${participantId}/assignments.json`)
+      .then(response => response.json())
+      .then(data => {
         assignmentSelect.innerHTML = '<option value="">Select Assignment</option>';
         
         if (data.length > 0) {
@@ -220,34 +354,15 @@
             option.textContent = assignment.title;
             assignmentSelect.appendChild(option);
           });
-          
           assignmentSelect.disabled = false;
-          
-          // If there's an assignment_id in the URL, try to select it
-          const urlParams = new URLSearchParams(window.location.search);
-          const assignmentId = urlParams.get('assignment_id');
-          if (assignmentId) {
-            const option = assignmentSelect.querySelector(`option[value="${assignmentId}"]`);
-            if (option) option.selected = true;
-          }
         } else {
           assignmentSelect.innerHTML = '<option value="">No assignments found</option>';
         }
       })
       .catch(error => {
-        console.error('Error fetching assignments:', error);
+        console.error('Error:', error);
         assignmentSelect.innerHTML = '<option value="">Error loading assignments</option>';
       });
   }
+}
 </script>
-
-<style>
-  .icon-circle {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-</style> 

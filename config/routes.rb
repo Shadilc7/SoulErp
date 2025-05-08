@@ -59,15 +59,15 @@ Rails.application.routes.draw do
   authenticate :user, lambda { |u| u.institute_admin? || u.master_admin? } do
     namespace :institute_admin do
       root "dashboard#index"
-      
+
       # Add profile routes
-      get 'profile', to: 'profile#show'
-      
+      get "profile", to: "profile#show"
+
       # Add settings routes
-      resources :settings, only: [:index]
-      get 'general_settings', to: 'general_settings#index', as: 'general_settings'
-      patch 'general_settings', to: 'general_settings#update'
-      
+      resources :settings, only: [ :index ]
+      get "general_settings", to: "general_settings#index", as: "general_settings"
+      patch "general_settings", to: "general_settings#update"
+
       resources :sections do
         member do
           get :reassign_users
@@ -93,15 +93,15 @@ Rails.application.routes.draw do
       end
       resources :question_sets
       resources :training_programs do
-        resources :training_program_feedbacks, only: [:index], path: 'feedbacks'
-        resources :attendances, only: [:index, :new, :create]
+        resources :training_program_feedbacks, only: [ :index ], path: "feedbacks"
+        resources :attendances, only: [ :index, :new, :create ]
         member do
           patch :update_status
           patch :update_progress
           patch :mark_completed
         end
       end
-      resources :attendances, only: [:index] do
+      resources :attendances, only: [ :index ] do
         collection do
           get :list
           get :export_history_csv
@@ -123,24 +123,30 @@ Rails.application.routes.draw do
         get "section/:section_id", action: :index, on: :collection
         get "section/:section_id/participant/:participant_id", action: :index, on: :collection
       end
-      resources :reports, only: [:index] do
+      resources :reports, only: [ :index ] do
         collection do
-          get 'assignment_reports_menu'
-          get 'assignment_reports'
-          get 'individual_assignment_reports'
-          get 'feedback_reports_menu'
-          get 'feedback_reports'
-          get 'section_feedback_reports'
-          get 'individual_feedback_reports'
-          get 'certificates'
-          get 'certificate_stats'
-          get 'generate_certificate'
-          post 'create_certificate'
-          get 'view_certificates'
-          get 'certificate/:id', to: 'reports#show_certificate', as: 'show_certificate'
-          get 'show_certificate/:id', to: 'reports#show_certificate', as: 'institute_admin_reports_show_certificate'
-          delete 'certificate/:id', to: 'reports#delete_certificate', as: 'delete_certificate'
-          post 'certificate/:id/regenerate', to: 'reports#regenerate_certificate', as: 'regenerate_certificate'
+          get "assignment_reports_menu"
+          get "assignment_reports"
+          get "individual_assignment_reports"
+          get "feedback_reports_menu"
+          get "feedback_reports"
+          get "section_feedback_reports"
+          get "individual_feedback_reports"
+          get "certificates"
+          get "certificate_stats"
+          get "generate_certificate"
+          post "create_certificate"
+          get "view_certificates"
+          get "certificate/:id", to: "reports#show_certificate", as: "view_certificate"
+          get "show_certificate/:id", to: "reports#show_certificate", as: "show_certificate"
+          get "download_certificate/:id", to: "reports#show_certificate", as: "download_certificate"
+          delete "certificate/:id", to: "reports#delete_certificate", as: "delete_certificate"
+          post "certificate/:id/regenerate", to: "reports#regenerate_certificate", as: "regenerate_certificate"
+        end
+        member do
+          post :toggle_publish_certificate
+          get :show_certificate_on_demand
+          get :download_certificate_on_demand
         end
       end
     end
@@ -150,18 +156,18 @@ Rails.application.routes.draw do
   authenticate :user do
     namespace :trainer_portal do
       root "dashboard#index"
-      
+
       # Add profile routes
-      get 'profile', to: 'profile#show'
-      
+      get "profile", to: "profile#show"
+
       resources :training_programs do
-        resources :attendances, only: [:index, :new, :create]
+        resources :attendances, only: [ :index, :new, :create ]
         member do
           patch :mark_completed
         end
       end
-      
-      resources :attendances, only: [:index] do
+
+      resources :attendances, only: [ :index ] do
         collection do
           get :list
           get :export_history_csv
@@ -176,8 +182,8 @@ Rails.application.routes.draw do
           get :check_status
         end
       end
-      
-      resources :training_program_feedbacks, only: [:index, :show], path: 'feedbacks'
+
+      resources :training_program_feedbacks, only: [ :index, :show ], path: "feedbacks"
     end
   end
 
@@ -185,6 +191,9 @@ Rails.application.routes.draw do
   authenticate :user do
     namespace :participant_portal do
       root "dashboard#index"
+
+      resources :certificates, only: [ :index, :show ]
+
       resources :training_programs, only: [ :index, :show ] do
         resources :sessions, only: [ :show ]
         resources :feedbacks, only: [ :new, :create ], controller: "training_program_feedbacks"
@@ -196,7 +205,7 @@ Rails.application.routes.draw do
         end
       end
       resource :profile, only: [ :show ]
-      get 'my_student', to: 'profiles#student_info', as: :student_info
+      get "my_student", to: "profiles#student_info", as: :student_info
     end
   end
 end

@@ -25,6 +25,11 @@
           <i class="bi bi-mortarboard me-2"></i>
           Training Programs
         <% end %>
+
+        <%= link_to participant_portal_certificates_path, class: "nav-link #{'active' if active_link?('certificates')}" do %>
+          <i class="bi bi-award me-2"></i>
+          My Certificates
+        <% end %>
       </ul>
 
       <!-- Right Side User Menu -->
@@ -90,4 +95,4 @@
       text-align: center;
     }
   </style>
-<% end %> 
+<% end %>

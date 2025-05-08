@@ -1,13 +1,15 @@
 <!-- Admin Dashboard -->
-<div class="d-flex justify-content-end mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0">Master Admin Dashboard</h4>
   <%= link_to new_admin_institute_path, class: "btn btn-primary" do %>
     <i class="bi bi-plus-lg"></i> New Institute
   <% end %>
 </div>
 
+<!-- Key Metrics -->
 <div class="row">
-  <!-- Total Institutes Card -->
-  <div class="col-md-4 mb-4">
+  <!-- Basic Stats -->
+  <div class="col-md-3 mb-4">
     <div class="card card-custom">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
@@ -22,8 +24,7 @@
     </div>
   </div>
 
-  <!-- Institute Admins Card -->
-  <div class="col-md-4 mb-4">
+  <div class="col-md-3 mb-4">
     <div class="card card-custom">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
@@ -31,9 +32,289 @@
             <h6 class="card-title mb-0">Institute Admins</h6>
             <h2 class="mt-2 mb-0"><%= @institute_admins_count %></h2>
           </div>
-          <i class="bi bi-people fs-1 text-primary opacity-75"></i>
+          <i class="bi bi-people fs-1 text-success opacity-75"></i>
         </div>
         <%= link_to "Manage Admins", admin_users_path, class: "btn btn-custom-primary mt-3" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-4">
+    <div class="card card-custom">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="card-title mb-0">Active Programs</h6>
+            <h2 class="mt-2 mb-0"><%= @active_programs_count %></h2>
+            <p class="text-muted small mb-0">of <%= @total_programs %> total</p>
+          </div>
+          <i class="bi bi-journal-check fs-1 text-info opacity-75"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-4">
+    <div class="card card-custom">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="card-title mb-0">Active Participants</h6>
+            <h2 class="mt-2 mb-0"><%= @active_participants %></h2>
+            <p class="text-muted small mb-0">of <%= @total_participants %> total</p>
+          </div>
+          <i class="bi bi-person-check fs-1 text-warning opacity-75"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Institution Charts -->
+<div class="row">
+  <!-- Participants Chart -->
+  <div class="col-md-6 mb-4">
+    <div class="card card-custom h-100">
+      <div class="card-header bg-light py-3">
+        <h5 class="card-title mb-0">Institution-wise Participants</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="participantsChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Programs Chart -->
+  <div class="col-md-6 mb-4">
+    <div class="card card-custom h-100">
+      <div class="card-header bg-light py-3">
+        <h5 class="card-title mb-0">Institution-wise Programs</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="programsChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Other Statistics -->
+<div class="row">
+  <!-- Training Resources -->
+  <div class="col-md-6 mb-4">
+    <div class="card card-custom h-100">
+      <div class="card-header bg-light py-3">
+        <h5 class="card-title mb-0">Training Resources by Institution</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="resourcesChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback Ratings -->
+  <div class="col-md-6 mb-4">
+    <div class="card card-custom h-100">
+      <div class="card-header bg-light py-3">
+        <h5 class="card-title mb-0">Average Feedback Ratings</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="ratingsChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Institution Details Table -->
+<div class="row">
+  <div class="col-12 mb-4">
+    <div class="card card-custom">
+      <div class="card-header bg-light py-3">
+        <h5 class="card-title mb-0">Institution Statistics</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Institution</th>
+                <th>Active Programs</th>
+                <th>Active Participants</th>
+                <th>Active Sections</th>
+                <th>Assignments</th>
+                <th>Questions</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @institutes.each do |institute| %>
+                <tr>
+                  <td><%= institute[:name] %></td>
+                  <td>
+                    <span class="d-block"><%= institute[:stats][:programs][:active] %> active</span>
+                    <small class="text-muted">of <%= institute[:stats][:programs][:total] %> total</small>
+                  </td>
+                  <td>
+                    <span class="d-block"><%= institute[:stats][:participants][:active] %> active</span>
+                    <small class="text-muted">of <%= institute[:stats][:participants][:total] %> total</small>
+                  </td>
+                  <td>
+                    <span class="d-block"><%= institute[:stats][:sections][:active] %> active</span>
+                    <small class="text-muted">of <%= institute[:stats][:sections][:total] %> total</small>
+                  </td>
+                  <td><%= institute[:stats][:assignments][:total] %></td>
+                  <td><%= institute[:stats][:questions] %></td>
+                  <td>
+                    <%= link_to admin_institute_path(institute[:id]), class: "btn btn-sm btn-outline-primary" do %>
+                      <i class="bi bi-eye"></i> View
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detailed Statistics -->
+<div class="row">
+  <!-- Training Statistics -->
+  <div class="col-md-6 mb-4">
+    <div class="card card-custom h-100">
+      <div class="card-header bg-light py-3">
+        <h5 class="card-title mb-0">Training Statistics</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="border rounded p-3">
+              <h6 class="text-muted mb-2">Sections</h6>
+              <h3 class="mb-1"><%= @active_sections %></h3>
+              <p class="text-muted small mb-0">Active Sections</p>
+              <p class="text-muted small mb-0">Total: <%= @total_sections %></p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="border rounded p-3">
+              <h6 class="text-muted mb-2">Assignments</h6>
+              <h3 class="mb-1"><%= @active_assignments %></h3>
+              <p class="text-muted small mb-0">Active Assignments</p>
+              <p class="text-muted small mb-0">Total: <%= @total_assignments %></p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="border rounded p-3">
+              <h6 class="text-muted mb-2">Questions</h6>
+              <h3 class="mb-1"><%= @total_questions %></h3>
+              <p class="text-muted small mb-0">Question Sets: <%= @total_question_sets %></p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="border rounded p-3">
+              <h6 class="text-muted mb-2">Feedback</h6>
+              <h3 class="mb-1"><%= @total_feedbacks %></h3>
+              <p class="text-muted small mb-0">Avg Rating: <%= @average_rating %>/5</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="col-md-6 mb-4">
+    <div class="card card-custom h-100">
+      <div class="card-header bg-light py-3">
+        <h5 class="card-title mb-0">Recent Activity</h5>
+      </div>
+      <div class="card-body">
+        <div class="list-group list-group-flush">
+          <% @recent_institutes.each do |institute| %>
+            <div class="list-group-item border-0 px-0">
+              <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                  <div class="bg-light rounded p-2">
+                    <i class="bi bi-building text-primary"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                  <h6 class="mb-1"><%= institute.name %></h6>
+                  <p class="text-muted small mb-0">Added <%= time_ago_in_words(institute.created_at) %> ago</p>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Programs and Feedback -->
+<div class="row">
+  <!-- Recent Programs -->
+  <div class="col-md-7 mb-4">
+    <div class="card card-custom">
+      <div class="card-header bg-light py-3">
+        <h5 class="card-title mb-0">Recent Training Programs</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Program</th>
+                <th>Institute</th>
+                <th>Trainer</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @recent_programs.each do |program| %>
+                <tr>
+                  <td><%= program.title %></td>
+                  <td><%= program.institute.name %></td>
+                  <td><%= program.trainer.user.full_name %></td>
+                  <td>
+                    <span class="badge bg-<%= program.status == 'ongoing' ? 'success' : 'secondary' %>">
+                      <%= program.status.titleize %>
+                    </span>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Feedback -->
+  <div class="col-md-5 mb-4">
+    <div class="card card-custom">
+      <div class="card-header bg-light py-3">
+        <h5 class="card-title mb-0">Recent Feedback</h5>
+      </div>
+      <div class="card-body">
+        <% @recent_feedbacks.each do |feedback| %>
+          <div class="border-bottom pb-3 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="mb-0"><%= feedback.training_program.title %></h6>
+              <div class="text-warning">
+                <% feedback.rating.times do %>
+                  <i class="bi bi-star-fill"></i>
+                <% end %>
+              </div>
+            </div>
+            <p class="text-muted small mb-1"><%= truncate(feedback.content, length: 100) %></p>
+            <p class="text-muted small mb-0">
+              By <%= feedback.participant.user.full_name %> • 
+              <%= time_ago_in_words(feedback.created_at) %> ago
+            </p>
+          </div>
+        <% end %>
       </div>
     </div>
   </div>
@@ -41,9 +322,162 @@
 
 <% content_for :styles do %>
   <style>
+    .card-custom {
+      border: none;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .card-custom .card-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid rgba(0,0,0,.125);
+    }
+    .btn-custom-primary {
+      color: var(--bs-primary);
+      background-color: rgba(var(--bs-primary-rgb), 0.1);
+      border: none;
+    }
+    .btn-custom-primary:hover {
+      color: #fff;
+      background-color: var(--bs-primary);
+    }
     .icon-primary {
-      color: var(--primary-color);
+      color: var(--bs-primary);
       opacity: 0.75;
     }
   </style>
 <% end %>
+
+<%= javascript_importmap_tags %>
+
+<!-- Add Chart.js UMD CDN globally for this view -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<script>
+document.addEventListener('turbo:load', function() {
+  const colors = {
+    primary: '#0d6efd',
+    success: '#198754',
+    info: '#0dcaf0',
+    warning: '#ffc107'
+  }
+  const stats = <%= raw @institution_stats.to_json %>;
+
+  function initParticipantsChart() {
+    const ctx = document.getElementById('participantsChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: stats.labels,
+        datasets: [{
+          label: 'Total Participants',
+          data: stats.participants,
+          backgroundColor: colors.primary
+        }, {
+          label: 'Active Participants',
+          data: stats.active_participants,
+          backgroundColor: colors.success
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  }
+  function initProgramsChart() {
+    const ctx = document.getElementById('programsChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: stats.labels,
+        datasets: [{
+          label: 'Total Programs',
+          data: stats.programs,
+          backgroundColor: colors.info
+        }, {
+          label: 'Active Programs',
+          data: stats.active_programs,
+          backgroundColor: colors.success
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  }
+  function initResourcesChart() {
+    const ctx = document.getElementById('resourcesChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: stats.labels,
+        datasets: [{
+          label: 'Sections',
+          data: stats.sections,
+          borderColor: colors.primary,
+          backgroundColor: `${colors.primary}33`
+        }, {
+          label: 'Assignments',
+          data: stats.assignments,
+          borderColor: colors.success,
+          backgroundColor: `${colors.success}33`
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  }
+  function initRatingsChart() {
+    const ctx = document.getElementById('ratingsChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: stats.labels,
+        datasets: [{
+          label: 'Average Rating',
+          data: stats.avg_ratings,
+          borderColor: colors.warning,
+          backgroundColor: `${colors.warning}33`,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 5,
+            ticks: {
+              stepSize: 1
+            }
+          }
+        }
+      }
+    });
+  }
+  initParticipantsChart();
+  initProgramsChart();
+  initResourcesChart();
+  initRatingsChart();
+});
+</script>

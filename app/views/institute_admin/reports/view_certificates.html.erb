@@ -1,13 +1,21 @@
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" data-controller="certificate-publisher">
   <%= render 'certificate_breadcrumb', current_page: "View Certificates" %>
 
   <div class="card card-custom">
     <div class="card-header card-header-custom">
       <div class="d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Generated Certificates</h5>
-        <%= link_to institute_admin_reports_path, class: "btn btn-outline-secondary btn-sm" do %>
-          <i class="bi bi-arrow-left me-1"></i>Back to Reports
-        <% end %>
+        <div>
+          <%= button_tag type: 'button', class: 'btn btn-success btn-sm me-2', id: 'publishSelected', disabled: true do %>
+            <i class="bi bi-check2-all me-1"></i>Publish Selected
+          <% end %>
+          <%= button_tag type: 'button', class: 'btn btn-success btn-sm me-2', id: 'publishAll' do %>
+            <i class="bi bi-check2-all me-1"></i>Publish All
+          <% end %>
+          <%= link_to generate_certificate_institute_admin_reports_path, class: "btn btn-primary btn-sm" do %>
+            <i class="bi bi-plus-circle me-1"></i>Generate New Certificate
+          <% end %>
+        </div>
       </div>
     </div>
 
@@ -16,13 +24,7 @@
         <!-- Filters -->
         <div class="filters mb-4 p-3 bg-light rounded-3">
           <div class="row g-3">
-            <div class="col-md-4">
-              <div class="input-group">
-                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control" id="certificateSearch" placeholder="Search certificates...">
-              </div>
-            </div>
-            <div class="col-md-3">
+            <div class="col-md-9">
               <select class="form-select" id="sectionFilter">
                 <option value="">All Sections</option>
                 <% current_institute.sections.active.each do |section| %>
@@ -31,14 +33,6 @@
               </select>
             </div>
             <div class="col-md-3">
-              <select class="form-select" id="configFilter">
-                <option value="">All Configurations</option>
-                <% current_institute.certificate_configurations.active.each do |config| %>
-                  <option value="<%= config.id %>"><%= config.name %></option>
-                <% end %>
-              </select>
-            </div>
-            <div class="col-md-2">
               <button class="btn btn-secondary w-100" id="resetFilters">
                 <i class="bi bi-x-circle me-1"></i> Reset
               </button>
@@ -50,6 +44,11 @@
           <table class="table align-middle">
             <thead>
               <tr>
+                <th width="40">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAll">
+                  </div>
+                </th>
                 <th>Assignment</th>
                 <th>Participant</th>
                 <th>Generated</th>
@@ -60,9 +59,14 @@
             <tbody>
               <% @certificates.each do |certificate| %>
                 <tr class="certificate-row" 
-                    data-section="<%= certificate.participant.section.id %>"
-                    data-config="<%= certificate.certificate_configuration.id %>"
-                    data-search="<%= "#{certificate.participant.user.full_name.downcase} #{certificate.assignment.title.downcase} #{certificate.certificate_configuration.name.downcase}" %>">
+                    data-section="<%= certificate.participant.section.id %>">
+                  <td>
+                    <div class="form-check">
+                      <input class="form-check-input certificate-checkbox" type="checkbox" 
+                             value="<%= certificate.id %>" 
+                             <%= 'checked disabled' if certificate.published? %>>
+                    </div>
+                  </td>
                   <td>
                     <%= certificate.assignment.title %>
                     <br>
@@ -92,10 +96,9 @@
                       <% end %>
                       
                       <%= link_to toggle_publish_certificate_institute_admin_report_path(certificate),
-                          method: :post,
                           class: "btn btn-sm #{certificate.published? ? 'btn-outline-warning' : 'btn-outline-success'}",
                           title: certificate.published? ? "Unpublish" : "Publish",
-                          data: { turbo_method: :post, confirm: "Are you sure you want to #{certificate.published? ? 'unpublish' : 'publish'} this certificate?" } do %>
+                          data: { turbo_method: :post, turbo_confirm: "Are you sure you want to #{certificate.published? ? 'unpublish' : 'publish'} this certificate?" } do %>
                         <i class="bi <%= certificate.published? ? 'bi-eye-slash' : 'bi-eye' %>"></i>
                         <%= certificate.published? ? 'Unpublish' : 'Publish' %>
                       <% end %>
@@ -144,6 +147,9 @@
   </div>
 </div>
 
+<%= csrf_meta_tags %>
+<%= turbo_include_tags %>
+
 <% content_for :styles do %>
   <style>
     .card-custom {
@@ -173,38 +179,173 @@
   </style>
 <% end %>
 
+<% content_for :scripts do %>
 <script>
 document.addEventListener('turbo:load', function() {
-  const certificateSearch = document.getElementById('certificateSearch');
+  initializeView();
+  initializeBarChart();
+});
+
+function initializeBarChart() {
+  const chartCanvas = document.getElementById('certificatesBarChart');
+  if (!chartCanvas) return;
+
+  const chartColors = [
+    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+    '#6610f2', '#6f42c1', '#fd7e14', '#20c997', '#5a5c69'
+  ];
+
+  new Chart(chartCanvas, {
+    type: 'bar',
+    data: {
+      labels: <%= raw @section_certificate_counts.keys.to_json %>,
+      datasets: [{
+        label: 'Certificates',
+        data: <%= raw @section_certificate_counts.values.to_json %>,
+        backgroundColor: '#4e73df',
+        borderColor: '#3a5ccc',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: false
+        },
+        title: {
+          display: true,
+          text: 'Number of Certificates by Section'
+        }
+      }
+    }
+  });
+}
+
+document.addEventListener('turbo:load', initializeView);
+
+function initializeView() {
+  const selectAll = document.getElementById('selectAll');
+  const certificateCheckboxes = document.querySelectorAll('.certificate-checkbox:not(:disabled)');
+  const publishSelected = document.getElementById('publishSelected');
+  const publishAll = document.getElementById('publishAll');
   const sectionFilter = document.getElementById('sectionFilter');
-  const configFilter = document.getElementById('configFilter');
   const resetFilters = document.getElementById('resetFilters');
-  const certificateRows = document.querySelectorAll('.certificate-row');
-  
-  function filterCertificates() {
-    const searchTerm = certificateSearch.value.toLowerCase();
-    const selectedSection = sectionFilter.value;
-    const selectedConfig = configFilter.value;
-    
-    certificateRows.forEach(row => {
-      const matchesSearch = row.dataset.search.includes(searchTerm);
-      const matchesSection = !selectedSection || row.dataset.section === selectedSection;
-      const matchesConfig = !selectedConfig || row.dataset.config === selectedConfig;
-      
-      row.style.display = matchesSearch && matchesSection && matchesConfig ? '' : 'none';
-    });
+
+  if (!selectAll || !publishSelected || !publishAll) return;
+
+  function updatePublishSelectedButton() {
+    const checkedCount = document.querySelectorAll('.certificate-checkbox:checked:not(:disabled)').length;
+    publishSelected.disabled = checkedCount === 0;
+    publishSelected.innerHTML = `<i class="bi bi-check2-all me-1"></i>Publish Selected (${checkedCount})`;
   }
-  
-  // Add event listeners
-  certificateSearch.addEventListener('input', filterCertificates);
+
+  // Select All functionality
+  selectAll.addEventListener('change', function() {
+    certificateCheckboxes.forEach(checkbox => {
+      if (checkbox.closest('tr').style.display !== 'none') {
+        checkbox.checked = this.checked;
+      }
+    });
+    updatePublishSelectedButton();
+  });
+
+  // Individual checkbox change
+  certificateCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      updatePublishSelectedButton();
+      
+      // Update select all checkbox state
+      const visibleCheckboxes = Array.from(certificateCheckboxes).filter(cb => 
+        cb.closest('tr').style.display !== 'none'
+      );
+      selectAll.checked = visibleCheckboxes.every(cb => cb.checked);
+    });
+  });
+
+  // Filter functionality
+  function filterCertificates() {
+    const selectedSection = sectionFilter.value;
+    
+    document.querySelectorAll('.certificate-row').forEach(row => {
+      const matchesSection = !selectedSection || row.dataset.section === selectedSection;
+      row.style.display = matchesSection ? '' : 'none';
+    });
+    
+    // Reset checkboxes and update button state
+    selectAll.checked = false;
+    certificateCheckboxes.forEach(cb => cb.checked = false);
+    updatePublishSelectedButton();
+  }
+
   sectionFilter.addEventListener('change', filterCertificates);
-  configFilter.addEventListener('change', filterCertificates);
   
   resetFilters.addEventListener('click', function() {
-    certificateSearch.value = '';
     sectionFilter.value = '';
-    configFilter.value = '';
     filterCertificates();
   });
-});
+
+  // Publishing functionality
+  publishSelected.addEventListener('click', function() {
+    const selectedIds = Array.from(document.querySelectorAll('.certificate-checkbox:checked:not(:disabled)'))
+      .map(checkbox => checkbox.value);
+    
+    if (selectedIds.length > 0 && confirm(`Are you sure you want to publish ${selectedIds.length} selected certificate(s)?`)) {
+      publishCertificates(selectedIds);
+    }
+  });
+
+  publishAll.addEventListener('click', function() {
+    const allIds = Array.from(document.querySelectorAll('.certificate-checkbox:not(:disabled)'))
+      .filter(checkbox => checkbox.closest('tr').style.display !== 'none')
+      .map(checkbox => checkbox.value);
+    
+    if (allIds.length > 0 && confirm(`Are you sure you want to publish all ${allIds.length} unpublished certificate(s)?`)) {
+      publishCertificates(allIds);
+    } else if (allIds.length === 0) {
+      alert('No unpublished certificates found.');
+    }
+  });
+
+  function publishCertificates(certificateIds) {
+    const token = document.querySelector('meta[name="csrf-token"]')?.content;
+    if (!token) {
+      console.error('CSRF token not found');
+      return;
+    }
+
+    fetch('/institute_admin/reports/publish_multiple_certificates', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': token
+      },
+      body: JSON.stringify({ certificate_ids: certificateIds })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        window.location.reload();
+      } else {
+        alert('Failed to publish certificates: ' + (data.message || 'Unknown error'));
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred while publishing certificates');
+    });
+  }
+
+  // Initialize view
+  updatePublishSelectedButton();
+}
 </script>
+<% end %>

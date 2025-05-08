@@ -74,3 +74,5 @@ gem "combine_pdf"
 gem "simple_calendar", "~> 2.4"
 
 gem "kaminari"
+
+gem "gruff"

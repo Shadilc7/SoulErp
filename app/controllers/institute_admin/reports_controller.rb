@@ -232,6 +232,13 @@ module InstituteAdmin
                                .where(institute_id: current_institute.id)
                                .order(generated_at: :desc)
                                .page(params[:page]).per(10)
+
+      # Get section-wise certificate counts for the bar graph
+      @section_certificate_counts = IndividualCertificate.joins(participant: :section)
+                                            .where(institute_id: current_institute.id)
+                                            .group("sections.name")
+                                            .order("sections.name")
+                                            .count
     end
 
     def show_certificate
@@ -420,6 +427,21 @@ module InstituteAdmin
 
       redirect_to view_certificates_institute_admin_reports_path,
                   notice: "Certificate #{@certificate.published? ? 'published' : 'unpublished'} successfully"
+    end
+
+    def publish_multiple_certificates
+      certificate_ids = params[:certificate_ids]
+      certificates = current_institute.individual_certificates.where(id: certificate_ids)
+
+      begin
+        IndividualCertificate.transaction do
+          certificates.update_all(published: true)
+        end
+
+        render json: { success: true, message: "Successfully published #{certificates.count} certificates" }
+      rescue => e
+        render json: { success: false, message: e.message }, status: :unprocessable_entity
+      end
     end
 
     private
@@ -1459,6 +1481,8 @@ module InstituteAdmin
     def generate_individual_certificate(certificate)
       require "prawn"
       require "prawn/table"
+      require "gruff"
+      require "tempfile"
 
       participant = certificate.participant
       assignment = certificate.assignment
@@ -1493,6 +1517,7 @@ module InstituteAdmin
 
       # Calculate data for the certificate
       table_data = []
+      graph_data = {}
 
       # Add header row
       header = [ "Question" ]
@@ -1500,60 +1525,65 @@ module InstituteAdmin
         interval_name = "#{(index+1).ordinalize} #{config.duration_period} Days"
         header << interval_name
       end
-      header << "Total" # Add Total column header
+      header << "Total"
       table_data << header
 
-      # Add yes/no questions data
-      yes_no_questions.each do |question|
+      # Process questions and collect data for graph
+      all_questions = yes_no_questions + number_questions
+      all_questions.each do |question|
         question_text = question.respond_to?(:title) ? question.title : "Question #{question.id}"
         row = [ question_text ]
-        row_total = 0
+        interval_data = []
 
         intervals.each do |(interval_start, interval_end)|
-          yes_count = 0
+          value = 0
 
           (interval_start..interval_end).each do |date|
             date_responses = responses_by_date[date] || []
             question_responses = date_responses.select { |r| r.question_id == question.id }
 
             question_responses.each do |response|
-              yes_count += 1 if response.answer.to_s.downcase == "yes"
+              if question.question_type == "yes_or_no"
+                value += 1 if response.answer.to_s.downcase == "yes"
+              else
+                value += response.answer.to_i if response.answer.present?
+              end
             end
           end
 
-          row << yes_count
-          row_total += yes_count
+          row << value
+          interval_data << value
         end
 
-        row << row_total
+        row << interval_data.sum
         table_data << row
+        graph_data[question_text] = interval_data
       end
 
-      # Add number questions data
-      number_questions.each do |question|
-        question_text = question.respond_to?(:title) ? question.title : "Question #{question.id}"
-        row = [ question_text ]
-        row_total = 0
+      # Create bar graph using Gruff
+      g = Gruff::Bar.new("800x400")
+      g.title = "Response Data by Interval"
+      g.theme = {
+        colors: [ "#4e73df", "#1cc88a", "#36b9cc", "#f6c23e", "#e74a3b" ],
+        marker_color: "#000000",
+        background_colors: [ "#ffffff", "#ffffff" ]
+      }
 
-        intervals.each do |(interval_start, interval_end)|
-          sum = 0
-
-          (interval_start..interval_end).each do |date|
-            date_responses = responses_by_date[date] || []
-            question_responses = date_responses.select { |r| r.question_id == question.id }
-
-            question_responses.each do |response|
-              sum += response.answer.to_i if response.answer.present?
-            end
-          end
-
-          row << sum
-          row_total += sum
-        end
-
-        row << row_total
-        table_data << row
+      # Add data to graph
+      graph_data.each do |question, values|
+        g.data(question, values)
       end
+
+      # Customize labels for intervals
+      labels = {}
+      intervals.each_with_index do |(start_date, end_date), index|
+        labels[index] = "Interval #{index + 1}"
+      end
+      g.labels = labels
+
+      # Save graph to temp file
+      graph_file = Tempfile.new([ "certificate_graph", ".png" ])
+      g.write(graph_file.path)
 
       # Generate the PDF in memory
       pdf_content = Prawn::Document.new(page_size: "A4", margin: [ 30, 30, 30, 30 ]) do |pdf|
@@ -1587,12 +1617,9 @@ module InstituteAdmin
           pdf.font "Helvetica"
         end
 
-        # Define modern colors
-        primary_color = "3498db"
-        secondary_color = "2ecc71"
+        # Colors
+        primary_color = "4e73df"
         dark_color = "2c3e50"
-        light_color = "ecf0f1"
-        accent_color = "e74c3c"
         border_color = "bdc3c7"
 
         # Header
@@ -1652,8 +1679,8 @@ module InstituteAdmin
         end
 
         pdf.move_down 20
-        pdf.fill_color dark_color
 
+        # Add response data table
         if table_data.size > 1
           pdf.font_size 9
           pdf.table table_data, width: pdf.bounds.width do |t|
@@ -1667,6 +1694,7 @@ module InstituteAdmin
             t.cells.border_color = border_color
             t.cells.padding = [ 6, 4 ]
 
+            # Zebra striping
             (1...table_data.length).each do |i|
               if i % 2 == 1
                 t.row(i).background_color = "F0F0F0"
@@ -1678,10 +1706,37 @@ module InstituteAdmin
             t.column(0).font_style = :bold
             t.column(0).width = pdf.bounds.width * 0.35
           end
-        else
-          pdf.text "No response data available", align: :center, style: :italic
         end
+
+        # Add graph
+        pdf.start_new_page
+        pdf.font_size 16
+        pdf.text "Response Data Visualization", align: :center, style: :bold
+        pdf.move_down 20
+
+        # Add the graph image with proper sizing
+        if File.exist?(graph_file.path)
+          pdf.image graph_file.path, position: :center, fit: [ 500, 300 ]
+        end
+
+        # Footer
+        pdf.number_pages "Page <page> of <total>",
+                         at: [ pdf.bounds.right - 150, 0 ],
+                         width: 150,
+                         align: :right,
+                         size: 9
+
+        # Add footer note
+        pdf.go_to_page(pdf.page_count)
+        pdf.move_down 10
+        pdf.horizontal_rule
+        pdf.move_down 5
+        pdf.text "This is a system generated report.", align: :center, size: 9, color: "666666"
       end
+
+      # Clean up temp file
+      graph_file.close
+      graph_file.unlink
 
       # Update certificate timestamp without storing file
       certificate.update(generated_at: Time.current)

@@ -142,6 +142,7 @@ Rails.application.routes.draw do
           get "download_certificate/:id", to: "reports#show_certificate", as: "download_certificate"
           delete "certificate/:id", to: "reports#delete_certificate", as: "delete_certificate"
           post "certificate/:id/regenerate", to: "reports#regenerate_certificate", as: "regenerate_certificate"
+          post :publish_multiple_certificates
         end
         member do
           post :toggle_publish_certificate

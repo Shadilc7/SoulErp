@@ -59,7 +59,7 @@
             <tbody>
               <% @certificates.each do |certificate| %>
                 <tr class="certificate-row" 
-                    data-section="<%= certificate.participant.section.id %>">
+                    data-section="<%= certificate.participant&.section&.id || '' %>">
                   <td>
                     <div class="form-check">
                       <input class="form-check-input certificate-checkbox" type="checkbox" 
@@ -95,6 +95,13 @@
                         <i class="bi bi-eye"></i> View
                       <% end %>
                       
+                      <%= link_to regenerate_certificate_institute_admin_reports_path(certificate),
+                          class: "btn btn-sm btn-outline-info",
+                          title: "Regenerate Certificate",
+                          data: { turbo_method: :post, turbo_confirm: "Are you sure you want to regenerate this certificate?" } do %>
+                        <i class="bi bi-arrow-clockwise"></i> Regenerate
+                      <% end %>
+
                       <%= link_to toggle_publish_certificate_institute_admin_report_path(certificate),
                           class: "btn btn-sm #{certificate.published? ? 'btn-outline-warning' : 'btn-outline-success'}",
                           title: certificate.published? ? "Unpublish" : "Publish",
@@ -190,11 +197,6 @@ function initializeBarChart() {
   const chartCanvas = document.getElementById('certificatesBarChart');
   if (!chartCanvas) return;
 
-  const chartColors = [
-    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
-    '#6610f2', '#6f42c1', '#fd7e14', '#20c997', '#5a5c69'
-  ];
-
   new Chart(chartCanvas, {
     type: 'bar',
     data: {
@@ -209,11 +211,19 @@ function initializeBarChart() {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       scales: {
         y: {
           beginAtZero: true,
           ticks: {
             precision: 0
+          }
+        },
+        x: {
+          ticks: {
+            autoSkip: false,
+            maxRotation: 45,
+            minRotation: 45
           }
         }
       },
@@ -221,9 +231,15 @@ function initializeBarChart() {
         legend: {
           display: false
         },
-        title: {
-          display: true,
-          text: 'Number of Certificates by Section'
+        tooltip: {
+          callbacks: {
+            title: function(tooltipItems) {
+              return tooltipItems[0].label;
+            },
+            label: function(context) {
+              return `Certificates: ${context.parsed.y}`;
+            }
+          }
         }
       }
     }

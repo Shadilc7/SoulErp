@@ -70,7 +70,20 @@ class User < ApplicationRecord
   end
 
   def full_name
-    first_name
+    if first_name.present? && last_name.present?
+      "#{first_name} #{last_name}".strip
+    elsif first_name.present?
+      first_name
+    elsif last_name.present?
+      last_name
+    else
+      email
+    end
+  end
+
+  # Alias for compatibility
+  def name
+    full_name
   end
 
   def institute_admin?

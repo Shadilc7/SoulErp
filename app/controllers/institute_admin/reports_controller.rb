@@ -1517,31 +1517,27 @@ module InstituteAdmin
 
       # Calculate data for the certificate
       table_data = []
-      graph_data = {}
+      # Truncate question labels for x-axis to avoid overlap
+      full_questions = (yes_no_questions + number_questions).map { |q| q.respond_to?(:title) ? q.title : "Question #{q.id}" }
+      short_labels = full_questions.map.with_index { |q, i| q.length > 15 ? "Q#{i+1}: #{q[0, 12]}..." : "Q#{i+1}: #{q}" }
+      interval_names = intervals.each_with_index.map { |(_s, _e), idx| "#{(idx+1).ordinalize} #{config.duration_period} Days" }
 
-      # Add header row
-      header = [ "Question" ]
-      intervals.each_with_index do |(start_date, end_date), index|
-        interval_name = "#{(index+1).ordinalize} #{config.duration_period} Days"
-        header << interval_name
-      end
-      header << "Total"
+      # Prepare table header
+      header = [ "Question" ] + interval_names + [ "Total" ]
       table_data << header
 
-      # Process questions and collect data for graph
-      all_questions = yes_no_questions + number_questions
-      all_questions.each do |question|
-        question_text = question.respond_to?(:title) ? question.title : "Question #{question.id}"
-        row = [ question_text ]
-        interval_data = []
+      # Prepare interval data: interval_bars[interval][question_index] = value
+      interval_bars = Array.new(intervals.size) { Array.new(full_questions.size, 0) }
+      total_per_question = Array.new(full_questions.size, 0)
 
-        intervals.each do |(interval_start, interval_end)|
+      (yes_no_questions + number_questions).each_with_index do |question, q_idx|
+        row = [ full_questions[q_idx] ]
+        total = 0
+        intervals.each_with_index do |(interval_start, interval_end), i_idx|
           value = 0
-
           (interval_start..interval_end).each do |date|
             date_responses = responses_by_date[date] || []
             question_responses = date_responses.select { |r| r.question_id == question.id }
-
             question_responses.each do |response|
               if question.question_type == "yes_or_no"
                 value += 1 if response.answer.to_s.downcase == "yes"
@@ -1550,36 +1546,44 @@ module InstituteAdmin
               end
             end
           end
-
           row << value
-          interval_data << value
+          interval_bars[i_idx][q_idx] = value
+          total += value
         end
-
-        row << interval_data.sum
+        row << total
+        total_per_question[q_idx] = total
         table_data << row
-        graph_data[question_text] = interval_data
       end
 
-      # Create bar graph using Gruff
+      # Create grouped bar graph: each interval is a series, x-axis is questions
       g = Gruff::Bar.new("800x400")
       g.title = "Response Data by Interval"
       g.theme = {
-        colors: [ "#4e73df", "#1cc88a", "#36b9cc", "#f6c23e", "#e74a3b" ],
+        colors: [
+          "#4e73df", "#1cc88a", "#36b9cc", "#f6c23e", "#e74a3b", "#6a5acd", "#20b2aa", "#ff6347", "#ffb347", "#4682b4"
+        ],
         marker_color: "#000000",
         background_colors: [ "#ffffff", "#ffffff" ]
       }
+      g.hide_legend = false
+      g.legend_font_size = 16
+      g.marker_font_size = 14
+      g.title_font_size = 20
+      g.bar_spacing = 0.5
+      g.group_spacing = 10
 
-      # Add data to graph
-      graph_data.each do |question, values|
-        g.data(question, values)
+      g.x_axis_label = "Questions"
+      g.y_axis_label = "Count"
+      g.minimum_value = 0
+      g.maximum_value = [ interval_bars.flatten.max, 10 ].max
+
+      # Add each interval as a data series
+      interval_names.each_with_index do |iname, i_idx|
+        g.data(iname, interval_bars[i_idx])
       end
 
-      # Customize labels for intervals
-      labels = {}
-      intervals.each_with_index do |(start_date, end_date), index|
-        labels[index] = "Interval #{index + 1}"
-      end
-      g.labels = labels
+      # X-axis labels: short question labels
+      g.labels = short_labels.each_with_index.map { |lbl, idx| [ idx, lbl ] }.to_h
 
       # Save graph to temp file
       graph_file = Tempfile.new([ "certificate_graph", ".png" ])
@@ -1717,6 +1721,14 @@ module InstituteAdmin
         # Add the graph image with proper sizing
         if File.exist?(graph_file.path)
           pdf.image graph_file.path, position: :center, fit: [ 500, 300 ]
+        end
+
+        # Add mapping of short label to full question for clarity
+        pdf.move_down 20
+        pdf.font_size 10
+        pdf.text "Question Key:", style: :bold
+        short_labels.each_with_index do |lbl, idx|
+          pdf.text "#{lbl} = #{full_questions[idx]}"
         end
 
         # Footer

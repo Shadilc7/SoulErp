@@ -6,36 +6,44 @@
       <div class="d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Generated Certificates</h5>
         <div>
-          <%= button_tag type: 'button', class: 'btn btn-success btn-sm me-2', id: 'publishSelected', disabled: true do %>
-            <i class="bi bi-check2-all me-1"></i>Publish Selected
-          <% end %>
-          <%= button_tag type: 'button', class: 'btn btn-success btn-sm me-2', id: 'publishAll' do %>
-            <i class="bi bi-check2-all me-1"></i>Publish All
-          <% end %>
           <%= link_to generate_certificate_institute_admin_reports_path, class: "btn btn-primary btn-sm" do %>
             <i class="bi bi-plus-circle me-1"></i>Generate New Certificate
           <% end %>
         </div>
-      </div>
+
     </div>
 
     <div class="card-body">
       <% if @certificates.any? %>
         <!-- Filters -->
         <div class="filters mb-4 p-3 bg-light rounded-3">
-          <div class="row g-3">
-            <div class="col-md-9">
-              <select class="form-select" id="sectionFilter">
+          <div class="row g-3 align-items-center">
+            <div class="col-auto">
+              <select class="form-select" id="sectionFilter" style="width: 260px; min-width: 160px;">
                 <option value="">All Sections</option>
                 <% current_institute.sections.active.each do |section| %>
                   <option value="<%= section.id %>"><%= section.name %></option>
                 <% end %>
               </select>
             </div>
-            <div class="col-md-3">
-              <button class="btn btn-secondary w-100" id="resetFilters">
-                <i class="bi bi-x-circle me-1"></i> Reset
-              </button>
+            <div class="col text-end d-flex gap-2 justify-content-end align-items-center">
+              <div class="btn-group" role="group" aria-label="Bulk actions">
+                <%= button_tag type: 'button', class: 'btn btn-sm btn-success', id: 'publishSelected', disabled: true, title: 'Publish selected certificates' do %>
+                  <i class="bi bi-check2-all me-1"></i>Publish
+                <% end %>
+                <%= button_tag type: 'button', class: 'btn btn-sm btn-warning text-dark', id: 'unpublishSelected', disabled: true, title: 'Unpublish selected certificates' do %>
+                  <i class="bi bi-eye-slash me-1"></i>Unpublish
+                <% end %>
+                <%= button_tag type: 'button', class: 'btn btn-sm btn-secondary', id: 'downloadSelected', disabled: true, title: 'Download selected certificates' do %>
+                  <i class="bi bi-download me-1"></i>Download
+                <% end %>
+                <%= button_tag type: 'button', class: 'btn btn-sm btn-info text-white', id: 'regenerateSelected', disabled: true, title: 'Regenerate selected certificates' do %>
+                  <i class="bi bi-arrow-clockwise me-1"></i>Regenerate
+                <% end %>
+                <%= button_tag type: 'button', class: 'btn btn-sm btn-danger', id: 'deleteSelected', disabled: true, title: 'Delete selected certificates' do %>
+                  <i class="bi bi-trash me-1"></i>Delete
+                <% end %>
+              </div>
             </div>
           </div>
         </div>
@@ -53,7 +61,7 @@
                 <th>Participant</th>
                 <th>Generated</th>
                 <th>Status</th>
-                <th class="text-end">Actions</th>
+                <th class="text-end" style="white-space: nowrap; width: 1%;">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -63,17 +71,13 @@
                   <td>
                     <div class="form-check">
                       <input class="form-check-input certificate-checkbox" type="checkbox" 
-                             value="<%= certificate.id %>" 
-                             <%= 'checked disabled' if certificate.published? %>>
+                             value="<%= certificate.id %>"
+                             data-published="<%= certificate.published? %>"
+                             <%= 'checked' if certificate.published? %>>
                     </div>
                   </td>
                   <td>
                     <%= certificate.assignment.title %>
-                    <br>
-                    <small class="text-muted">
-                      <%= certificate.assignment.start_date.strftime("%b %d") %> - 
-                      <%= certificate.assignment.end_date.strftime("%b %d, %Y") %>
-                    </small>
                   </td>
                   <td>
                     <%= certificate.participant.user.full_name %>
@@ -86,42 +90,45 @@
                       <%= certificate.published? ? 'Published' : 'Not Published' %>
                     </span>
                   </td>
-                  <td>
-                    <div class="d-flex gap-2 justify-content-end">
-                      <%= link_to view_certificate_institute_admin_reports_path(certificate, format: :pdf),
-                          class: "btn btn-sm btn-outline-primary",
-                          title: "View Certificate",
-                          target: "_blank" do %>
-                        <i class="bi bi-eye"></i> View
-                      <% end %>
-                      
-                      <%= link_to regenerate_certificate_institute_admin_reports_path(certificate),
-                          class: "btn btn-sm btn-outline-info",
-                          title: "Regenerate Certificate",
-                          data: { turbo_method: :post, turbo_confirm: "Are you sure you want to regenerate this certificate?" } do %>
-                        <i class="bi bi-arrow-clockwise"></i> Regenerate
-                      <% end %>
+                  <td style="white-space: nowrap;">
+                    <div class="d-flex flex-row flex-nowrap gap-1 justify-content-end align-items-center" style="min-width: 220px;">
 
                       <%= link_to toggle_publish_certificate_institute_admin_report_path(certificate),
-                          class: "btn btn-sm #{certificate.published? ? 'btn-outline-warning' : 'btn-outline-success'}",
+                          class: "btn btn-sm #{certificate.published? ? 'btn-warning text-dark shadow-sm' : 'btn-success shadow-sm'} fw-bold px-3",
                           title: certificate.published? ? "Unpublish" : "Publish",
                           data: { turbo_method: :post, turbo_confirm: "Are you sure you want to #{certificate.published? ? 'unpublish' : 'publish'} this certificate?" } do %>
                         <i class="bi <%= certificate.published? ? 'bi-eye-slash' : 'bi-eye' %>"></i>
                         <%= certificate.published? ? 'Unpublish' : 'Publish' %>
                       <% end %>
-
-                      <%= link_to download_certificate_institute_admin_reports_path(certificate, format: :pdf),
-                          class: "btn btn-sm btn-outline-secondary",
-                          title: "Download Certificate" do %>
-                        <i class="bi bi-download"></i> Download
+                      <%= link_to view_certificate_institute_admin_reports_path(certificate, format: :pdf),
+                          class: "btn btn-sm btn-primary shadow-sm",
+                          title: "View Certificate",
+                          target: "_blank" do %>
+                        <i class="bi bi-eye"></i>
                       <% end %>
-
+                      <%= button_to regenerate_certificate_institute_admin_reports_path(certificate),
+                          method: :post,
+                          class: "btn btn-sm btn-info text-white shadow-sm #{'disabled' if certificate.published?}",
+                          form: { style: 'display: inline-block' },
+                          disabled: certificate.published?,
+                          title: (certificate.published? ? 'Cannot regenerate a published certificate' : 'Regenerate Certificate'),
+                          data: { turbo_confirm: "Are you sure you want to regenerate this certificate?" } do %>
+                        <i class="bi bi-arrow-clockwise"></i>
+                      <% end %>
+                      <%= link_to download_certificate_on_demand_institute_admin_report_path(certificate),
+                          class: "btn btn-sm btn-secondary shadow-sm",
+                          title: "Download Certificate",
+                          download: "certificate-#{certificate.id}.pdf" do %>
+                        <i class="bi bi-download"></i>
+                      <% end %>
                       <%= button_to delete_certificate_institute_admin_reports_path(certificate),
                           method: :delete,
-                          class: "btn btn-sm btn-outline-danger",
+                          class: "btn btn-sm btn-danger shadow-sm #{'disabled' if certificate.published?}",
                           form: { style: 'display: inline-block' },
+                          disabled: certificate.published?,
+                          title: (certificate.published? ? 'Cannot delete a published certificate' : 'Delete Certificate'),
                           data: { turbo_confirm: "Are you sure you want to delete this certificate?" } do %>
-                        <i class="bi bi-trash"></i> Delete
+                        <i class="bi bi-trash"></i>
                       <% end %>
                     </div>
                   </td>
@@ -131,237 +138,13 @@
           </table>
         </div>
 
+
         <!-- Pagination -->
-        <div class="d-flex justify-content-between align-items-center mt-4">
-          <div class="text-muted small">
-            Showing <%= @certificates.offset_value + 1 %> to <%= @certificates.offset_value + @certificates.length %> of <%= @certificates.total_count %> certificates
-          </div>
-          <%= paginate @certificates %>
-        </div>
-      <% else %>
-        <div class="text-center py-5">
-          <div class="mb-3">
-            <i class="bi bi-award text-secondary" style="font-size: 4rem;"></i>
-          </div>
-          <h5 class="text-secondary">No certificates generated yet</h5>
-          <p class="text-muted">Generate certificates from the certificate generation page</p>
-          <%= link_to generate_certificate_institute_admin_reports_path, class: "btn btn-primary mt-2" do %>
-            <i class="bi bi-plus-circle me-1"></i> Generate Certificate
-          <% end %>
-        </div>
+        <!-- ...existing code... -->
+
+      <!-- JavaScript behavior moved to Stimulus controller: app/javascript/controllers/certificate_publisher_controller.js -->
+
       <% end %>
-    </div>
-  </div>
-</div>
-
-<%= csrf_meta_tags %>
-<%= turbo_include_tags %>
-
-<% content_for :styles do %>
-  <style>
-    .card-custom {
-      border: none;
-      border-radius: 0.5rem;
-    }
-
-    .card-header-custom {
-      background-color: transparent;
-      border-bottom: 1px solid rgba(0,0,0,0.1);
-    }
-
-    .table td {
-      vertical-align: middle;
-    }
-
-    .filters {
-      background-color: #f8f9fa;
-      border: 1px solid #e9ecef;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-  </style>
-<% end %>
-
-<% content_for :scripts do %>
-<script>
-document.addEventListener('turbo:load', function() {
-  initializeView();
-  initializeBarChart();
-});
-
-function initializeBarChart() {
-  const chartCanvas = document.getElementById('certificatesBarChart');
-  if (!chartCanvas) return;
-
-  new Chart(chartCanvas, {
-    type: 'bar',
-    data: {
-      labels: <%= raw @section_certificate_counts.keys.to_json %>,
-      datasets: [{
-        label: 'Certificates',
-        data: <%= raw @section_certificate_counts.values.to_json %>,
-        backgroundColor: '#4e73df',
-        borderColor: '#3a5ccc',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            precision: 0
-          }
-        },
-        x: {
-          ticks: {
-            autoSkip: false,
-            maxRotation: 45,
-            minRotation: 45
-          }
-        }
-      },
-      plugins: {
-        legend: {
-          display: false
-        },
-        tooltip: {
-          callbacks: {
-            title: function(tooltipItems) {
-              return tooltipItems[0].label;
-            },
-            label: function(context) {
-              return `Certificates: ${context.parsed.y}`;
-            }
-          }
-        }
-      }
-    }
-  });
-}
-
-document.addEventListener('turbo:load', initializeView);
-
-function initializeView() {
-  const selectAll = document.getElementById('selectAll');
-  const certificateCheckboxes = document.querySelectorAll('.certificate-checkbox:not(:disabled)');
-  const publishSelected = document.getElementById('publishSelected');
-  const publishAll = document.getElementById('publishAll');
-  const sectionFilter = document.getElementById('sectionFilter');
-  const resetFilters = document.getElementById('resetFilters');
-
-  if (!selectAll || !publishSelected || !publishAll) return;
-
-  function updatePublishSelectedButton() {
-    const checkedCount = document.querySelectorAll('.certificate-checkbox:checked:not(:disabled)').length;
-    publishSelected.disabled = checkedCount === 0;
-    publishSelected.innerHTML = `<i class="bi bi-check2-all me-1"></i>Publish Selected (${checkedCount})`;
-  }
-
-  // Select All functionality
-  selectAll.addEventListener('change', function() {
-    certificateCheckboxes.forEach(checkbox => {
-      if (checkbox.closest('tr').style.display !== 'none') {
-        checkbox.checked = this.checked;
-      }
-    });
-    updatePublishSelectedButton();
-  });
-
-  // Individual checkbox change
-  certificateCheckboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-      updatePublishSelectedButton();
-      
-      // Update select all checkbox state
-      const visibleCheckboxes = Array.from(certificateCheckboxes).filter(cb => 
-        cb.closest('tr').style.display !== 'none'
-      );
-      selectAll.checked = visibleCheckboxes.every(cb => cb.checked);
-    });
-  });
-
-  // Filter functionality
-  function filterCertificates() {
-    const selectedSection = sectionFilter.value;
-    
-    document.querySelectorAll('.certificate-row').forEach(row => {
-      const matchesSection = !selectedSection || row.dataset.section === selectedSection;
-      row.style.display = matchesSection ? '' : 'none';
-    });
-    
-    // Reset checkboxes and update button state
-    selectAll.checked = false;
-    certificateCheckboxes.forEach(cb => cb.checked = false);
-    updatePublishSelectedButton();
-  }
-
-  sectionFilter.addEventListener('change', filterCertificates);
-  
-  resetFilters.addEventListener('click', function() {
-    sectionFilter.value = '';
-    filterCertificates();
-  });
-
-  // Publishing functionality
-  publishSelected.addEventListener('click', function() {
-    const selectedIds = Array.from(document.querySelectorAll('.certificate-checkbox:checked:not(:disabled)'))
-      .map(checkbox => checkbox.value);
-    
-    if (selectedIds.length > 0 && confirm(`Are you sure you want to publish ${selectedIds.length} selected certificate(s)?`)) {
-      publishCertificates(selectedIds);
-    }
-  });
-
-  publishAll.addEventListener('click', function() {
-    const allIds = Array.from(document.querySelectorAll('.certificate-checkbox:not(:disabled)'))
-      .filter(checkbox => checkbox.closest('tr').style.display !== 'none')
-      .map(checkbox => checkbox.value);
-    
-    if (allIds.length > 0 && confirm(`Are you sure you want to publish all ${allIds.length} unpublished certificate(s)?`)) {
-      publishCertificates(allIds);
-    } else if (allIds.length === 0) {
-      alert('No unpublished certificates found.');
-    }
-  });
-
-  function publishCertificates(certificateIds) {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content;
-    if (!token) {
-      console.error('CSRF token not found');
-      return;
-    }
-
-    fetch('/institute_admin/reports/publish_multiple_certificates', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': token
-      },
-      body: JSON.stringify({ certificate_ids: certificateIds })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        window.location.reload();
-      } else {
-        alert('Failed to publish certificates: ' + (data.message || 'Unknown error'));
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('An error occurred while publishing certificates');
-    });
-  }
-
-  // Initialize view
-  updatePublishSelectedButton();
-}
-</script>
-<% end %>
+    </div> <!-- .card-body -->
+  </div> <!-- .card -->
+</div> <!-- .container-fluid -->

@@ -444,6 +444,85 @@ module InstituteAdmin
       end
     end
 
+    def delete_multiple_certificates
+      certificate_ids = params[:certificate_ids]
+      certificates = current_institute.individual_certificates.where(id: certificate_ids)
+
+      begin
+        IndividualCertificate.transaction do
+          certificates.find_each do |cert|
+            # attempt to delete the file if present
+            File.delete(cert.file_path) if cert.filename.present? && File.exist?(cert.file_path)
+            cert.destroy
+          end
+        end
+
+        render json: { success: true, message: "Successfully deleted #{certificates.count} certificates" }
+      rescue => e
+        render json: { success: false, message: e.message }, status: :unprocessable_entity
+      end
+    end
+
+    def unpublish_multiple_certificates
+      certificate_ids = params[:certificate_ids]
+      certificates = current_institute.individual_certificates.where(id: certificate_ids)
+
+      begin
+        IndividualCertificate.transaction do
+          certificates.update_all(published: false)
+        end
+
+        render json: { success: true, message: "Successfully unpublished #{certificates.count} certificates" }
+      rescue => e
+        render json: { success: false, message: e.message }, status: :unprocessable_entity
+      end
+    end
+
+    def download_multiple_certificates
+      certificate_ids = params[:certificate_ids] || []
+      certificates = current_institute.individual_certificates.where(id: certificate_ids)
+
+      if certificates.empty?
+        render json: { success: false, message: "No certificates found" }, status: :not_found
+        return
+      end
+
+      require "zip"
+      temp_file = Tempfile.new([ "certificates-", ".zip" ])
+      begin
+        Zip::OutputStream.open(temp_file.path) do |zos|
+          certificates.find_each do |cert|
+            # generate or fetch PDF content
+            pdf_content = generate_individual_certificate(cert)
+            next unless pdf_content
+            filename = "certificate-#{cert.id}.pdf"
+            zos.put_next_entry(filename)
+            zos.write(pdf_content)
+          end
+        end
+
+        send_data File.read(temp_file.path), filename: "certificates_#{Time.current.strftime('%Y%m%d%H%M%S')}.zip", type: "application/zip"
+      ensure
+        temp_file.close
+        temp_file.unlink
+      end
+    end
+
+    def regenerate_multiple_certificates
+      certificate_ids = params[:certificate_ids] || []
+      certificates = current_institute.individual_certificates.where(id: certificate_ids)
+
+      updated = 0
+      certificates.find_each do |cert|
+        # remove old file if exists
+        File.delete(cert.file_path) if cert.filename.present? && File.exist?(cert.file_path)
+        success = generate_individual_certificate(cert)
+        updated += 1 if success
+      end
+
+      render json: { success: true, message: "Regenerated #{updated} certificates" }
+    end
+
     private
 
     def fetch_assignment_reports
@@ -1330,6 +1409,7 @@ module InstituteAdmin
         cells.borders = []
         column(0).font_style = :bold
         column(0).width = 100
+        column(0).align = :right
         column(1).align = :left
         cells.padding = [ 5, 10 ]
       end

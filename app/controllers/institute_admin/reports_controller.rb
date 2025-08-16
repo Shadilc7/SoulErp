@@ -1555,42 +1555,51 @@ module InstituteAdmin
         table_data << row
       end
 
+      # Calculate available width and height for the chart
+      chart_width = 535 # A4 width (595) - left/right margins (30 each)
+      chart_height = 0 # Will be set later based on PDF layout
+
       # Create grouped bar graph: each interval is a series, x-axis is questions
-      g = Gruff::Bar.new("800x400")
-      g.title = "Response Data by Interval"
+      g = Gruff::Bar.new("#{chart_width}x350") # Initial height, will update below
+      g.title = nil # Remove chart title
+
       g.theme = {
         colors: [
           "#4e73df", "#1cc88a", "#36b9cc", "#f6c23e", "#e74a3b", "#6a5acd", "#20b2aa", "#ff6347", "#ffb347", "#4682b4"
         ],
-        marker_color: "#000000",
+        marker_color: "#CCCCCC", # lighter axis/grid lines
         background_colors: [ "#ffffff", "#ffffff" ]
       }
       g.hide_legend = false
-      g.legend_font_size = 16
-      g.marker_font_size = 14
-      g.title_font_size = 20
+      g.legend_font_size = 14
+      g.marker_font_size = 12
+      g.title_font_size = 18
       g.bar_spacing = 0.5
-      g.group_spacing = 10
+      g.group_spacing = 8
 
       g.x_axis_label = "Questions"
       g.y_axis_label = "Count"
       g.minimum_value = 0
       g.maximum_value = [ interval_bars.flatten.max, 10 ].max
 
-      # Add each interval as a data series
       interval_names.each_with_index do |iname, i_idx|
         g.data(iname, interval_bars[i_idx])
       end
-
-      # X-axis labels: short question labels
       g.labels = short_labels.each_with_index.map { |lbl, idx| [ idx, lbl ] }.to_h
-
-      # Save graph to temp file
+      g.hide_line_markers = false # Show axis lines only
+      # Gruff shows axis lines by default; grid lines are hidden with hide_line_markers=false
+      # Chart width set in Gruff::Bar.new("535x220")
       graph_file = Tempfile.new([ "certificate_graph", ".png" ])
       g.write(graph_file.path)
 
       # Generate the PDF in memory
-      pdf_content = Prawn::Document.new(page_size: "A4", margin: [ 30, 30, 30, 30 ]) do |pdf|
+      pdf_content = Prawn::Document.new(page_size: "A4", margin: [ 50, 30, 30, 30 ]) do |pdf| # More space at top
+        # Draw a subtle border on all pages
+        pdf.repeat(:all) do
+          pdf.stroke_color "888888"
+          pdf.line_width = 1.2
+          pdf.stroke_rectangle [ pdf.bounds.left, pdf.bounds.top ], pdf.bounds.width, pdf.bounds.height
+        end
         # Set up fonts
         roboto_font_available = true
         font_paths = {
@@ -1621,45 +1630,38 @@ module InstituteAdmin
           pdf.font "Helvetica"
         end
 
-        # Colors
-        primary_color = "4e73df"
-        dark_color = "2c3e50"
-        border_color = "bdc3c7"
+
+        # Colors (black/white/gray theme)
+        primary_color = "000000"
+        dark_color = "222222"
+        border_color = "888888"
 
         # Header
-        pdf.stroke_color primary_color
-        pdf.line_width 2
-        pdf.stroke_rectangle [ 0, pdf.bounds.height ], pdf.bounds.width, 50
+
+
+        # Modern certificate title and subtitle
+        pdf.move_down 30
+        pdf.font_size 28
         pdf.fill_color primary_color
-        pdf.fill_rectangle [ 0, pdf.bounds.height ], pdf.bounds.width, 50
-
-        # Certificate title
-        pdf.fill_color "FFFFFF"
+        pdf.text (config.name.present? ? config.name.upcase : "CERTIFICATE OF ACHIEVEMENT"), align: :center, style: :bold
+        pdf.move_down 8
+        pdf.font_size 14
+        pdf.fill_color "555555"
+        pdf.text "This certificate is proudly presented to", align: :center, style: :italic
+        pdf.move_down 18
         pdf.font_size 20
-        certificate_title = config.name.present? ? config.name.upcase : "CERTIFICATE"
-        pdf.text_box certificate_title,
-                   at: [ 0, pdf.bounds.height - 18 ],
-                   width: pdf.bounds.width,
-                   align: :center,
-                   style: :bold
-
         pdf.fill_color dark_color
-        pdf.stroke_color dark_color
-        pdf.move_down 60
-
-        if config.details.present?
-          pdf.font_size 10
-          pdf.text_box config.details,
-                       at: [ 0, pdf.cursor ],
-                       width: pdf.bounds.width,
-                       height: 30,
-                       align: :center,
-                       style: :italic,
-                       overflow: :shrink_to_fit
-          pdf.move_down 35
-        else
-           pdf.move_down 15
-        end
+        pdf.text participant.user.full_name, align: :center, style: :bold
+        pdf.move_down 10
+        pdf.font_size 12
+        pdf.text "For successfully completing:", align: :center
+        pdf.move_down 4
+        pdf.font_size 14
+        pdf.text assignment.title, align: :center, style: :bold
+        pdf.move_down 6
+        pdf.font_size 10
+        pdf.text "Section: #{participant.section.name} | Date: #{assignment.start_date.strftime('%B %d, %Y')} - #{assignment.end_date.strftime('%B %d, %Y')}", align: :center
+        pdf.move_down 18
 
         # Participant details
         participant_data = [
@@ -1678,72 +1680,93 @@ module InstituteAdmin
           t.column(0).align = :left
           t.column(0).size = 10
           t.column(1).align = :left
-          t.column(1).text_color = primary_color
+          t.column(1).text_color = dark_color
           t.column(1).size = 10
         end
 
-        pdf.move_down 20
+        # Add more space between border and table
+        pdf.move_down 40
 
-        # Add response data table
+        # Draw table first
         if table_data.size > 1
           pdf.font_size 9
-          pdf.table table_data, width: pdf.bounds.width do |t|
+          table_width = pdf.bounds.width - 10
+          pdf.table table_data, width: table_width, position: :center do |t|
             t.header = true
             t.row(0).font_style = :bold
-            t.row(0).background_color = primary_color
+            t.row(0).background_color = dark_color
             t.row(0).text_color = "FFFFFF"
-            t.row(0).min_font_size = 8
+            t.row(0).min_font_size = 9
+            t.row(0).align = :center # Center align all headers
             t.cells.borders = [ :top, :bottom, :left, :right ]
-            t.cells.border_width = 0.5
+            t.cells.border_width = 0.4
             t.cells.border_color = border_color
-            t.cells.padding = [ 6, 4 ]
-
-            # Zebra striping
+            t.cells.padding = [ 6, 2 ] # Slightly smaller row height
             (1...table_data.length).each do |i|
-              if i % 2 == 1
-                t.row(i).background_color = "F0F0F0"
-              else
-                t.row(i).background_color = "FFFFFF"
-              end
+              t.row(i).background_color = i % 2 == 1 ? "F0F0F0" : "FFFFFF"
             end
-
             t.column(0).font_style = :bold
-            t.column(0).width = pdf.bounds.width * 0.35
+            t.column(0).width = table_width * 0.32
+            t.column(t.column_length - 1).width = 48 # Just enough to fit 'Total' label
+            t.column(t.column_length - 1).align = :center
           end
+          pdf.move_down 20
         end
 
-        # Add graph
-        pdf.start_new_page
-        pdf.font_size 16
-        pdf.text "Response Data Visualization", align: :center, style: :bold
-        pdf.move_down 20
+        # Calculate available height for the chart (space between here and the footer)
+        available_height = pdf.bounds.bottom - pdf.cursor - 260 # 260 for footer and spacing
+        chart_height = [ available_height, 250 ].max # Minimum height 250
 
-        # Add the graph image with proper sizing
+        # Regenerate the chart with the new height
+        chart_width = pdf.bounds.width.to_i
+        g = Gruff::Bar.new("#{chart_width}x#{chart_height}")
+        g.title = nil
+        g.theme = {
+          colors: [
+            "#4e73df", "#1cc88a", "#36b9cc", "#f6c23e", "#e74a3b", "#6a5acd", "#20b2aa", "#ff6347", "#ffb347", "#4682b4"
+          ],
+          marker_color: "#CCCCCC",
+          background_colors: [ "#ffffff", "#ffffff" ]
+        }
+        g.hide_legend = false
+        g.legend_font_size = 12
+        g.marker_font_size = 10
+        g.title_font_size = 14
+        g.x_axis_label_font_size = 12 if g.respond_to?(:x_axis_label_font_size=)
+        g.y_axis_label_font_size = 12 if g.respond_to?(:y_axis_label_font_size=)
+        g.bar_spacing = 0.5
+        g.group_spacing = 8
+        g.x_axis_label = "Questions"
+        g.y_axis_label = "Count"
+        g.minimum_value = 0
+        g.maximum_value = [ interval_bars.flatten.max, 10 ].max
+        interval_names.each_with_index do |iname, i_idx|
+          g.data(iname, interval_bars[i_idx])
+        end
+        g.labels = short_labels.each_with_index.map { |lbl, idx| [ idx, lbl ] }.to_h
+        g.hide_line_markers = false
+        graph_file = Tempfile.new([ "certificate_graph", ".png" ])
+        g.write(graph_file.path)
+
+        # Draw chart below table, using all available space
         if File.exist?(graph_file.path)
-          pdf.image graph_file.path, position: :center, fit: [ 500, 300 ]
+          pdf.image graph_file.path, fit: [ pdf.bounds.width, chart_height ], position: :center
+          pdf.move_down 10
         end
 
-        # Add mapping of short label to full question for clarity
-        pdf.move_down 20
-        pdf.font_size 10
-        pdf.text "Question Key:", style: :bold
-        short_labels.each_with_index do |lbl, idx|
-          pdf.text "#{lbl} = #{full_questions[idx]}"
-        end
+        pdf.move_down 240
+        # (Removed question key section)
 
         # Footer
-        pdf.number_pages "Page <page> of <total>",
-                         at: [ pdf.bounds.right - 150, 0 ],
-                         width: 150,
-                         align: :right,
-                         size: 9
 
         # Add footer note
         pdf.go_to_page(pdf.page_count)
         pdf.move_down 10
+        pdf.stroke_color border_color
         pdf.horizontal_rule
         pdf.move_down 5
-        pdf.text "This is a system generated report.", align: :center, size: 9, color: "666666"
+        pdf.fill_color dark_color
+        pdf.text "This is a system generated report.", align: :center, size: 9, color: dark_color
       end
 
       # Clean up temp file

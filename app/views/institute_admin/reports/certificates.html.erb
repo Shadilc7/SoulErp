@@ -17,7 +17,20 @@
         <%= link_to "", generate_certificate_institute_admin_reports_path, class: "card-link" %>
       </div>
     </div>
-    
+
+    <div class="col-12 col-md-6">
+      <!-- Generate Section-Wise Certificates Card -->
+      <div class="mini-card">
+        <div class="icon-box bg-primary-soft">
+          <i class="bi bi-file-earmark-medical text-primary"></i>
+        </div>
+        <div class="content">
+          <h6>Generate Section-Wise Certificate</h6>
+        </div>
+        <%= link_to "", generate_section_certificate_institute_admin_reports_path, class: "card-link" %>
+      </div>
+    </div>
+
     <div class="col-12 col-md-6">
       <!-- View Certificates Card -->
       <div class="mini-card">
@@ -28,19 +41,6 @@
           <h6>View Certificate</h6>
         </div>
         <%= link_to "", view_certificates_institute_admin_reports_path, class: "card-link" %>
-      </div>
-    </div>
-    
-    <div class="col-12 col-md-6">
-      <!-- Certificate Configurations Card -->
-      <div class="mini-card">
-        <div class="icon-box bg-info-soft">
-          <i class="bi bi-gear-fill text-info"></i>
-        </div>
-        <div class="content">
-          <h6>Configurations</h6>
-        </div>
-        <%= link_to "", institute_admin_certificate_configurations_path, class: "card-link" %>
       </div>
     </div>
     
@@ -58,15 +58,15 @@
     </div>
 
     <div class="col-12 col-md-6">
-      <!-- Generate Section-Wise Certificates Card -->
+      <!-- Certificate Configurations Card -->
       <div class="mini-card">
-        <div class="icon-box bg-primary-soft">
-          <i class="bi bi-file-earmark-medical text-primary"></i>
+        <div class="icon-box bg-info-soft">
+          <i class="bi bi-gear-fill text-info"></i>
         </div>
         <div class="content">
-          <h6>Generate Section-Wise Certificate</h6>
+          <h6>Configurations</h6>
         </div>
-        <%= link_to "", generate_section_certificate_institute_admin_reports_path, class: "card-link" %>
+        <%= link_to "", institute_admin_certificate_configurations_path, class: "card-link" %>
       </div>
     </div>
   </div>

@@ -26,20 +26,20 @@
 
             <div class="d-flex align-items-center gap-2">
               <small class="text-muted me-2 d-none d-sm-inline">Bulk actions</small>
-              <div class="btn-group btn-group-sm" role="group" aria-label="Bulk actions">
-                <%= button_tag type: 'button', class: 'btn btn-sm btn-success', id: 'publishSelected', disabled: true, title: 'Publish selected certificates' do %>
-                  <i class="bi bi-check2-all"></i>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <%= button_tag type: 'button', class: 'btn btn-sm btn-success shadow-sm', id: 'publishSelected', disabled: true, title: 'Publish selected certificates' do %>
+                  <i class="bi bi-check2-all me-1"></i> Publish
                 <% end %>
-                <%= button_tag type: 'button', class: 'btn btn-sm btn-warning text-dark', id: 'unpublishSelected', disabled: true, title: 'Unpublish selected certificates' do %>
-                  <i class="bi bi-eye-slash"></i>
+                <%= button_tag type: 'button', class: 'btn btn-sm btn-warning text-dark shadow-sm', id: 'unpublishSelected', disabled: true, title: 'Unpublish selected certificates' do %>
+                  <i class="bi bi-eye-slash me-1"></i> Unpublish
                 <% end %>
-                <%= button_tag type: 'button', class: 'btn btn-sm btn-secondary', id: 'downloadSelected', disabled: true, title: 'Download selected certificates' do %>
+                <%= button_tag type: 'button', class: 'btn btn-sm btn-secondary shadow-sm', id: 'downloadSelected', disabled: true, title: 'Download selected certificates' do %>
                   <i class="bi bi-download"></i>
                 <% end %>
-                <%= button_tag type: 'button', class: 'btn btn-sm btn-info text-white', id: 'regenerateSelected', disabled: true, title: 'Regenerate selected certificates' do %>
+                <%= button_tag type: 'button', class: 'btn btn-sm btn-info text-white shadow-sm', id: 'regenerateSelected', disabled: true, title: 'Regenerate selected certificates' do %>
                   <i class="bi bi-arrow-clockwise"></i>
                 <% end %>
-                <%= button_tag type: 'button', class: 'btn btn-sm btn-danger', id: 'deleteSelected', disabled: true, title: 'Delete selected certificates' do %>
+                <%= button_tag type: 'button', class: 'btn btn-sm btn-danger shadow-sm', id: 'deleteSelected', disabled: true, title: 'Delete selected certificates' do %>
                   <i class="bi bi-trash"></i>
                 <% end %>
               </div>
@@ -79,9 +79,11 @@
                     <%= certificate.assignment.title %>
                   </td>
                   <td>
-                    <%= certificate.participant.user.full_name %>
-                    <br>
-                    <small class="text-muted"><%= certificate.participant.section&.name || "No Section" %></small>
+                    <% if certificate.participant && certificate.participant.user %>
+                      <%= link_to certificate.participant.user.full_name, institute_admin_participant_path(certificate.participant.user), class: 'text-decoration-none' %>
+                    <% else %>
+                      <%= certificate.participant&.user&.full_name || 'Unknown Participant' %>
+                    <% end %>
                   </td>
                   <td><%= certificate.generated_at.strftime("%b %d, %Y") %></td>
                   <td>

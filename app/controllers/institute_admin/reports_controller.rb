@@ -226,6 +226,94 @@ module InstituteAdmin
       end
     end
 
+    def generate_section_certificate
+      @sections = current_institute.sections.active
+      @certificate_configurations = current_institute.certificate_configurations.active
+      @assignments = current_institute.assignments.order(created_at: :desc)
+
+      # optionally preselect section from params
+      @section_id = params[:section_id]
+    end
+
+    def create_section_certificate
+      section_id = params[:section_id]
+      assignment_id = params[:assignment_id]
+      certificate_configuration_id = params[:certificate_configuration_id]
+
+      unless section_id.present? && assignment_id.present? && certificate_configuration_id.present?
+        redirect_to generate_section_certificate_institute_admin_reports_path, alert: "All fields are required"
+        return
+      end
+
+      section = current_institute.sections.find_by(id: section_id)
+      assignment = current_institute.assignments.find_by(id: assignment_id)
+      certificate_configuration = current_institute.certificate_configurations.find_by(id: certificate_configuration_id)
+
+      errors = []
+      errors << "Section not found" unless section
+      errors << "Assignment not found" unless assignment
+      errors << "Certificate configuration not found" unless certificate_configuration
+
+      if errors.any?
+        redirect_to generate_section_certificate_institute_admin_reports_path, alert: "Invalid selection: #{errors.join(', ')}"
+        return
+      end
+
+      participants = current_institute.participants.where(section_id: section.id)
+
+      created = 0
+      skipped = 0
+      failed = 0
+      failures = []
+
+      IndividualCertificate.transaction do
+        participants.find_each do |participant|
+          existing = IndividualCertificate.find_by(participant_id: participant.id, assignment_id: assignment.id, certificate_configuration_id: certificate_configuration.id)
+          if existing
+            skipped += 1
+            next
+          end
+
+          cert = IndividualCertificate.new(
+            participant: participant,
+            assignment: assignment,
+            certificate_configuration: certificate_configuration,
+            institute: current_institute
+          )
+
+          if cert.save
+            # attempt to generate PDF now; capture failures but do not rollback entire transaction for generation errors
+            begin
+              success = generate_individual_certificate(cert)
+              if success
+                created += 1
+              else
+                failed += 1
+                failures << "#{participant.full_name}: generation failed"
+              end
+            rescue => e
+              failed += 1
+              failures << "#{participant.full_name}: #{e.message}"
+            end
+          else
+            failed += 1
+            failures << "#{participant.full_name}: #{cert.errors.full_messages.join(', ')}"
+          end
+        end
+      end
+
+      notice_parts = []
+      notice_parts << "Created: #{created}" if created > 0
+      notice_parts << "Skipped (already exists): #{skipped}" if skipped > 0
+      notice_parts << "Failed: #{failed}" if failed > 0
+
+      if failures.any?
+        redirect_to view_certificates_institute_admin_reports_path, alert: "Section generation completed - #{notice_parts.join(', ')}. Errors: #{failures.join('; ')}"
+      else
+        redirect_to view_certificates_institute_admin_reports_path, notice: "Section generation completed - #{notice_parts.join(', ')}"
+      end
+    end
+
     def view_certificates
       # Load certificates with pagination
       @certificates = IndividualCertificate.includes(:participant, :assignment, :certificate_configuration)
@@ -1864,5 +1952,7 @@ module InstituteAdmin
       certificate.errors.add(:base, "Certificate generation failed: #{e.message}")
       nil
     end
+
+    # `view_section_certificates` removed — section-based viewing consolidated into `view_certificates`
   end
 end

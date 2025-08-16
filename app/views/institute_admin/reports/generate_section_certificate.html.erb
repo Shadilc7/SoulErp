@@ -1,0 +1,275 @@
+<div class="container-fluid">
+  <%= render 'certificate_breadcrumb', current_page: "Generate Section-Wise Certificate" %>
+
+  <div class="card mb-4 mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center py-3">
+      <div class="d-flex align-items-center">
+        <h5 class="mb-0">Generate Section-Wise Certificate</h5>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <!-- Progress Steps -->
+      <div class="steps mb-4">
+        <div class="step active" id="step1">
+          <div class="step-icon">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <span>Section</span>
+        </div>
+        <div class="step" id="step2">
+          <div class="step-icon">
+            <i class="bi bi-file-earmark-text-fill"></i>
+          </div>
+          <span>Assignment</span>
+        </div>
+        <div class="step" id="step3">
+          <div class="step-icon">
+            <i class="bi bi-award-fill"></i>
+          </div>
+          <span>Configuration</span>
+        </div>
+      </div>
+
+      <%= form_with url: create_section_certificate_institute_admin_reports_path, method: :post, local: true, class: 'needs-validation', data: { turbo: false } do |f| %>
+        <% if flash[:alert].present? %>
+          <div class="alert alert-danger">
+            <%= flash[:alert] %>
+          </div>
+        <% end %>
+
+        <div class="filter-container p-4 bg-light rounded-3">
+          <!-- Section Selection -->
+          <div class="row mb-4 align-items-center selection-group active" id="section-group">
+            <label for="section_id" class="col-md-3 col-form-label">
+              <div class="d-flex align-items-center">
+                <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                  <i class="bi bi-people-fill text-primary"></i>
+                </div>
+                <span>Section</span>
+              </div>
+            </label>
+            <div class="col-md-9">
+              <%= f.select :section_id,
+                  options_for_select(@sections.map { |s| [s.name, s.id] }, @section_id),
+                  { prompt: 'Select Section' },
+                  { class: 'form-select form-select-lg', required: true, id: 'section_select' } %>
+            </div>
+          </div>
+
+          <!-- Assignment Selection -->
+          <div class="row mb-4 align-items-center selection-group" id="assignment-group">
+            <label for="assignment_id" class="col-md-3 col-form-label">
+              <div class="d-flex align-items-center">
+                <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                  <i class="bi bi-file-earmark-text-fill text-primary"></i>
+                </div>
+                <span>Assignment</span>
+              </div>
+            </label>
+            <div class="col-md-9">
+              <div class="position-relative">
+                <%= f.select :assignment_id,
+                    options_for_select(@assignments.map { |a| [a.title, a.id] }, @assignment_id),
+                    { prompt: 'Select Assignment' },
+                    { class: 'form-select form-select-lg', required: true, id: 'assignment_select' } %>
+                <% if @assignments.empty? %>
+                  <div class="form-text text-muted mt-2">
+                    <i class="bi bi-info-circle me-1"></i>Please select suitable data
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Certificate Configuration Selection -->
+          <div class="row mb-4 align-items-center selection-group" id="config-group">
+            <label for="certificate_configuration_id" class="col-md-3 col-form-label">
+              <div class="d-flex align-items-center">
+                <div class="icon-circle bg-primary bg-opacity-10 me-2">
+                  <i class="bi bi-award-fill text-primary"></i>
+                </div>
+                <span>Certificate Configuration</span>
+              </div>
+            </label>
+            <div class="col-md-9">
+              <%= f.select :certificate_configuration_id,
+                  options_for_select(@certificate_configurations.map { |c| ["#{c.name} (#{c.formatted_duration} interval)", c.id] }, nil),
+                  { prompt: 'Select Configuration' },
+                  { class: 'form-select form-select-lg', required: true } %>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-9">
+              <div class="d-flex gap-2">
+                <%= f.submit 'Generate Section Certificates', class: 'btn btn-primary btn-lg px-4', data: { disable_with: 'Generating...' } %>
+                <%= link_to 'Cancel', certificates_institute_admin_reports_path, class: 'btn btn-outline-secondary btn-lg' %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<style>
+  .steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .steps::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e9ecef;
+    z-index: -1;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+  }
+
+  .step.active {
+    opacity: 1;
+  }
+
+  .step.completed .step-icon {
+    background-color: var(--bs-primary);
+    color: white;
+  }
+
+  .step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .step.active .step-icon {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+  }
+
+  .step span {
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+
+  .selection-group {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+
+  .selection-group.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .form-select-lg {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .icon-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', initializeSectionCertificateForm);
+document.addEventListener('turbo:load', initializeSectionCertificateForm);
+
+function initializeSectionCertificateForm() {
+  const sectionSelect = document.getElementById('section_select');
+  const assignmentSelect = document.getElementById('assignment_select');
+  const configGroup = document.getElementById('config-group');
+  const assignmentGroup = document.getElementById('assignment-group');
+  const sectionGroup = document.getElementById('section-group');
+
+  if (!sectionSelect || !assignmentSelect) return;
+
+  // Ensure section group is active and clickable
+  sectionGroup.classList.add('active');
+
+  // If assignments are present server-side, disable until section selected for UX
+  if (!assignmentSelect.value) {
+    assignmentGroup.classList.remove('active');
+  } else {
+    assignmentGroup.classList.add('active');
+  }
+
+  // When section changes, enable assignment select and activate next step
+  sectionSelect.removeEventListener('change', onSectionChange);
+  sectionSelect.addEventListener('change', onSectionChange);
+
+  function onSectionChange() {
+    if (sectionSelect.value) {
+      assignmentGroup.classList.add('active');
+      setActiveStep(2);
+    } else {
+      assignmentGroup.classList.remove('active');
+      configGroup.classList.remove('active');
+      setActiveStep(1);
+    }
+  }
+
+  // Also enable config when assignment chosen
+  assignmentSelect.removeEventListener('change', onAssignmentChange);
+  assignmentSelect.addEventListener('change', onAssignmentChange);
+
+  function onAssignmentChange() {
+    if (assignmentSelect.value) {
+      configGroup.classList.add('active');
+      setActiveStep(3);
+    } else {
+      configGroup.classList.remove('active');
+      setActiveStep(2);
+    }
+  }
+
+  // initialize UI state
+  if (sectionSelect.value) {
+    assignmentGroup.classList.add('active');
+    setActiveStep(2);
+  }
+  if (assignmentSelect.value) {
+    configGroup.classList.add('active');
+    setActiveStep(3);
+  }
+
+  function setActiveStep(step) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    const stepEl = document.getElementById(`step${step}`);
+    if (stepEl) stepEl.classList.add('active');
+  }
+}
+</script>

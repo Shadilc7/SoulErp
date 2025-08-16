@@ -59,7 +59,7 @@
                 <th>Assignment</th>
                 <th>Participant</th>
                 <th>Generated</th>
-                <th>Status</th>
+                <th>Configuration</th>
                 <th class="text-end" style="white-space: nowrap; width: 1%;">Actions</th>
               </tr>
             </thead>
@@ -87,9 +87,7 @@
                   </td>
                   <td><%= certificate.generated_at.strftime("%b %d, %Y") %></td>
                   <td>
-                    <span class="badge <%= certificate.published? ? 'bg-success' : 'bg-secondary' %>">
-                      <%= certificate.published? ? 'Published' : 'Not Published' %>
-                    </span>
+                    <%= certificate.certificate_configuration&.name || '—' %>
                   </td>
                   <td style="white-space: nowrap;">
                     <div class="d-flex flex-row flex-nowrap gap-1 justify-content-end align-items-center" style="min-width: 220px;">

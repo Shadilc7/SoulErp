@@ -135,6 +135,8 @@ Rails.application.routes.draw do
           get "certificates"
           get "certificate_stats"
           get "generate_certificate"
+          get "generate_section_certificate"
+          post "create_section_certificate"
           post "create_certificate"
           get "view_certificates"
           get "certificate/:id", to: "reports#show_certificate", as: "view_certificate"

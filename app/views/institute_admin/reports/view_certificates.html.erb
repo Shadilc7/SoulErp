@@ -1,47 +1,46 @@
 <div class="container-fluid py-4" data-controller="certificate-publisher">
   <%= render 'certificate_breadcrumb', current_page: "View Certificates" %>
 
-  <div class="card card-custom">
-    <div class="card-header card-header-custom">
+  <div class="card card-custom mt-3">
+    <div class="card-header card-header-custom py-3">
       <div class="d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Generated Certificates</h5>
-        <div>
-          <%= link_to generate_certificate_institute_admin_reports_path, class: "btn btn-primary btn-sm" do %>
-            <i class="bi bi-plus-circle me-1"></i>Generate New Certificate
-          <% end %>
-        </div>
-
+        <div></div>
+      </div>
     </div>
 
     <div class="card-body">
       <% if @certificates.any? %>
-        <!-- Filters -->
-        <div class="filters mb-4 p-3 bg-light rounded-3">
-          <div class="row g-3 align-items-center">
-            <div class="col-auto">
-              <select class="form-select" id="sectionFilter" style="width: 260px; min-width: 160px;">
+        <!-- Filters (redesigned) -->
+        <div class="filters mb-4 p-3 bg-white rounded-3 shadow-sm border">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+              <label for="sectionFilter" class="mb-0 text-muted small me-2">Section</label>
+              <select class="form-select form-select-sm" id="sectionFilter" style="min-width: 180px;">
                 <option value="">All Sections</option>
                 <% current_institute.sections.active.each do |section| %>
                   <option value="<%= section.id %>"><%= section.name %></option>
                 <% end %>
               </select>
             </div>
-            <div class="col text-end d-flex gap-2 justify-content-end align-items-center">
-              <div class="btn-group" role="group" aria-label="Bulk actions">
+
+            <div class="d-flex align-items-center gap-2">
+              <small class="text-muted me-2 d-none d-sm-inline">Bulk actions</small>
+              <div class="btn-group btn-group-sm" role="group" aria-label="Bulk actions">
                 <%= button_tag type: 'button', class: 'btn btn-sm btn-success', id: 'publishSelected', disabled: true, title: 'Publish selected certificates' do %>
-                  <i class="bi bi-check2-all me-1"></i>Publish
+                  <i class="bi bi-check2-all"></i>
                 <% end %>
                 <%= button_tag type: 'button', class: 'btn btn-sm btn-warning text-dark', id: 'unpublishSelected', disabled: true, title: 'Unpublish selected certificates' do %>
-                  <i class="bi bi-eye-slash me-1"></i>Unpublish
+                  <i class="bi bi-eye-slash"></i>
                 <% end %>
                 <%= button_tag type: 'button', class: 'btn btn-sm btn-secondary', id: 'downloadSelected', disabled: true, title: 'Download selected certificates' do %>
-                  <i class="bi bi-download me-1"></i>Download
+                  <i class="bi bi-download"></i>
                 <% end %>
                 <%= button_tag type: 'button', class: 'btn btn-sm btn-info text-white', id: 'regenerateSelected', disabled: true, title: 'Regenerate selected certificates' do %>
-                  <i class="bi bi-arrow-clockwise me-1"></i>Regenerate
+                  <i class="bi bi-arrow-clockwise"></i>
                 <% end %>
                 <%= button_tag type: 'button', class: 'btn btn-sm btn-danger', id: 'deleteSelected', disabled: true, title: 'Delete selected certificates' do %>
-                  <i class="bi bi-trash me-1"></i>Delete
+                  <i class="bi bi-trash"></i>
                 <% end %>
               </div>
             </div>

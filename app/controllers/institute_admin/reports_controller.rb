@@ -315,11 +315,29 @@ module InstituteAdmin
     end
 
     def view_certificates
-      # Load certificates with pagination
-      @certificates = IndividualCertificate.includes(:participant, :assignment, :certificate_configuration)
-                               .where(institute_id: current_institute.id)
-                               .order(generated_at: :desc)
-                               .page(params[:page]).per(10)
+      # Read optional filters
+      @section_id = params[:section_id]
+      @certificate_configuration_id = params[:certificate_configuration_id]
+
+      # Load available configurations for the filter dropdown
+      @certificate_configurations = current_institute.certificate_configurations.active
+
+      # Build base query
+      base = IndividualCertificate.includes(:participant, :assignment, :certificate_configuration)
+                   .where(institute_id: current_institute.id)
+
+      # Apply section filter (via participant's section)
+      if @section_id.present?
+        base = base.joins(participant: :section).where(participants: { section_id: @section_id })
+      end
+
+      # Apply certificate configuration filter
+      if @certificate_configuration_id.present?
+        base = base.where(certificate_configuration_id: @certificate_configuration_id)
+      end
+
+      # Pagination and ordering
+      @certificates = base.order(generated_at: :desc).page(params[:page]).per(10)
 
       # Get section-wise certificate counts for the bar graph
       @section_certificate_counts = IndividualCertificate.joins(participant: :section)
@@ -1952,6 +1970,8 @@ module InstituteAdmin
       certificate.errors.add(:base, "Certificate generation failed: #{e.message}")
       nil
     end
+
+    # Close generate_individual_certificate method
 
     # `view_section_certificates` removed — section-based viewing consolidated into `view_certificates`
   end

@@ -10,39 +10,49 @@
     </div>
 
     <div class="card-body">
-      <% if @certificates.any? %>
+
         <!-- Filters (redesigned) -->
-        <div class="filters mb-4 p-3 bg-white rounded-3 shadow-sm border">
-          <div class="d-flex justify-content-between align-items-center">
+        <div class="filters mb-3 p-3 bg-white rounded-3 shadow-sm border">
+          <%= form_with url: view_certificates_institute_admin_reports_path, method: :get, local: true, class: 'd-flex align-items-center', html: { style: 'gap: 1rem' } do |f| %>
             <div class="d-flex align-items-center gap-2">
               <label for="sectionFilter" class="mb-0 text-muted small me-2">Section</label>
-              <select class="form-select form-select-sm" id="sectionFilter" style="min-width: 180px;">
-                <option value="">All Sections</option>
-                <% current_institute.sections.active.each do |section| %>
-                  <option value="<%= section.id %>"><%= section.name %></option>
-                <% end %>
-              </select>
+              <%= select_tag :section_id, options_for_select([['All Sections', '']] + current_institute.sections.active.map { |s| [s.name, s.id] }, @section_id), class: 'form-select form-select-sm', id: 'sectionFilter', style: 'min-width: 180px;', onchange: 'this.form.submit()' %>
             </div>
 
             <div class="d-flex align-items-center gap-2">
-              <small class="text-muted me-2 d-none d-sm-inline">Bulk actions</small>
-              <div class="d-flex align-items-center gap-2 flex-wrap">
-                <%= button_tag type: 'button', class: 'btn btn-sm btn-success shadow-sm', id: 'publishSelected', disabled: true, title: 'Publish selected certificates' do %>
-                  <i class="bi bi-check2-all me-1"></i> Publish
-                <% end %>
-                <%= button_tag type: 'button', class: 'btn btn-sm btn-warning text-dark shadow-sm', id: 'unpublishSelected', disabled: true, title: 'Unpublish selected certificates' do %>
-                  <i class="bi bi-eye-slash me-1"></i> Unpublish
-                <% end %>
-                <%= button_tag type: 'button', class: 'btn btn-sm btn-secondary shadow-sm', id: 'downloadSelected', disabled: true, title: 'Download selected certificates' do %>
-                  <i class="bi bi-download"></i>
-                <% end %>
-                <%= button_tag type: 'button', class: 'btn btn-sm btn-info text-white shadow-sm', id: 'regenerateSelected', disabled: true, title: 'Regenerate selected certificates' do %>
-                  <i class="bi bi-arrow-clockwise"></i>
-                <% end %>
-                <%= button_tag type: 'button', class: 'btn btn-sm btn-danger shadow-sm', id: 'deleteSelected', disabled: true, title: 'Delete selected certificates' do %>
-                  <i class="bi bi-trash"></i>
-                <% end %>
-              </div>
+              <label for="configFilter" class="mb-0 text-muted small me-2">Configuration</label>
+              <%= select_tag :certificate_configuration_id, options_for_select([['All Configurations', '']] + (@certificate_configurations || []).map { |c| [c.name, c.id] }, @certificate_configuration_id), class: 'form-select form-select-sm', id: 'configFilter', style: 'min-width: 220px;', onchange: 'this.form.submit()' %>
+            </div>
+
+            <div class="ms-auto d-none d-md-block">
+              <%= link_to 'Reset', view_certificates_institute_admin_reports_path, class: 'btn btn-sm btn-outline-secondary d-inline-flex align-items-center form-select-sm py-1 px-3' %>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Bulk actions (separate section) -->
+        <div class="bulk-actions mb-4 p-3 bg-white rounded-3 shadow-sm border">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong class="me-2">Bulk actions</strong>
+              <small class="text-muted">Select certificates to apply</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <%= button_tag type: 'button', class: 'btn btn-sm btn-success shadow-sm', id: 'publishSelected', disabled: true, title: 'Publish selected certificates' do %>
+                <i class="bi bi-check2-all me-1"></i> Publish
+              <% end %>
+              <%= button_tag type: 'button', class: 'btn btn-sm btn-warning text-dark shadow-sm', id: 'unpublishSelected', disabled: true, title: 'Unpublish selected certificates' do %>
+                <i class="bi bi-eye-slash me-1"></i> Unpublish
+              <% end %>
+              <%= button_tag type: 'button', class: 'btn btn-sm btn-secondary shadow-sm', id: 'downloadSelected', disabled: true, title: 'Download selected certificates' do %>
+                <i class="bi bi-download"></i>
+              <% end %>
+              <%= button_tag type: 'button', class: 'btn btn-sm btn-info text-white shadow-sm', id: 'regenerateSelected', disabled: true, title: 'Regenerate selected certificates' do %>
+                <i class="bi bi-arrow-clockwise"></i>
+              <% end %>
+              <%= button_tag type: 'button', class: 'btn btn-sm btn-danger shadow-sm', id: 'deleteSelected', disabled: true, title: 'Delete selected certificates' do %>
+                <i class="bi bi-trash"></i>
+              <% end %>
             </div>
           </div>
         </div>
@@ -101,7 +111,7 @@
                       <% end %>
                       <%= link_to view_certificate_institute_admin_reports_path(certificate, format: :pdf),
                           class: "btn btn-sm btn-primary shadow-sm",
-                          title: "View Individual Certificate",
+                          title: "View Certificate",
                           target: "_blank" do %>
                         <i class="bi bi-eye"></i>
                       <% end %>
@@ -133,6 +143,11 @@
                   </td>
                 </tr>
               <% end %>
+              <% if @certificates.empty? %>
+                <tr>
+                  <td colspan="6" class="text-center py-3">No certificates found.</td>
+                </tr>
+              <% end %>
             </tbody>
           </table>
         </div>
@@ -143,7 +158,6 @@
 
       <!-- JavaScript behavior moved to Stimulus controller: app/javascript/controllers/certificate_publisher_controller.js -->
 
-      <% end %>
     </div> <!-- .card-body -->
   </div> <!-- .card -->
 </div> <!-- .container-fluid -->

@@ -21,14 +21,14 @@ Rails.application.configure do
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
 
-  # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  # Store uploaded files. Use ENV['ACTIVE_STORAGE_SERVICE'] to switch between :local and :amazon (S3) in Render.
+  config.active_storage.service = ENV.fetch("ACTIVE_STORAGE_SERVICE", "local").to_sym
 
-  # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  config.assume_ssl = true
+  # Assume access is through an SSL-terminating proxy. Allow disabling via ENV if necessary.
+  config.assume_ssl = ENV.fetch("ASSUME_SSL", "true") == "true"
 
-  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = true
+  # Force SSL when deploying to production behind a proxy (recommended). Make configurable via ENV.FORCE_SSL
+  config.force_ssl = ENV.fetch("FORCE_SSL", "true") == "true"
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
@@ -57,17 +57,13 @@ Rails.application.configure do
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
+  # Set host to be used by links generated in mailer templates. Configure APP_HOST in Render.
+  config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "example.com"), protocol: ENV.fetch("DEFAULT_URL_PROTOCOL", "https") }
 
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  # Allow the Render-provided host (or any host set in APP_HOST)
+  if ENV["APP_HOST"].present?
+    config.hosts << ENV["APP_HOST"]
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

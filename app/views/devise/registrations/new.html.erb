@@ -1,51 +1,102 @@
-<div class="auth-wrapper">
-  <div class="container">
-    <div class="row justify-content-center min-vh-100 align-items-center">
-      <div class="col-12 col-md-8 col-lg-5">
-        <div class="card shadow-lg border-0 rounded-4">
-          <div class="card-header text-center py-4 bg-transparent border-bottom-0">
-            <h3 class="mb-0 fw-bold text-dark">Create Account</h3>
-            <p class="text-muted mb-0">Join us to start your learning journey</p>
-          </div>
+<div class="registration-wrapper">
+  <!-- Animated Background -->
+  <div class="animated-bg">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+    <div class="circle circle-4"></div>
+    <div class="circle circle-5"></div>
+  </div>
 
-          <div class="card-body p-4">
+  <div class="container">
+    <div class="row justify-content-center min-vh-100 align-items-center py-5">
+      <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+        <!-- Header Section -->
+        <div class="registration-header text-center mb-4">
+          <div class="logo-badge">
+            <i class="bi bi-person-plus-fill"></i>
+          </div>
+          <h1 class="registration-title">
+            Join <span class="gradient-text">SOUL</span>
+          </h1>
+          <p class="registration-subtitle">
+            <i class="bi bi-mortarboard-fill"></i>
+            Start your educational journey with us
+          </p>
+        </div>
+
+        <div class="registration-card">
+          <div class="card-glow"></div>
+
+          <div class="card-body p-4 p-md-5">
             <%= render "shared/error_messages", resource: resource %>
             
-            <div class="alert alert-info mb-4" role="alert">
-              <i class="bi bi-info-circle me-2"></i>
-              <small>All new accounts require approval before access is granted.</small>
+            <div class="info-banner">
+              <div class="info-icon">
+                <i class="bi bi-shield-check"></i>
+              </div>
+              <div class="info-content">
+                <strong>Account Approval Required</strong>
+                <p>All new registrations are reviewed before access is granted for security.</p>
+              </div>
             </div>
 
             <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
-              <div class="form-floating mb-3">
-                <%= f.text_field :first_name, 
-                    class: "form-control #{resource.errors[:first_name].any? ? 'is-invalid' : ''}", 
-                    placeholder: "Name" %>
-                <%= f.label :first_name, "Name" %>
-                <% if resource.errors[:first_name].any? %>
-                  <div class="invalid-feedback"><%= resource.errors[:first_name].first %></div>
-                <% end %>
+              <!-- Personal Information Section -->
+              <div class="form-section">
+                <h5 class="section-title">
+                  <i class="bi bi-person-circle"></i>
+                  Personal Information
+                </h5>
+                
+                <div class="form-floating mb-3">
+                  <div class="input-icon">
+                    <i class="bi bi-person"></i>
+                  </div>
+                  <%= f.text_field :first_name, 
+                      class: "form-control icon-input #{resource.errors[:first_name].any? ? 'is-invalid' : ''}", 
+                      placeholder: "Name",
+                      required: true %>
+                  <%= f.label :first_name, "Full Name" %>
+                  <% if resource.errors[:first_name].any? %>
+                    <div class="invalid-feedback"><%= resource.errors[:first_name].first %></div>
+                  <% end %>
+                </div>
+
+                <div class="form-floating mb-3">
+                  <div class="input-icon">
+                    <i class="bi bi-envelope"></i>
+                  </div>
+                  <%= f.email_field :email, 
+                      class: "form-control icon-input #{resource.errors[:email].any? ? 'is-invalid' : ''}", 
+                      placeholder: "Email",
+                      required: true %>
+                  <%= f.label :email, "Email Address" %>
+                  <% if resource.errors[:email].any? %>
+                    <div class="invalid-feedback"><%= resource.errors[:email].first %></div>
+                  <% end %>
+                </div>
               </div>
 
-              <div class="form-floating mb-3">
-                <%= f.email_field :email, 
-                    class: "form-control #{resource.errors[:email].any? ? 'is-invalid' : ''}", 
-                    placeholder: "Email" %>
-                <%= f.label :email, "Email" %>
-                <% if resource.errors[:email].any? %>
-                  <div class="invalid-feedback"><%= resource.errors[:email].first %></div>
-                <% end %>
-              </div>
-
-              <div data-controller="sections">
+              <!-- Contact & Location Section -->
+              <div class="form-section" data-controller="sections">
+                <h5 class="section-title">
+                  <i class="bi bi-geo-alt"></i>
+                  Contact & Location
+                </h5>
+                
                 <%= f.fields_for :participant do |p| %>
-                  <div class="form-floating mb-3">
+                  <div class="mb-3">
                     <div class="input-group">
-                      <span class="input-group-text bg-light text-muted" style="width: 60px;">+91</span>
+                      <span class="input-group-text phone-prefix">
+                        <i class="bi bi-telephone"></i>
+                        <span>+91</span>
+                      </span>
                       <div class="form-floating flex-grow-1">
                         <%= p.text_field :phone_number, 
                             class: "form-control #{p.object.errors[:phone_number].any? ? 'is-invalid' : ''}", 
-                            placeholder: "Phone Number" %>
+                            placeholder: "Phone Number",
+                            required: true %>
                         <%= p.label :phone_number, "Phone Number" %>
                         <% if p.object.errors[:phone_number].any? %>
                           <div class="invalid-feedback">
@@ -54,13 +105,20 @@
                         <% end %>
                       </div>
                     </div>
-                    <small class="text-muted ms-2">Enter 10 digits without country code</small>
+                    <small class="form-hint">
+                      <i class="bi bi-info-circle"></i>
+                      Enter 10 digits without country code
+                    </small>
                   </div>
 
                   <div class="form-floating mb-3">
+                    <div class="input-icon">
+                      <i class="bi bi-calendar-event"></i>
+                    </div>
                     <%= p.date_field :date_of_birth, 
-                        class: "form-control #{p.object.errors[:date_of_birth].any? ? 'is-invalid' : ''}", 
-                        placeholder: "Date of Birth" %>
+                        class: "form-control icon-input #{p.object.errors[:date_of_birth].any? ? 'is-invalid' : ''}", 
+                        placeholder: "Date of Birth",
+                        required: true %>
                     <%= p.label :date_of_birth, "Date of Birth" %>
                     <% if p.object.errors[:date_of_birth].any? %>
                       <div class="invalid-feedback"><%= p.object.errors[:date_of_birth].first %></div>
@@ -68,10 +126,14 @@
                   </div>
 
                   <div class="form-floating mb-3">
+                    <div class="input-icon textarea-icon">
+                      <i class="bi bi-house"></i>
+                    </div>
                     <%= p.text_area :address,
-                        class: "form-control #{p.object.errors[:address].any? ? 'is-invalid' : ''}", 
+                        class: "form-control icon-input #{p.object.errors[:address].any? ? 'is-invalid' : ''}", 
                         placeholder: "Address",
-                        style: "height: 100px;" %>
+                        style: "height: 100px;",
+                        required: true %>
                     <%= p.label :address, "Address" %>
                     <% if p.object.errors[:address].any? %>
                       <div class="invalid-feedback"><%= p.object.errors[:address].first %></div>
@@ -81,9 +143,13 @@
                   <div class="row g-3 mb-3">
                     <div class="col-md-4">
                       <div class="form-floating">
+                        <div class="input-icon">
+                          <i class="bi bi-mailbox"></i>
+                        </div>
                         <%= p.text_field :pin_code,
-                            class: "form-control #{p.object.errors[:pin_code].any? ? 'is-invalid' : ''}", 
-                            placeholder: "PIN Code" %>
+                            class: "form-control icon-input #{p.object.errors[:pin_code].any? ? 'is-invalid' : ''}", 
+                            placeholder: "PIN Code",
+                            required: true %>
                         <%= p.label :pin_code, "PIN Code" %>
                         <% if p.object.errors[:pin_code].any? %>
                           <div class="invalid-feedback"><%= p.object.errors[:pin_code].first %></div>
@@ -93,9 +159,13 @@
                     
                     <div class="col-md-4">
                       <div class="form-floating">
+                        <div class="input-icon">
+                          <i class="bi bi-geo"></i>
+                        </div>
                         <%= p.text_field :district,
-                            class: "form-control #{p.object.errors[:district].any? ? 'is-invalid' : ''}", 
-                            placeholder: "District" %>
+                            class: "form-control icon-input #{p.object.errors[:district].any? ? 'is-invalid' : ''}", 
+                            placeholder: "District",
+                            required: true %>
                         <%= p.label :district, "District" %>
                         <% if p.object.errors[:district].any? %>
                           <div class="invalid-feedback"><%= p.object.errors[:district].first %></div>
@@ -105,9 +175,13 @@
                     
                     <div class="col-md-4">
                       <div class="form-floating">
+                        <div class="input-icon">
+                          <i class="bi bi-map"></i>
+                        </div>
                         <%= p.text_field :state,
-                            class: "form-control #{p.object.errors[:state].any? ? 'is-invalid' : ''}", 
-                            placeholder: "State" %>
+                            class: "form-control icon-input #{p.object.errors[:state].any? ? 'is-invalid' : ''}", 
+                            placeholder: "State",
+                            required: true %>
                         <%= p.label :state, "State" %>
                         <% if p.object.errors[:state].any? %>
                           <div class="invalid-feedback"><%= p.object.errors[:state].first %></div>
@@ -116,11 +190,20 @@
                     </div>
                   </div>
 
+                  <!-- Academic Information Section -->
+                  <h5 class="section-title mt-4">
+                    <i class="bi bi-building"></i>
+                    Academic Information
+                  </h5>
+
                   <div class="form-floating mb-3">
+                    <div class="input-icon">
+                      <i class="bi bi-person-badge"></i>
+                    </div>
                     <%= p.select :participant_type,
                         [['Student', 'student'], ['Guardian', 'guardian'], ['Employee', 'employee']],
                         { prompt: "Select Type" },
-                        { class: "form-select #{p.object.errors[:participant_type].any? ? 'is-invalid' : ''}" } %>
+                        { class: "form-select icon-input #{p.object.errors[:participant_type].any? ? 'is-invalid' : ''}", required: true } %>
                     <%= p.label :participant_type, "Participant Type" %>
                     <% if p.object.errors[:participant_type].any? %>
                       <div class="invalid-feedback"><%= p.object.errors[:participant_type].first %></div>
@@ -128,10 +211,14 @@
                   </div>
 
                   <div class="form-floating mb-3">
+                    <div class="input-icon">
+                      <i class="bi bi-bank"></i>
+                    </div>
                     <%= p.select :institute_id, 
                         @institutes.map { |i| [i.name, i.id] }, 
                         { prompt: "Select Institution" },
-                        { class: "form-select #{p.object.errors[:institute_id].any? ? 'is-invalid' : ''}", 
+                        { class: "form-select icon-input #{p.object.errors[:institute_id].any? ? 'is-invalid' : ''}", 
+                          required: true,
                           data: { 
                             sections_target: "instituteSelect",
                             action: "change->sections#fetchSections"
@@ -144,10 +231,13 @@
                   </div>
 
                   <div class="form-floating mb-3">
+                    <div class="input-icon">
+                      <i class="bi bi-grid-3x3"></i>
+                    </div>
                     <%= p.select :section_id, 
                         [], 
                         { prompt: "Select Section" },
-                        { class: "form-select #{p.object.errors[:section_id].any? ? 'is-invalid' : ''}", 
+                        { class: "form-select icon-input #{p.object.errors[:section_id].any? ? 'is-invalid' : ''}", 
                           data: { sections_target: "sectionSelect" } } %>
                     <%= p.label :section_id, "Section" %>
                     <% if p.object.errors[:section_id].any? %>
@@ -157,64 +247,68 @@
                 <% end %>
               </div>
 
-              <div class="form-floating mb-3">
-                <%= f.password_field :password, 
-                    class: "form-control #{resource.errors[:password].any? ? 'is-invalid' : ''}", 
-                    placeholder: "Password" %>
-                <%= f.label :password, "Password" %>
-                <% if resource.errors[:password].any? %>
-                  <div class="invalid-feedback"><%= resource.errors[:password].first %></div>
-                <% end %>
-                <% if @minimum_password_length %>
-                  <small class="form-text text-muted">Minimum <%= @minimum_password_length %> characters</small>
-                <% end %>
+              <!-- Security Section -->
+              <div class="form-section">
+                <h5 class="section-title">
+                  <i class="bi bi-shield-lock"></i>
+                  Security
+                </h5>
+                
+                <div class="form-floating mb-3">
+                  <div class="input-icon">
+                    <i class="bi bi-lock"></i>
+                  </div>
+                  <div class="password-wrapper">
+                    <%= f.password_field :password, 
+                        class: "form-control icon-input #{resource.errors[:password].any? ? 'is-invalid' : ''}", 
+                        placeholder: "Password",
+                        id: "registration-password",
+                        required: true %>
+                    <button type="button" class="password-toggle" onclick="toggleRegistrationPassword('registration-password', 'toggle-icon-1')">
+                      <i class="bi bi-eye-fill" id="toggle-icon-1"></i>
+                    </button>
+                  </div>
+                  <%= f.label :password, "Password" %>
+                  <% if resource.errors[:password].any? %>
+                    <div class="invalid-feedback"><%= resource.errors[:password].first %></div>
+                  <% end %>
+                  <% if @minimum_password_length %>
+                    <small class="form-hint">
+                      <i class="bi bi-info-circle"></i>
+                      Minimum <%= @minimum_password_length %> characters required
+                    </small>
+                  <% end %>
+                </div>
+
+                <div class="form-floating mb-4">
+                  <div class="input-icon">
+                    <i class="bi bi-lock-fill"></i>
+                  </div>
+                  <div class="password-wrapper">
+                    <%= f.password_field :password_confirmation, 
+                        class: "form-control icon-input #{resource.errors[:password_confirmation].any? ? 'is-invalid' : ''}", 
+                        placeholder: "Confirm Password",
+                        id: "registration-password-confirmation",
+                        required: true %>
+                    <button type="button" class="password-toggle" onclick="toggleRegistrationPassword('registration-password-confirmation', 'toggle-icon-2')">
+                      <i class="bi bi-eye-fill" id="toggle-icon-2"></i>
+                    </button>
+                  </div>
+                  <%= f.label :password_confirmation, "Confirm Password" %>
+                  <% if resource.errors[:password_confirmation].any? %>
+                    <div class="invalid-feedback"><%= resource.errors[:password_confirmation].first %></div>
+                  <% end %>
+                </div>
               </div>
 
-              <div class="form-floating mb-4">
-                <%= f.password_field :password_confirmation, 
-                    class: "form-control #{resource.errors[:password_confirmation].any? ? 'is-invalid' : ''}", 
-                    placeholder: "Confirm Password" %>
-                <%= f.label :password_confirmation, "Confirm Password" %>
-                <% if resource.errors[:password_confirmation].any? %>
-                  <div class="invalid-feedback"><%= resource.errors[:password_confirmation].first %></div>
+              <div class="form-actions">
+                <%= f.submit "Create Account", class: "btn-register" %>
+                <%= link_to new_user_session_path, class: "btn-login" do %>
+                  <i class="bi bi-arrow-left"></i>
+                  Already have an account? Login
                 <% end %>
-              </div>
-
-              <div class="d-grid gap-2 mt-4">
-                <%= f.submit "Create Account", class: "btn btn-primary btn-lg" %>
-                <%= link_to "Already have an account? Login", new_user_session_path, 
-                    class: "btn btn-light btn-lg" %>
               </div>
             <% end %>
-
-            <script>
-              document.addEventListener('DOMContentLoaded', function() {
-                const participantTypeSelect = document.querySelector('select[name="user[participant_attributes][participant_type]"]');
-                const sectionSelect = document.querySelector('select[name="user[participant_attributes][section_id]"]');
-                
-                function toggleFields() {
-                  const selectedType = participantTypeSelect.value;
-                  const sectionField = sectionSelect.closest('.form-floating');
-                  
-                  // Show section field for students and employees
-                  if (selectedType === 'student' || selectedType === 'employee') {
-                    sectionField.style.display = 'block';
-                  } else if (selectedType === 'guardian') {
-                    // For guardians, we'll handle section selection differently
-                    sectionField.style.display = 'none';
-                  } else {
-                    // Default to showing section field
-                    sectionField.style.display = 'block';
-                  }
-                }
-                
-                if (participantTypeSelect) {
-                  participantTypeSelect.addEventListener('change', toggleFields);
-                  // Initialize fields on page load
-                  toggleFields();
-                }
-              });
-            </script>
           </div>
         </div>
       </div>
@@ -222,94 +316,445 @@
   </div>
 </div>
 
+<script>
+function toggleRegistrationPassword(fieldId, iconId) {
+  const passwordField = document.getElementById(fieldId);
+  const toggleIcon = document.getElementById(iconId);
+  
+  if (passwordField.type === 'password') {
+    passwordField.type = 'text';
+    toggleIcon.classList.remove('bi-eye-fill');
+    toggleIcon.classList.add('bi-eye-slash-fill');
+  } else {
+    passwordField.type = 'password';
+    toggleIcon.classList.remove('bi-eye-slash-fill');
+    toggleIcon.classList.add('bi-eye-fill');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const participantTypeSelect = document.querySelector('select[name="user[participant_attributes][participant_type]"]');
+  const sectionSelect = document.querySelector('select[name="user[participant_attributes][section_id]"]');
+  
+  function toggleFields() {
+    const selectedType = participantTypeSelect.value;
+    const sectionField = sectionSelect.closest('.form-floating');
+    
+    if (selectedType === 'student' || selectedType === 'employee') {
+      sectionField.style.display = 'block';
+    } else if (selectedType === 'guardian') {
+      sectionField.style.display = 'none';
+    } else {
+      sectionField.style.display = 'block';
+    }
+  }
+  
+  if (participantTypeSelect) {
+    participantTypeSelect.addEventListener('change', toggleFields);
+    toggleFields();
+  }
+});
+</script>
+
 <% content_for :styles do %>
   <style>
-    body {
-      background: linear-gradient(135deg, rgba(0, 128, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%);
-      min-height: 100vh;
+    /* Animated Background */
+    .animated-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     }
 
-    .auth-wrapper {
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(0, 182, 122, 0.1), rgba(152, 216, 170, 0.15));
+      animation: float 25s infinite ease-in-out;
+    }
+
+    .circle-1 {
+      width: 400px;
+      height: 400px;
+      top: 5%;
+      left: 5%;
+      animation-delay: 0s;
+    }
+
+    .circle-2 {
+      width: 300px;
+      height: 300px;
+      top: 50%;
+      right: 5%;
+      animation-delay: 3s;
+    }
+
+    .circle-3 {
+      width: 200px;
+      height: 200px;
+      bottom: 10%;
+      left: 15%;
+      animation-delay: 6s;
+    }
+
+    .circle-4 {
+      width: 250px;
+      height: 250px;
+      top: 30%;
+      right: 20%;
+      animation-delay: 9s;
+    }
+
+    .circle-5 {
+      width: 180px;
+      height: 180px;
+      bottom: 20%;
+      right: 10%;
+      animation-delay: 12s;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.3;
+      }
+      50% {
+        transform: translate(40px, -40px) scale(1.15);
+        opacity: 0.5;
+      }
+    }
+
+    .registration-wrapper {
+      position: relative;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
       padding: 2rem 0;
     }
 
-    .card {
-      backdrop-filter: blur(10px);
-      background-color: rgba(255, 255, 255, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    .registration-header {
+      position: relative;
+      z-index: 1;
     }
 
-    .form-floating > .form-control,
-    .form-floating > .form-select {
-      height: calc(3.5rem + 2px);
-      line-height: 1.25;
-      border-radius: 0.5rem;
+    .logo-badge {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      background: linear-gradient(135deg, #00B67A 0%, #00d68f 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 30px rgba(0, 182, 122, 0.3),
+                  0 0 0 10px rgba(0, 182, 122, 0.1);
+      animation: pulse-glow 3s infinite;
+    }
+
+    .logo-badge i {
+      font-size: 2rem;
+      color: white;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 8px 30px rgba(0, 182, 122, 0.3),
+                    0 0 0 10px rgba(0, 182, 122, 0.1);
+      }
+      50% {
+        box-shadow: 0 8px 40px rgba(0, 182, 122, 0.5),
+                    0 0 0 15px rgba(0, 182, 122, 0.15);
+      }
+    }
+
+    .registration-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #2d3238;
+      margin-bottom: 0.5rem;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #00B67A 0%, #00d68f 50%, #98D8AA 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .registration-subtitle {
+      font-size: 1.1rem;
+      color: #6c757d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .registration-subtitle i {
+      color: #00B67A;
+      font-size: 1.3rem;
+    }
+
+    .registration-card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .card-glow {
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(0, 182, 122, 0.1) 0%, transparent 70%);
+      animation: rotate-glow 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes rotate-glow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .info-banner {
+      display: flex;
+      gap: 1rem;
+      padding: 1.2rem;
+      background: linear-gradient(135deg, rgba(0, 182, 122, 0.1) 0%, rgba(152, 216, 170, 0.1) 100%);
+      border-left: 4px solid #00B67A;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      align-items: flex-start;
+    }
+
+    .info-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #00B67A, #00d68f);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .info-icon i {
+      color: white;
+      font-size: 1.2rem;
+    }
+
+    .info-content strong {
+      color: #00B67A;
+      display: block;
+      margin-bottom: 0.3rem;
+      font-size: 1.05rem;
+    }
+
+    .info-content p {
+      color: #6c757d;
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .form-section {
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    .section-title {
+      color: #2d3238;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 2px solid #e9ecef;
+    }
+
+    .section-title i {
+      color: #00B67A;
+      font-size: 1.4rem;
+    }
+
+    .form-floating {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      color: #6c757d;
+      font-size: 1.1rem;
+      pointer-events: none;
+      transition: color 0.3s ease;
+    }
+
+    .textarea-icon {
+      top: 1.5rem;
+      transform: none;
+    }
+
+    .icon-input {
+      padding-left: 3rem !important;
     }
 
     .form-control,
     .form-select {
-      border: 1px solid #ced4da;
-      padding: 0.75rem 1rem;
+      height: calc(3.5rem + 2px);
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
       font-size: 1rem;
-      transition: all 0.2s ease-in-out;
+      transition: all 0.3s ease;
+      background-color: #f8f9fa;
     }
 
     .form-control:focus,
     .form-select:focus {
-      border-color: #198754;
-      box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+      border-color: #00B67A;
+      background-color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(0, 182, 122, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .form-control:focus ~ .input-icon,
+    .form-select:focus ~ .input-icon {
+      color: #00B67A;
     }
 
     .form-floating > label {
-      padding: 1rem;
+      padding: 1rem 1rem 1rem 3rem;
       color: #6c757d;
-    }
-
-    .btn-primary {
-      background-color: #198754;
-      border-color: #198754;
-      padding: 0.75rem 1.5rem;
       font-weight: 500;
-      transition: all 0.2s ease-in-out;
-    }
-
-    .btn-primary:hover {
-      background-color: #157347;
-      border-color: #146c43;
-      transform: translateY(-1px);
-    }
-
-    .btn-light {
-      background-color: #f8f9fa;
-      border-color: #f8f9fa;
-      color: #198754;
-      font-weight: 500;
-    }
-
-    .btn-light:hover {
-      background-color: #e9ecef;
-      border-color: #e9ecef;
-      color: #157347;
-    }
-
-    .invalid-feedback {
-      font-size: 0.875rem;
-      margin-top: 0.25rem;
     }
 
     .form-floating > .form-control:focus ~ label,
     .form-floating > .form-control:not(:placeholder-shown) ~ label,
     .form-floating > .form-select ~ label {
-      color: #198754;
+      color: #00B67A;
       transform: scale(0.85) translateY(-1rem) translateX(0.15rem);
+      padding-left: 3rem;
+    }
+
+    textarea.form-control {
+      height: 120px !important;
+      resize: vertical;
+    }
+
+    .password-wrapper {
+      position: relative;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #6c757d;
+      cursor: pointer;
+      padding: 0.5rem;
+      z-index: 10;
+      transition: color 0.3s ease;
+    }
+
+    .password-toggle:hover {
+      color: #00B67A;
+    }
+
+    .password-toggle i {
+      font-size: 1.2rem;
+    }
+
+    .form-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #6c757d;
+      font-size: 0.875rem;
+      margin-top: 0.4rem;
+      margin-left: 0.5rem;
+    }
+
+    .form-hint i {
+      font-size: 0.9rem;
+      color: #00B67A;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: stretch;
+    }
+
+    .input-group-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 1rem 1.2rem;
+      background: linear-gradient(135deg, #00B67A, #00d68f);
+      color: white;
+      border: none;
+      border-radius: 12px 0 0 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .input-group-text.phone-prefix {
+      min-width: auto;
+    }
+
+    .input-group-text i {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .input-group-text span {
+      line-height: 1;
+      font-size: 1rem;
+    }
+
+    .input-group .form-floating {
+      flex: 1;
+    }
+
+    .input-group .form-control {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-left: none;
+      padding-left: 1rem !important;
+    }
+
+    .input-group .form-floating > label {
+      padding-left: 1rem;
+    }
+
+    .input-group .form-floating > .form-control:focus ~ label,
+    .input-group .form-floating > .form-control:not(:placeholder-shown) ~ label {
+      padding-left: 1rem;
+    }
+
+    /* Remove input icon for phone number field inside input-group */
+    .input-group + .form-hint {
+      margin-left: 0.5rem;
     }
 
     .is-invalid {
-      border-color: #dc3545;
+      border-color: #dc3545 !important;
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
       padding-right: calc(1.5em + 0.75rem);
       background-repeat: no-repeat;
@@ -317,58 +762,133 @@
       background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
     }
 
-    .alert {
-      border-radius: 0.5rem;
-      border: none;
+    .invalid-feedback {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.4rem;
+      margin-left: 0.5rem;
     }
 
-    .alert-danger {
-      background-color: #f8d7da;
-      color: #842029;
+    .form-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .btn-register {
+      width: 100%;
+      padding: 1.2rem;
+      background: linear-gradient(135deg, #00B67A 0%, #00d68f 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 20px rgba(0, 182, 122, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-register::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-register:hover::before {
+      left: 100%;
+    }
+
+    .btn-register:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 182, 122, 0.5);
+    }
+
+    .btn-register:active {
+      transform: translateY(0);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 1rem;
+      background: white;
+      color: #00B67A;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-login:hover {
+      background: #f8f9fa;
+      border-color: #00B67A;
+      color: #00B67A;
+      transform: translateY(-2px);
+    }
+
+    .btn-login i {
+      font-size: 1.1rem;
     }
 
     @media (max-width: 768px) {
-      .container {
-        padding: 1rem;
+      .registration-title {
+        font-size: 2rem;
+      }
+
+      .card-body {
+        padding: 2rem 1.5rem !important;
+      }
+
+      .section-title {
+        font-size: 1.1rem;
+      }
+
+      .form-floating > label {
+        font-size: 0.9rem;
+      }
+
+      .logo-badge {
+        width: 70px;
+        height: 70px;
+      }
+
+      .logo-badge i {
+        font-size: 1.7rem;
       }
     }
 
-    /* Additional styles for phone input group */
-    .input-group .form-floating {
-      display: flex;
-      flex-direction: column;
-    }
+    @media (max-width: 480px) {
+      .registration-wrapper {
+        padding: 1rem 0;
+      }
 
-    .input-group .form-floating > .form-control {
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-    }
+      .card-body {
+        padding: 1.5rem 1rem !important;
+      }
 
-    .input-group .form-floating > label {
-      z-index: 4;
-      padding-left: 1rem;
-    }
+      .registration-title {
+        font-size: 1.8rem;
+      }
 
-    .input-group-text {
-      font-weight: 500;
-      color: #6c757d;
-      background-color: #f8f9fa;
-      border-color: #ced4da;
-    }
-
-    /* Fix for floating label in input group */
-    .input-group .form-floating:not(.form-control:disabled)::before {
-      content: none;
-    }
-
-    .input-group .form-floating:focus-within {
-      z-index: 5;
-    }
-
-    /* Ensure error message appears correctly */
-    .input-group .invalid-feedback {
-      display: block;
-      margin-top: 0.25rem;
+      .btn-register {
+        padding: 1rem;
+        font-size: 1rem;
+      }
     }
   </style>
 <% end %>

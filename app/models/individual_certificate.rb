@@ -26,12 +26,8 @@ class IndividualCertificate < ApplicationRecord
   end
 
   def pdf_content
-    # Get the controller instance to use its generate_individual_certificate method
-    controller = InstituteAdmin::ReportsController.new
-    controller.instance_variable_set("@_current_institute", institute)
-
-    # Generate the PDF content using the existing method
-    controller.send(:generate_individual_certificate, self)
+    # Use service object for PDF generation
+    CertificatePdfGenerator.new(self).generate
   end
 
   private

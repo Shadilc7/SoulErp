@@ -205,24 +205,42 @@ module InstituteAdmin
         return
       end
 
-      # Create certificate record
-      @certificate = IndividualCertificate.new(
-        participant: @participant,
-        assignment: @assignment,
-        certificate_configuration: @certificate_configuration,
-        institute: current_institute
-      )
+      # Create certificate record with transaction
+      begin
+        ActiveRecord::Base.transaction do
+          @certificate = IndividualCertificate.new(
+            participant: @participant,
+            assignment: @assignment,
+            certificate_configuration: @certificate_configuration,
+            institute: current_institute
+          )
 
-      if @certificate.save
+          if @certificate.save
+            # Verify PDF can be generated
+            pdf_content = CertificatePdfGenerator.new(@certificate).generate
+
+            unless pdf_content
+              raise ActiveRecord::Rollback, "PDF generation failed"
+            end
+
+            redirect_to view_certificates_institute_admin_reports_path,
+                        notice: "Certificate successfully generated. <a href='#{show_certificate_on_demand_institute_admin_report_path(@certificate)}' target='_blank'>View Certificate</a>".html_safe
+          else
+            redirect_to generate_certificate_institute_admin_reports_path(
+              section_id: @section_id,
+              participant_id: @participant_id,
+              assignment_id: @assignment_id,
+              certificate_configuration_id: @certificate_configuration_id
+            ), alert: "Failed to generate certificate: #{@certificate.errors.full_messages.join(', ')}"
+          end
+        end
+      rescue ActiveRecord::RecordNotUnique
         redirect_to view_certificates_institute_admin_reports_path,
-                    notice: "Certificate successfully generated. <a href='#{show_certificate_on_demand_institute_admin_report_path(@certificate)}' target='_blank'>View Certificate</a>".html_safe
-      else
-        redirect_to generate_certificate_institute_admin_reports_path(
-          section_id: @section_id,
-          participant_id: @participant_id,
-          assignment_id: @assignment_id,
-          certificate_configuration_id: @certificate_configuration_id
-        ), alert: "Failed to generate certificate: #{@certificate.errors.full_messages.join(', ')}"
+                    alert: "This certificate already exists"
+      rescue => e
+        Rails.logger.error "Certificate creation failed: #{e.message}\n#{e.backtrace.join("\n")}"
+        redirect_to generate_certificate_institute_admin_reports_path,
+                    alert: "An unexpected error occurred while generating the certificate. Please try again."
       end
     end
 
@@ -350,8 +368,8 @@ module InstituteAdmin
     def show_certificate
       @certificate = current_institute.individual_certificates.find(params[:id])
 
-      # Generate PDF content on-demand
-      pdf_content = generate_individual_certificate(@certificate)
+      # Generate PDF content on-demand using service object
+      pdf_content = CertificatePdfGenerator.new(@certificate).generate
 
       if pdf_content
         send_data pdf_content,
@@ -360,8 +378,12 @@ module InstituteAdmin
                   disposition: "inline"
       else
         redirect_to view_certificates_institute_admin_reports_path,
-                    alert: "Failed to generate certificate: #{@certificate.errors.full_messages.join(', ')}"
+                    alert: "Failed to generate certificate PDF. Please try again or contact support."
       end
+    rescue => e
+      Rails.logger.error "Certificate display failed: #{e.message}\n#{e.backtrace.join("\n")}"
+      redirect_to view_certificates_institute_admin_reports_path,
+                  alert: "An error occurred while displaying the certificate."
     end
 
     def delete_certificate
@@ -379,28 +401,36 @@ module InstituteAdmin
     def regenerate_certificate
       @certificate = current_institute.individual_certificates.find(params[:id])
 
-      # Delete the existing file if it exists
-      if @certificate.filename.present? && File.exist?(@certificate.file_path)
-        File.delete(@certificate.file_path)
-      end
+      begin
+        # Delete the existing file if it exists
+        if @certificate.filename.present? && File.exist?(@certificate.file_path)
+          File.delete(@certificate.file_path)
+        end
 
-      # Regenerate the certificate PDF
-      success = generate_individual_certificate(@certificate)
+        # Regenerate the certificate PDF using service object
+        pdf_content = CertificatePdfGenerator.new(@certificate).generate
 
-      if success && @certificate.save
-        redirect_to view_certificates_institute_admin_reports_path, notice: "Certificate successfully regenerated. <a href='#{show_certificate_institute_admin_reports_path(@certificate)}' target='_blank'>View Certificate</a>".html_safe
-      else
-        error_messages = @certificate.errors.full_messages
-        error_messages << "Failed to regenerate certificate PDF" unless success
-        redirect_to view_certificates_institute_admin_reports_path, alert: "Failed to regenerate certificate: #{error_messages.join(', ')}"
+        if pdf_content && @certificate.save
+          redirect_to view_certificates_institute_admin_reports_path,
+                      notice: "Certificate successfully regenerated. <a href='#{show_certificate_institute_admin_reports_path(@certificate)}' target='_blank'>View Certificate</a>".html_safe
+        else
+          error_messages = @certificate.errors.full_messages
+          error_messages << "Failed to regenerate certificate PDF" unless pdf_content
+          redirect_to view_certificates_institute_admin_reports_path,
+                      alert: "Failed to regenerate certificate: #{error_messages.join(', ')}"
+        end
+      rescue => e
+        Rails.logger.error "Certificate regeneration failed: #{e.message}\n#{e.backtrace.join("\n")}"
+        redirect_to view_certificates_institute_admin_reports_path,
+                    alert: "An error occurred while regenerating the certificate."
       end
     end
 
     def show_certificate_on_demand
       @certificate = current_institute.individual_certificates.find(params[:id])
 
-      # Generate PDF content on-demand
-      pdf_content = generate_individual_certificate(@certificate)
+      # Generate PDF content on-demand using service object
+      pdf_content = CertificatePdfGenerator.new(@certificate).generate
 
       if pdf_content
         send_data pdf_content,
@@ -409,15 +439,19 @@ module InstituteAdmin
                   disposition: "inline"
       else
         redirect_to view_certificates_institute_admin_reports_path,
-                    alert: "Failed to generate certificate: #{@certificate.errors.full_messages.join(', ')}"
+                    alert: "Failed to generate certificate PDF. Please try again."
       end
+    rescue => e
+      Rails.logger.error "Certificate display failed: #{e.message}\n#{e.backtrace.join("\n")}"
+      redirect_to view_certificates_institute_admin_reports_path,
+                  alert: "An error occurred while displaying the certificate."
     end
 
     def download_certificate_on_demand
       @certificate = current_institute.individual_certificates.find(params[:id])
 
-      # Generate PDF content on-demand
-      pdf_content = generate_individual_certificate(@certificate)
+      # Generate PDF content on-demand using service object
+      pdf_content = CertificatePdfGenerator.new(@certificate).generate
 
       if pdf_content
         send_data pdf_content,
@@ -426,9 +460,14 @@ module InstituteAdmin
                   disposition: "attachment"
       else
         redirect_to view_certificates_institute_admin_reports_path,
-                    alert: "Failed to generate certificate: #{@certificate.errors.full_messages.join(', ')}"
+                    alert: "Failed to generate certificate PDF. Please try again."
       end
+    rescue => e
+      Rails.logger.error "Certificate download failed: #{e.message}\n#{e.backtrace.join("\n")}"
+      redirect_to view_certificates_institute_admin_reports_path,
+                  alert: "An error occurred while downloading the certificate."
     end
+  end
 
     def individual_assignment_reports
       @date_range = params[:date_range]
@@ -1664,315 +1703,9 @@ module InstituteAdmin
         disposition: disposition
     end
 
+    # Wrapper method for backward compatibility
+    # Delegates to CertificatePdfGenerator service object
     def generate_individual_certificate(certificate)
-      require "prawn"
-      require "prawn/table"
-      require "gruff"
-      require "tempfile"
-
-      participant = certificate.participant
-      assignment = certificate.assignment
-      config = certificate.certificate_configuration
-
-      # Get the date range for the assignment
-      start_date = assignment.start_date.to_date
-      end_date = assignment.end_date.to_date
-
-      # Create interval periods based on certificate configuration
-      intervals = []
-      current_date = start_date
-
-      while current_date <= end_date
-        interval_end = [ current_date + config.duration_period.days - 1, end_date ].min
-        intervals << [ current_date, interval_end ]
-        current_date = interval_end + 1.day
-      end
-
-      # Get all responses for this assignment and participant
-      responses = AssignmentResponse.where(
-        participant: participant,
-        assignment: assignment
-      ).includes(:question)
-
-      # Group responses by date
-      responses_by_date = responses.group_by { |r| r.response_date.to_date }
-
-      # Filter for yes/no and number questions
-      yes_no_questions = assignment.questions.where(question_type: "yes_or_no").select(:id, :title, :question_type)
-      number_questions = assignment.questions.where(question_type: "number").select(:id, :title, :question_type)
-
-      # Calculate data for the certificate
-      table_data = []
-      # Truncate question labels for x-axis to avoid overlap
-      full_questions = (yes_no_questions + number_questions).map { |q| q.respond_to?(:title) ? q.title : "Question #{q.id}" }
-      short_labels = full_questions.map.with_index { |q, i| q.length > 15 ? "Q#{i+1}: #{q[0, 12]}..." : "Q#{i+1}: #{q}" }
-      interval_names = intervals.each_with_index.map { |(_s, _e), idx| "#{(idx+1).ordinalize} #{config.duration_period} Days" }
-
-      # Prepare table header
-      header = [ "Question" ] + interval_names + [ "Total" ]
-      table_data << header
-
-      # Prepare interval data: interval_bars[interval][question_index] = value
-      interval_bars = Array.new(intervals.size) { Array.new(full_questions.size, 0) }
-      total_per_question = Array.new(full_questions.size, 0)
-
-      (yes_no_questions + number_questions).each_with_index do |question, q_idx|
-        row = [ full_questions[q_idx] ]
-        total = 0
-        intervals.each_with_index do |(interval_start, interval_end), i_idx|
-          value = 0
-          (interval_start..interval_end).each do |date|
-            date_responses = responses_by_date[date] || []
-            question_responses = date_responses.select { |r| r.question_id == question.id }
-            question_responses.each do |response|
-              if question.question_type == "yes_or_no"
-                value += 1 if response.answer.to_s.downcase == "yes"
-              else
-                value += response.answer.to_i if response.answer.present?
-              end
-            end
-          end
-          row << value
-          interval_bars[i_idx][q_idx] = value
-          total += value
-        end
-        row << total
-        total_per_question[q_idx] = total
-        table_data << row
-      end
-
-      # Calculate available width and height for the chart
-      chart_width = 535 # A4 width (595) - left/right margins (30 each)
-      chart_height = 0 # Will be set later based on PDF layout
-
-      # Create grouped bar graph: each interval is a series, x-axis is questions
-      g = Gruff::Bar.new("#{chart_width}x350") # Initial height, will update below
-      g.title = nil # Remove chart title
-
-      g.theme = {
-        colors: [
-          "#4e73df", "#1cc88a", "#36b9cc", "#f6c23e", "#e74a3b", "#6a5acd", "#20b2aa", "#ff6347", "#ffb347", "#4682b4"
-        ],
-        marker_color: "#CCCCCC", # lighter axis/grid lines
-        background_colors: [ "#ffffff", "#ffffff" ]
-      }
-      g.hide_legend = false
-      g.legend_font_size = 14
-      g.marker_font_size = 12
-      g.title_font_size = 18
-      g.bar_spacing = 0.5
-      g.group_spacing = 8
-
-      g.x_axis_label = "Questions"
-      g.y_axis_label = "Count"
-      g.minimum_value = 0
-      g.maximum_value = [ interval_bars.flatten.max, 10 ].max
-
-      interval_names.each_with_index do |iname, i_idx|
-        g.data(iname, interval_bars[i_idx])
-      end
-      g.labels = short_labels.each_with_index.map { |lbl, idx| [ idx, lbl ] }.to_h
-      g.hide_line_markers = false # Show axis lines only
-      # Gruff shows axis lines by default; grid lines are hidden with hide_line_markers=false
-      # Chart width set in Gruff::Bar.new("535x220")
-      graph_file = Tempfile.new([ "certificate_graph", ".png" ])
-      g.write(graph_file.path)
-
-      # Generate the PDF in memory
-      pdf_content = Prawn::Document.new(page_size: "A4", margin: [ 50, 30, 30, 30 ]) do |pdf| # More space at top
-        # Draw a subtle border on all pages
-        pdf.repeat(:all) do
-          pdf.stroke_color "888888"
-          pdf.line_width = 1.2
-          pdf.stroke_rectangle [ pdf.bounds.left, pdf.bounds.top ], pdf.bounds.width, pdf.bounds.height
-        end
-        # Set up fonts
-        roboto_font_available = true
-        font_paths = {
-          normal: Rails.root.join("app/assets/fonts/Roboto-Regular.ttf"),
-          bold: Rails.root.join("app/assets/fonts/Roboto-Bold.ttf"),
-          italic: Rails.root.join("app/assets/fonts/Roboto-Italic.ttf")
-        }
-
-        # Check if font files exist
-        font_paths.each do |style, path|
-          unless File.exist?(path)
-            Rails.logger.error "Font file not found: #{path}"
-            roboto_font_available = false
-          end
-        end
-
-        # Initialize fonts
-        if roboto_font_available
-          pdf.font_families.update(
-            "Roboto" => {
-              normal: font_paths[:normal],
-              bold: font_paths[:bold],
-              italic: font_paths[:italic]
-            }
-          )
-          pdf.font "Roboto"
-        else
-          pdf.font "Helvetica"
-        end
-
-
-        # Colors (black/white/gray theme)
-        primary_color = "000000"
-        dark_color = "222222"
-        border_color = "888888"
-
-        # Header
-
-
-        # Modern certificate title and subtitle
-        pdf.move_down 30
-        pdf.font_size 28
-        pdf.fill_color primary_color
-        pdf.text (config.name.present? ? config.name.upcase : "CERTIFICATE OF ACHIEVEMENT"), align: :center, style: :bold
-        pdf.move_down 8
-        pdf.font_size 14
-        pdf.fill_color "555555"
-        pdf.text "This certificate is proudly presented to", align: :center, style: :italic
-        pdf.move_down 18
-        pdf.font_size 20
-        pdf.fill_color dark_color
-        pdf.text participant.user.full_name, align: :center, style: :bold
-        pdf.move_down 10
-        pdf.font_size 12
-        pdf.text "For successfully completing:", align: :center
-        pdf.move_down 4
-        pdf.font_size 14
-        pdf.text assignment.title, align: :center, style: :bold
-        pdf.move_down 6
-        pdf.font_size 10
-        pdf.text "Section: #{participant.section.name} | Date: #{assignment.start_date.strftime('%B %d, %Y')} - #{assignment.end_date.strftime('%B %d, %Y')}", align: :center
-        pdf.move_down 18
-
-        # Participant details
-        participant_data = [
-          [ "Name:", participant.user.full_name ],
-          [ "Section:", participant.section.name ],
-          [ "Assignment:", "#{assignment.title}" ],
-          [ "Date Range:", "#{assignment.start_date.strftime('%B %d, %Y')} - #{assignment.end_date.strftime('%B %d, %Y')}" ]
-        ]
-
-        pdf.table participant_data, width: 500, position: :left do |t|
-          t.cells.borders = []
-          t.cells.padding = [ 4, 8 ]
-          t.cells.inline_format = true
-          t.column(0).font_style = :bold
-          t.column(0).width = 80
-          t.column(0).align = :left
-          t.column(0).size = 10
-          t.column(1).align = :left
-          t.column(1).text_color = dark_color
-          t.column(1).size = 10
-        end
-
-        # Add more space between border and table
-        pdf.move_down 40
-
-        # Draw table first
-        if table_data.size > 1
-          pdf.font_size 9
-          table_width = pdf.bounds.width - 10
-          pdf.table table_data, width: table_width, position: :center do |t|
-            t.header = true
-            t.row(0).font_style = :bold
-            t.row(0).background_color = dark_color
-            t.row(0).text_color = "FFFFFF"
-            t.row(0).min_font_size = 9
-            t.row(0).align = :center # Center align all headers
-            t.cells.borders = [ :top, :bottom, :left, :right ]
-            t.cells.border_width = 0.4
-            t.cells.border_color = border_color
-            t.cells.padding = [ 6, 2 ] # Slightly smaller row height
-            (1...table_data.length).each do |i|
-              t.row(i).background_color = i % 2 == 1 ? "F0F0F0" : "FFFFFF"
-            end
-            t.column(0).font_style = :bold
-            t.column(0).width = table_width * 0.32
-            t.column(t.column_length - 1).width = 48 # Just enough to fit 'Total' label
-            t.column(t.column_length - 1).align = :center
-          end
-          pdf.move_down 20
-        end
-
-        # Calculate available height for the chart (space between here and the footer)
-        available_height = pdf.bounds.bottom - pdf.cursor - 260 # 260 for footer and spacing
-        chart_height = [ available_height, 250 ].max # Minimum height 250
-
-        # Regenerate the chart with the new height
-        chart_width = pdf.bounds.width.to_i
-        g = Gruff::Bar.new("#{chart_width}x#{chart_height}")
-        g.title = nil
-        g.theme = {
-          colors: [
-            "#4e73df", "#1cc88a", "#36b9cc", "#f6c23e", "#e74a3b", "#6a5acd", "#20b2aa", "#ff6347", "#ffb347", "#4682b4"
-          ],
-          marker_color: "#CCCCCC",
-          background_colors: [ "#ffffff", "#ffffff" ]
-        }
-        g.hide_legend = false
-        g.legend_font_size = 12
-        g.marker_font_size = 10
-        g.title_font_size = 14
-        g.x_axis_label_font_size = 12 if g.respond_to?(:x_axis_label_font_size=)
-        g.y_axis_label_font_size = 12 if g.respond_to?(:y_axis_label_font_size=)
-        g.bar_spacing = 0.5
-        g.group_spacing = 8
-        g.x_axis_label = "Questions"
-        g.y_axis_label = "Count"
-        g.minimum_value = 0
-        g.maximum_value = [ interval_bars.flatten.max, 10 ].max
-        interval_names.each_with_index do |iname, i_idx|
-          g.data(iname, interval_bars[i_idx])
-        end
-        g.labels = short_labels.each_with_index.map { |lbl, idx| [ idx, lbl ] }.to_h
-        g.hide_line_markers = false
-        graph_file = Tempfile.new([ "certificate_graph", ".png" ])
-        g.write(graph_file.path)
-
-        # Draw chart below table, using all available space
-        if File.exist?(graph_file.path)
-          pdf.image graph_file.path, fit: [ pdf.bounds.width, chart_height ], position: :center
-          pdf.move_down 10
-        end
-
-        pdf.move_down 240
-        # (Removed question key section)
-
-        # Footer
-
-        # Add footer note
-        pdf.go_to_page(pdf.page_count)
-        pdf.move_down 10
-        pdf.stroke_color border_color
-        pdf.horizontal_rule
-        pdf.move_down 5
-        pdf.fill_color dark_color
-        pdf.text "This is a system generated report.", align: :center, size: 9, color: dark_color
-      end
-
-      # Clean up temp file
-      graph_file.close
-      graph_file.unlink
-
-      # Update certificate timestamp without storing file
-      certificate.update(generated_at: Time.current)
-
-      # Return the PDF content
-      pdf_content.render
-    rescue => e
-      Rails.logger.error "Error generating certificate: #{e.message}"
-      Rails.logger.error e.backtrace.join("\n")
-      certificate.errors.add(:base, "Certificate generation failed: #{e.message}")
-      nil
+      CertificatePdfGenerator.new(certificate).generate
     end
-
-    # Close generate_individual_certificate method
-
-    # `view_section_certificates` removed — section-based viewing consolidated into `view_certificates`
-  end
 end
